@@ -42,7 +42,6 @@ int main(int argc, char* argv[]) {
     lua_pushvalue(L, -2);
     lua_remove(L, -3);
     lua_xmove(L, T, 1);
-    luaL_sandboxthread(T);
 
     int status = lua_resume(T, nullptr, 0);
     if (status != LUA_OK) {
