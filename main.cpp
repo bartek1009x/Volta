@@ -20,7 +20,6 @@ int main(int argc, char* argv[]) {
     ResourceState state{};
 
     lua_State* L = state.getL();
-    luaL_openlibs(L);
 
     lua_pushcfunction(L, luau_require, "require");
     lua_setglobal(L, "require");
