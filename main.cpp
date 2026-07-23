@@ -9,39 +9,11 @@
 
 #include <SDL3/SDL.h>
 
+#include "ResourceState.hpp"
 #include "require.cpp"
+#include "modules/window.hpp"
 
 using namespace std;
-
-class ResourceState {
-    SDL_Window *window;
-    SDL_Renderer *renderer;
-    lua_State* L;
-
-public:
-    ResourceState() : L(luaL_newstate()) {
-        // state setup
-        luaL_openlibs(L);
-
-        if (!SDL_Init(SDL_INIT_VIDEO)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
-        }
-
-        if (!SDL_CreateWindowAndRenderer("Volta", 320, 240, 0, &window, &renderer)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window and renderer: %s", SDL_GetError());
-        }
-    }
-    ~ResourceState() {
-        lua_close(L);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-    }
-
-    lua_State* getL() const {
-        return L;
-    }
-};
 
 int main(int argc, char* argv[]) {
     // luau
@@ -72,6 +44,9 @@ int main(int argc, char* argv[]) {
         printf("Failed to compile: %s\n", msg);
         return 1;
     }
+
+    // register modules
+    registerWindowFunctions(&state);
 
     // luau init
     lua_State* T = lua_newthread(L);

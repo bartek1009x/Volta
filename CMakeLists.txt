@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_subdirectory(dependencies/luau)
 
-set(SOURCE_FILES main.cpp require.cpp)
+set(SOURCE_FILES main.cpp require.cpp ResourceState.cpp modules/window.cpp)
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 add_executable(volta ${SOURCE_FILES})
 
