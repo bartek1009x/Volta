@@ -7,26 +7,61 @@
 #include "dependencies/luau/VM/include/lualib.h"
 #include "dependencies/luau/Compiler/include/luacode.h"
 
+#include <SDL3/SDL.h>
+
 #include "require.cpp"
 
+using namespace std;
+
+class ResourceState {
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    lua_State* L;
+
+public:
+    ResourceState() : L(luaL_newstate()) {
+        // state setup
+        luaL_openlibs(L);
+
+        if (!SDL_Init(SDL_INIT_VIDEO)) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
+        }
+
+        if (!SDL_CreateWindowAndRenderer("Volta", 320, 240, 0, &window, &renderer)) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window and renderer: %s", SDL_GetError());
+        }
+    }
+    ~ResourceState() {
+        lua_close(L);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+    }
+
+    lua_State* getL() const {
+        return L;
+    }
+};
+
 int main(int argc, char* argv[]) {
-    lua_State* L = luaL_newstate();
+    // luau
+    ResourceState state{};
+
+    lua_State* L = state.getL();
     luaL_openlibs(L);
 
     lua_pushcfunction(L, luau_require, "require");
     lua_setglobal(L, "require");
 
-    luaL_sandbox(L);
-
-    auto scriptPath = std::filesystem::current_path() / argv[1];
-    auto size = std::filesystem::file_size(scriptPath);
-    std::string script(size, '\0');
-    std::ifstream in(scriptPath);
+    auto scriptPath = filesystem::current_path() / argv[1];
+    auto size = filesystem::file_size(scriptPath);
+    string script(size, '\0');
+    ifstream in{scriptPath};
     in.read(&script[0], size);
 
     size_t bytecode_size;
     char* bytecode = luau_compile(script.c_str(), script.length(), nullptr, &bytecode_size);
-    std::string chunkname = "=" + scriptPath.string();
+    string chunkname = "=" + scriptPath.string();
     int res = luau_load(L, chunkname.c_str(), bytecode, bytecode_size, 0);
     free(bytecode);
 
@@ -38,6 +73,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // luau init
     lua_State* T = lua_newthread(L);
     lua_pushvalue(L, -2);
     lua_remove(L, -3);
@@ -49,6 +85,41 @@ int main(int argc, char* argv[]) {
         printf("Runtime error: %s\n", err ? err : "unknown error");
     }
 
-    lua_close(L);
+    lua_getglobal(L, "init");
+
+    if (lua_pcall(L, 0, 1, 0) != 0) {
+        printf("Runtime error: %s\n", lua_tostring(L, -1));
+        return 1;
+    }
+
+    // sdl3
+    SDL_Event event;
+    bool closeWindow = false;
+
+    Uint64 NOW = SDL_GetPerformanceCounter();
+    Uint64 LAST = 0;
+    double deltaTime = 0;
+
+    while (!closeWindow) {
+        SDL_PollEvent(&event);
+        if (event.type == SDL_EVENT_QUIT) {
+            closeWindow = true;
+        }
+
+        LAST = NOW;
+        NOW = SDL_GetPerformanceCounter();
+
+        deltaTime = (double) ((NOW - LAST) * 1000 / (double) SDL_GetPerformanceFrequency());
+
+        // call luau update function
+        lua_getglobal(L, "update");
+        lua_pushnumber(L, deltaTime);
+
+        if (lua_pcall(L, 1, 1, 0) != 0) {
+            printf("Runtime error: %s\n", lua_tostring(L, -1));
+        }
+        lua_pop(L, 1);
+    }
+
     return 0;
 }
