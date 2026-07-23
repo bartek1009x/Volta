@@ -4,6 +4,7 @@
 #include "../dependencies/luau/VM/include/lua.h"
 #include "../ResourceState.hpp"
 
+int setVsync(lua_State* L);
 int setDrawColor(lua_State* L);
 int clear(lua_State* L);
 int drawRect(lua_State* L);

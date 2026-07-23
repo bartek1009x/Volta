@@ -16,6 +16,11 @@ unordered_map<int, SDL_Texture*> loadedTextures;
 Uint32 textureIDCounter = 0;
 SDL_FRect rect;
 
+int setVsync(lua_State *L) {
+    SDL_SetRenderVSync(renderer, lua_toboolean(L, 1) ? 1 : SDL_RENDERER_VSYNC_DISABLED);
+    return 1;
+}
+
 int setDrawColor(lua_State *L) {
     SDL_SetRenderDrawColor(renderer, lua_tonumber(L, 1), lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4));
     return 1;
@@ -86,6 +91,8 @@ void registerGraphicsFunctions(ResourceState* state) {
 
     lua_createtable(L, 1, 0);
 
+    lua_pushcfunction(L, setVsync, "setVsync");
+    lua_setfield(L, -2, "setVsync");
     lua_pushcfunction(L, setDrawColor, "setDrawColor");
     lua_setfield(L, -2, "setDrawColor");
     lua_pushcfunction(L, clear, "clear");

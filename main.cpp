@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
         LAST = NOW;
         NOW = SDL_GetPerformanceCounter();
 
-        deltaTime = (double) ((NOW - LAST) * 1000 / (double) SDL_GetPerformanceFrequency());
+        deltaTime = (double) (NOW - LAST) / (double )SDL_GetPerformanceFrequency();
 
         // call luau update function
         lua_getglobal(L, "update");
