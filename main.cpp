@@ -1,14 +1,13 @@
-#include <SDL3/SDL_render.h>
 #include <iostream>
 #include <fstream>
 #include <filesystem>
-#include <unordered_map>
 
 #include "dependencies/luau/VM/include/lua.h"
 #include "dependencies/luau/VM/include/lualib.h"
 #include "dependencies/luau/Compiler/include/luacode.h"
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_render.h>
 
 #include "ResourceState.hpp"
 #include "require.cpp"
@@ -26,7 +25,8 @@ int main(int argc, char* argv[]) {
     lua_pushcfunction(L, luau_require, "require");
     lua_setglobal(L, "require");
 
-    auto scriptPath = filesystem::current_path() / argv[1];
+    filesystem::path scriptPath = filesystem::current_path() / argv[1];
+    state.setMainPath(scriptPath.parent_path());
     auto size = filesystem::file_size(scriptPath);
     string script(size, '\0');
     ifstream in{scriptPath};

@@ -7,6 +7,7 @@ add_subdirectory(dependencies/luau)
 
 set(SOURCE_FILES main.cpp require.cpp ResourceState.cpp modules/window.cpp modules/graphics.cpp)
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
+find_package(SDL3_image REQUIRED CONFIG REQUIRED COMPONENTS)
 add_executable(volta ${SOURCE_FILES})
 
-target_link_libraries(volta PRIVATE SDL3::SDL3 Luau.Compiler Luau.VM)
+target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image Luau.Compiler Luau.VM)

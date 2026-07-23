@@ -24,6 +24,14 @@ SDL_Renderer* ResourceState::getRenderer() const {
     return renderer;
 }
 
+std::filesystem::path ResourceState::getMainPath() const {
+    return mainPath;
+}
+
+void ResourceState::setMainPath(std::filesystem::path path) {
+    mainPath = path;
+}
+
 void ResourceState::setWinRen(SDL_Window* win, SDL_Renderer* ren) {
     window = win;
     renderer = ren;

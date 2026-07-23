@@ -6,6 +6,8 @@
 
 int setDrawColor(lua_State* L);
 int clear(lua_State* L);
+int loadImage(lua_State* L);
+int drawImage(lua_State* L);
 void registerGraphicsFunctions(ResourceState* state);
 
 #endif
