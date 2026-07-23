@@ -11,7 +11,8 @@ using namespace std;
 
 SDL_Renderer *renderer = nullptr;
 std::filesystem::path mainPath;
-unordered_map<const char*, SDL_Texture*> loadedTextures;
+unordered_map<int, SDL_Texture*> loadedTextures;
+Uint32 textureIDCounter = 0;
 
 int setDrawColor(lua_State *L) {
     SDL_SetRenderDrawColor(renderer, lua_tonumber(L, 1), lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4));
@@ -25,18 +26,33 @@ int clear(lua_State *L) {
 
 int loadImage(lua_State *L) {
     const char* path = lua_tostring(L, 1);
-    SDL_Texture* texture = IMG_LoadTexture(renderer, (mainPath / path).c_str());
+    std::filesystem::path finalPath = mainPath / path;
+    SDL_Texture* texture = IMG_LoadTexture(renderer, finalPath.c_str());
     if (texture == nullptr) {
+        lua_pushfstring(L, "Could not load texture: %s", finalPath.c_str());
+        lua_error(L);
         return 0;
     }
 
-    loadedTextures[path] = texture;
+    loadedTextures[textureIDCounter] = texture;
+
+    lua_pushnumber(L, textureIDCounter);
+
+    textureIDCounter++;
+
+    return 1;
+}
+
+int unloadImage(lua_State *L) {
+    int index = lua_tonumber(L, 1);
+    SDL_DestroyTexture(loadedTextures[index]);
+    loadedTextures.erase(index);
 
     return 1;
 }
 
 int drawImage(lua_State *L) {
-    SDL_RenderTexture(renderer, loadedTextures[lua_tostring(L, 1)], nullptr, nullptr);
+    SDL_RenderTexture(renderer, loadedTextures[lua_tonumber(L, 1)], nullptr, nullptr);
     return 1;
 }
 
@@ -55,6 +71,8 @@ void registerGraphicsFunctions(ResourceState* state) {
     lua_setfield(L, -2, "clear");
     lua_pushcfunction(L, loadImage, "loadImage");
     lua_setfield(L, -2, "loadImage");
+    lua_pushcfunction(L, unloadImage, "unloadImage");
+    lua_setfield(L, -2, "unloadImage");
     lua_pushcfunction(L, drawImage, "drawImage");
     lua_setfield(L, -2, "drawImage");
 
