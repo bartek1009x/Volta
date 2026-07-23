@@ -16,6 +16,7 @@ class ResourceState {
         ~ResourceState();
 
         lua_State* getL() const;
+        SDL_Renderer* getRenderer() const;
         void setWinRen(SDL_Window* win, SDL_Renderer* ren);
 };
 

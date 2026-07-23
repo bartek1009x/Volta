@@ -2,6 +2,7 @@
 
 #include "dependencies/luau/VM/include/lua.h"
 #include "dependencies/luau/VM/include/lualib.h"
+#include <SDL3/SDL_render.h>
 
 ResourceState::ResourceState() : L(luaL_newstate()) {
     luaL_openlibs(L);
@@ -17,6 +18,10 @@ ResourceState::~ResourceState() {
 
 lua_State* ResourceState::getL() const {
     return L;
+}
+
+SDL_Renderer* ResourceState::getRenderer() const {
+    return renderer;
 }
 
 void ResourceState::setWinRen(SDL_Window* win, SDL_Renderer* ren) {

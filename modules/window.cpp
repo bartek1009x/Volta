@@ -1,8 +1,8 @@
 #include "window.hpp"
+#include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 
 SDL_Window* window;
-SDL_Renderer *renderer;
 
 int setTitle(lua_State* L) {
     SDL_SetWindowTitle(window, lua_tostring(L, 1));
@@ -72,6 +72,7 @@ void registerWindowFunctions(ResourceState* state) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
     }
 
+    SDL_Renderer* renderer;
     if (!SDL_CreateWindowAndRenderer("Volta", 320, 240, 0, &window, &renderer)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window and renderer: %s", SDL_GetError());
     }
