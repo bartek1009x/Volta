@@ -2,7 +2,7 @@
 #define WINDOW_H
 
 #include "../dependencies/luau/VM/include/lua.h"
-#include "../ResourceState.hpp"
+#include "../utils/ResourceState.hpp"
 
 int setTitle(lua_State* L);
 int setFullscreen(lua_State* L);

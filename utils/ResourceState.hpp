@@ -5,7 +5,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
-#include "dependencies/luau/VM/include/lua.h"
+#include "../dependencies/luau/VM/include/lua.h"
 
 class ResourceState {
     SDL_Window *window;

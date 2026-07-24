@@ -11,7 +11,7 @@
 using namespace std;
 
 SDL_Renderer *renderer = nullptr;
-std::filesystem::path mainPath;
+static ResourceState* resourceState = nullptr;
 unordered_map<int, SDL_Texture*> loadedTextures;
 Uint32 textureIDCounter = 0;
 SDL_FRect rect;
@@ -48,7 +48,7 @@ int drawRect(lua_State *L) {
 
 int loadImage(lua_State *L) {
     const char* path = lua_tostring(L, 1);
-    std::filesystem::path finalPath = mainPath / path;
+    std::filesystem::path finalPath = resourceState->getMainPath() / path;
     SDL_Texture* texture = IMG_LoadTexture(renderer, finalPath.c_str());
     if (texture == nullptr) {
         lua_pushfstring(L, "Could not load texture: %s", finalPath.c_str());
@@ -83,10 +83,10 @@ int drawImage(lua_State *L) {
 }
 
 void registerGraphicsFunctions(ResourceState* state) {
+    resourceState = state;
     if (renderer == nullptr) {
         renderer = state->getRenderer();
     }
-    mainPath = state->getMainPath();
     lua_State* L = state->getL();
 
     lua_createtable(L, 1, 0);

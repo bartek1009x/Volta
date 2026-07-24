@@ -2,7 +2,7 @@
 #define GRAPHICS_H
 
 #include "../dependencies/luau/VM/include/lua.h"
-#include "../ResourceState.hpp"
+#include "../utils/ResourceState.hpp"
 
 int setVsync(lua_State* L);
 int setDrawColor(lua_State* L);

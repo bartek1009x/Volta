@@ -2,7 +2,7 @@
 #define INPUT_H
 
 #include "../dependencies/luau/VM/include/lua.h"
-#include "../ResourceState.hpp"
+#include "../utils/ResourceState.hpp"
 
 int isKeyDown(lua_State* L);
 int isKeyUp(lua_State* L);

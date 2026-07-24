@@ -4,9 +4,9 @@
 #include <filesystem>
 #include <unordered_map>
 
-#include "dependencies/luau/VM/include/lua.h"
-#include "dependencies/luau/VM/include/lualib.h"
-#include "dependencies/luau/Compiler/include/luacode.h"
+#include "../dependencies/luau/VM/include/lua.h"
+#include "../dependencies/luau/VM/include/lualib.h"
+#include "../dependencies/luau/Compiler/include/luacode.h"
 
 using namespace std;
 

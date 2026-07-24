@@ -1,8 +1,8 @@
 #include "ResourceState.hpp"
 
-#include "dependencies/luau/VM/include/lua.h"
-#include "dependencies/luau/VM/include/lualib.h"
+#include "../dependencies/luau/VM/include/lualib.h"
 #include <SDL3/SDL_render.h>
+#include <SDL3_mixer/SDL_mixer.h>
 
 ResourceState::ResourceState() : L(luaL_newstate()) {
     luaL_openlibs(L);
@@ -13,6 +13,7 @@ ResourceState::~ResourceState() {
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
     }
+    MIX_Quit();
     SDL_Quit();
 }
 
