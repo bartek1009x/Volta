@@ -13,6 +13,7 @@
 #include "require.cpp"
 #include "modules/window.hpp"
 #include "modules/graphics.hpp"
+#include "modules/input.hpp"
 
 using namespace std;
 
@@ -49,6 +50,7 @@ int main(int argc, char* argv[]) {
     // register modules
     registerWindowFunctions(&state);
     registerGraphicsFunctions(&state);
+    registerInputFunctions(&state);
 
     // luau init
     lua_State* T = lua_newthread(L);
@@ -79,9 +81,12 @@ int main(int argc, char* argv[]) {
 
     SDL_Renderer* renderer = state.getRenderer();
     while (!closeWindow) {
-        SDL_PollEvent(&event);
-        if (event.type == SDL_EVENT_QUIT) {
-            closeWindow = true;
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_EVENT_QUIT:
+                    closeWindow = true;
+                    break;
+            }
         }
 
         LAST = NOW;
