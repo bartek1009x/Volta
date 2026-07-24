@@ -18,17 +18,17 @@ SDL_FRect rect;
 
 int setVsync(lua_State *L) {
     SDL_SetRenderVSync(renderer, lua_toboolean(L, 1) ? 1 : SDL_RENDERER_VSYNC_DISABLED);
-    return 1;
+    return 0;
 }
 
 int setDrawColor(lua_State *L) {
     SDL_SetRenderDrawColor(renderer, lua_tonumber(L, 1), lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4));
-    return 1;
+    return 0;
 }
 
 int clear(lua_State *L) {
     SDL_RenderClear(renderer);
-    return 1;
+    return 0;
 }
 
 int drawRect(lua_State *L) {
@@ -43,7 +43,7 @@ int drawRect(lua_State *L) {
         SDL_RenderRect(renderer, &rect);
     }
 
-    return 1;
+    return 0;
 }
 
 int loadImage(lua_State *L) {
@@ -70,7 +70,7 @@ int unloadImage(lua_State *L) {
     SDL_DestroyTexture(loadedTextures[index]);
     loadedTextures.erase(index);
 
-    return 1;
+    return 0;
 }
 
 int drawImage(lua_State *L) {
@@ -79,7 +79,7 @@ int drawImage(lua_State *L) {
     rect.w = lua_tonumber(L, 4);
     rect.h = lua_tonumber(L, 5);
     SDL_RenderTexture(renderer, loadedTextures[lua_tonumber(L, 1)], nullptr, &rect);
-    return 1;
+    return 0;
 }
 
 void registerGraphicsFunctions(ResourceState* state) {

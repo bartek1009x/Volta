@@ -6,42 +6,42 @@ SDL_Window* window;
 
 int setTitle(lua_State* L) {
     SDL_SetWindowTitle(window, lua_tostring(L, 1));
-    return 1;
+    return 0;
 }
 
 int setFullscreen(lua_State* L) {
     SDL_SetWindowFullscreen(window, lua_toboolean(L, 1));
-    return 1;
+    return 0;
 }
 
 int setBorderless(lua_State* L) {
     SDL_SetWindowBordered(window, !lua_toboolean(L, 1));
-    return 1;
+    return 0;
 }
 
 int setResizable(lua_State* L) {
     SDL_SetWindowResizable(window, lua_toboolean(L, 1));
-    return 1;
+    return 0;
 }
 
 int setPosition(lua_State* L) {
     SDL_SetWindowPosition(window, lua_tonumber(L, 1), lua_tonumber(L, 2));
-    return 1;
+    return 0;
 }
 
 int setSize(lua_State* L) {
     SDL_SetWindowSize(window, lua_tonumber(L, 1), lua_tonumber(L, 2));
-    return 1;
+    return 0;
 }
 
 int setMaxSize(lua_State* L) {
     SDL_SetWindowMaximumSize(window, lua_tonumber(L, 1), lua_tonumber(L, 2));
-    return 1;
+    return 0;
 }
 
 int setMinSize(lua_State* L) {
     SDL_SetWindowMinimumSize(window, lua_tonumber(L, 1), lua_tonumber(L, 2));
-    return 1;
+    return 0;
 }
 
 void registerWindowFunctions(ResourceState* state) {

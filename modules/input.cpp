@@ -28,6 +28,14 @@ int isMouseButtonUp(lua_State *L) {
     return 1;
 }
 
+int getMousePosition(lua_State *L) {
+    float x, y;
+    SDL_GetMouseState(&x, &y);
+    lua_pushnumber(L, (double) x);
+    lua_pushnumber(L, (double) y);
+    return 2;
+}
+
 static const std::unordered_map<std::string, SDL_Scancode> keyCodes = {
     {"A", SDL_SCANCODE_A},
     {"B", SDL_SCANCODE_B},
@@ -324,6 +332,8 @@ void registerInputFunctions(ResourceState* state) {
     lua_setfield(L, -2, "isMouseButtonDown");
     lua_pushcfunction(L, isMouseButtonUp, "isMouseButtonUp");
     lua_setfield(L, -2, "isMouseButtonUp");
+    lua_pushcfunction(L, getMousePosition, "getMousePosition");
+    lua_setfield(L, -2, "getMousePosition");
 
     lua_setglobal(L, "input");
 }
