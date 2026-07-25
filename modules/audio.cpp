@@ -12,6 +12,8 @@ Uint32 audioIDCounter = 0;
 Pool<MIX_Track*> tracks([]{
     return MIX_CreateTrack(mixer);
 });
+std::unordered_map<int, MIX_Track*> playingTracks;
+Uint32 trackIDCounter = 0;
 
 int loadAudio(lua_State *L) {
     const char* path = lua_tostring(L, 1);
@@ -41,14 +43,44 @@ int unloadAudio(lua_State *L) {
 }
 
 void SDLCALL TrackStoppedCallback(void *userdata, MIX_Track *track) {
+    for (auto it = playingTracks.begin(); it != playingTracks.end(); ++it) {
+        if (it->second == track) {
+            playingTracks.erase(it);
+            break;
+        }
+    }
     tracks.free(track);
 }
 
-int playAudio(lua_State *L) {
+int play(lua_State *L) {
     MIX_Track* track = tracks.get();
     MIX_SetTrackAudio(track, loadedAudio[lua_tonumber(L, 1)]);
     MIX_PlayTrack(track, 0);
     MIX_SetTrackStoppedCallback(track, TrackStoppedCallback, nullptr);
+
+    playingTracks[trackIDCounter] = track;
+
+    lua_pushnumber(L, trackIDCounter);
+
+    trackIDCounter++;
+
+    return 1;
+}
+
+int stop(lua_State *L) {
+    int index = lua_tointeger(L, 1);
+    MIX_StopTrack(playingTracks[index], 0);
+    playingTracks.erase(index);
+    return 0;
+}
+
+int setVolume(lua_State *L) {
+    MIX_SetTrackGain(playingTracks[lua_tointeger(L, 1)], lua_tonumber(L, 2));
+    return 0;
+}
+
+int setMasterVolume(lua_State *L) {
+    MIX_SetMixerGain(mixer, lua_tonumber(L, 1));
     return 0;
 }
 
@@ -65,8 +97,14 @@ void registerAudioFunctions(ResourceState* state) {
     lua_setfield(L, -2, "loadAudio");
     lua_pushcfunction(L, unloadAudio, "unloadAudio");
     lua_setfield(L, -2, "unloadAudio");
-    lua_pushcfunction(L, playAudio, "playAudio");
-    lua_setfield(L, -2, "playAudio");
+    lua_pushcfunction(L, play, "play");
+    lua_setfield(L, -2, "play");
+    lua_pushcfunction(L, stop, "stop");
+    lua_setfield(L, -2, "stop");
+    lua_pushcfunction(L, setVolume, "setVolume");
+    lua_setfield(L, -2, "setVolume");
+    lua_pushcfunction(L, setMasterVolume, "setMasterVolume");
+    lua_setfield(L, -2, "setMasterVolume");
 
     lua_setglobal(L, "audio");
 }
