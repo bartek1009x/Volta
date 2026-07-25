@@ -12,6 +12,15 @@ int setPosition(lua_State* L);
 int setSize(lua_State* L);
 int setMinSize(lua_State* L);
 int setMaxSize(lua_State* L);
+int hasFocus(lua_State* L);
+int getTitle(lua_State* L);
+int isFullscreen(lua_State* L);
+int isBorderless(lua_State* L);
+int isResizable(lua_State* L);
+int getPosition(lua_State* L);
+int getSize(lua_State* L);
+int getMinSize(lua_State* L);
+int getMaxSize(lua_State* L);
 void registerWindowFunctions(ResourceState* state);
 
 #endif

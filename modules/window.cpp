@@ -44,6 +44,63 @@ int setMinSize(lua_State* L) {
     return 0;
 }
 
+int hasFocus(lua_State* L) {
+    lua_pushboolean(L, SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS);
+    return 1;
+}
+
+int getTitle(lua_State* L) {
+    lua_pushstring(L, SDL_GetWindowTitle(window));
+    return 1;
+}
+
+int isFullscreen(lua_State* L) {
+    lua_pushboolean(L, SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN);
+    return 1;
+}
+
+int isBorderless(lua_State* L) {
+    lua_pushboolean(L, SDL_GetWindowFlags(window) & SDL_WINDOW_BORDERLESS);
+    return 1;
+}
+
+int isResizable(lua_State* L) {
+    lua_pushboolean(L, SDL_GetWindowFlags(window) & SDL_WINDOW_RESIZABLE);
+    return 1;
+}
+
+int getPosition(lua_State* L) {
+    int x, y;
+    SDL_GetWindowPosition(window, &x, &y);
+    lua_pushnumber(L, x);
+    lua_pushnumber(L, y);
+    return 2;
+}
+
+int getSize(lua_State* L) {
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+    lua_pushnumber(L, w);
+    lua_pushnumber(L, h);
+    return 2;
+}
+
+int getMinSize(lua_State* L) {
+    int w, h;
+    SDL_GetWindowMinimumSize(window, &w, &h);
+    lua_pushnumber(L, w);
+    lua_pushnumber(L, h);
+    return 2;
+}
+
+int getMaxSize(lua_State* L) {
+    int w, h;
+    SDL_GetWindowMaximumSize(window, &w, &h);
+    lua_pushnumber(L, w);
+    lua_pushnumber(L, h);
+    return 2;
+}
+
 void registerWindowFunctions(ResourceState* state) {
     lua_State* L = state->getL();
 
@@ -65,6 +122,24 @@ void registerWindowFunctions(ResourceState* state) {
     lua_setfield(L, -2, "setMinSize");
     lua_pushcfunction(L, setMaxSize, "setMaxSize");
     lua_setfield(L, -2, "setMaxSize");
+    lua_pushcfunction(L, hasFocus, "hasFocus");
+    lua_setfield(L, -2, "hasFocus");
+    lua_pushcfunction(L, getTitle, "getTitle");
+    lua_setfield(L, -2, "getTitle");
+    lua_pushcfunction(L, isFullscreen, "isFullscreen");
+    lua_setfield(L, -2, "isFullscreen");
+    lua_pushcfunction(L, isBorderless, "isBorderless");
+    lua_setfield(L, -2, "isBorderless");
+    lua_pushcfunction(L, isResizable, "isResizable");
+    lua_setfield(L, -2, "isResizable");
+    lua_pushcfunction(L, getPosition, "getPosition");
+    lua_setfield(L, -2, "getPosition");
+    lua_pushcfunction(L, getSize, "getSize");
+    lua_setfield(L, -2, "getSize");
+    lua_pushcfunction(L, getMinSize, "getMinSize");
+    lua_setfield(L, -2, "getMinSize");
+    lua_pushcfunction(L, getMaxSize, "getMaxSize");
+    lua_setfield(L, -2, "getMaxSize");
 
     lua_setglobal(L, "window");
 
