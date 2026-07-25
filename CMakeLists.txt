@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(dependencies/luau)
 
-set(SOURCE_FILES main.cpp utils/require.cpp utils/ResourceState.cpp utils/Pool.hpp modules/window.cpp modules/graphics.cpp modules/input.cpp modules/audio.cpp)
+set(SOURCE_FILES main.cpp utils/require.cpp utils/ResourceState.cpp utils/Pool.hpp modules/window.cpp modules/graphics.cpp modules/input.cpp modules/audio.cpp modules/system.cpp)
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 find_package(SDL3_image REQUIRED CONFIG REQUIRED COMPONENTS)
 find_package(SDL3_mixer REQUIRED CONFIG REQUIRED COMPONENTS)

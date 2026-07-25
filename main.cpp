@@ -9,6 +9,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_render.h>
 
+#include "modules/system.hpp"
 #include "utils/ResourceState.hpp"
 #include "utils/require.cpp"
 #include "modules/window.hpp"
@@ -53,6 +54,7 @@ int main(int argc, char* argv[]) {
     registerGraphicsFunctions(&state);
     registerInputFunctions(&state);
     registerAudioFunctions(&state);
+    registerSystemFunctions(&state);
 
     // luau init
     lua_State* T = lua_newthread(L);
