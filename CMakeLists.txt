@@ -80,6 +80,7 @@ Categories=Game;
                     --executable ${APPDIR}/usr/bin/volta
                     --desktop-file ${CMAKE_BINARY_DIR}/volta.desktop
                     --icon-file ${CMAKE_SOURCE_DIR}/assets/volta.png
+                    --library $<TARGET_FILE:SDL3::SDL3>
                     --library $<TARGET_FILE:SDL3_image::SDL3_image>
                     --library $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
                     --output appimage
