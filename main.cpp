@@ -68,10 +68,17 @@ int main(int argc, char* argv[]) {
         printf("Runtime error: %s\n", err ? err : "unknown error");
     }
 
-    lua_getglobal(L, "init");
+    if (lua_getglobal(L, "update") != LUA_TFUNCTION) {
+        printf("No update function found in %s\n", argv[1]);
+        return 1;
+    }
 
-    if (lua_pcall(L, 0, 1, 0) != 0) {
-        printf("Runtime error: %s\n", lua_tostring(L, -1));
+    int initFunc = lua_getglobal(L, "init");
+
+    if (initFunc != LUA_TFUNCTION) {
+        lua_pop(L, 1);
+    } else if (lua_pcall(L, 0, 1, 0) != 0) {
+        printf("Init function error: %s\n", lua_tostring(L, -1));
         return 1;
     }
 
@@ -84,6 +91,7 @@ int main(int argc, char* argv[]) {
     double deltaTime = 0;
 
     SDL_Renderer* renderer = state.getRenderer();
+
     while (!closeWindow) {
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
