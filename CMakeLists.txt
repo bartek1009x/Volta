@@ -5,9 +5,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(dependencies/luau)
+set(VOLTA_EXTRAS_DIR ${CMAKE_SOURCE_DIR}/volta_extras)
 
 set(SOURCE_FILES
     main.cpp
+    utils/ExecutablePath.hpp
     utils/require.cpp
     utils/ResourceState.cpp
     utils/Pool.hpp
@@ -32,6 +34,11 @@ if (WIN32)
             $<TARGET_FILE:SDL3_image::SDL3_image>
             $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
             $<TARGET_FILE_DIR:volta>
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            $<TARGET_FILE_DIR:volta>/extras
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${VOLTA_EXTRAS_DIR}
+            $<TARGET_FILE_DIR:volta>/extras
     )
 elseif (APPLE)
     set_target_properties(volta PROPERTIES
@@ -44,6 +51,11 @@ elseif (APPLE)
             $<TARGET_FILE:SDL3_image::SDL3_image>
             $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
             $<TARGET_FILE_DIR:volta>
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            $<TARGET_FILE_DIR:volta>/extras
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${VOLTA_EXTRAS_DIR}
+            $<TARGET_FILE_DIR:volta>/extras
     )
 elseif (UNIX)
     set_target_properties(volta PROPERTIES
@@ -56,6 +68,8 @@ elseif (UNIX)
     add_custom_command(TARGET volta POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${APPDIR}/usr/bin
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:volta> ${APPDIR}/usr/bin/volta
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${APPDIR}/usr/bin/extras
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${VOLTA_EXTRAS_DIR} ${APPDIR}/usr/bin/extras
     )
 
     # AppImage requires a .desktop file and an icon
