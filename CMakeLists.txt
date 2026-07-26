@@ -51,23 +51,44 @@ elseif (UNIX)
         INSTALL_RPATH "$ORIGIN"
     )
 
+    set(APPDIR ${CMAKE_BINARY_DIR}/AppDir)
+
     add_custom_command(TARGET volta POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:SDL3::SDL3>
-            $<TARGET_FILE:SDL3_image::SDL3_image>
-            $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
-            $<TARGET_FILE_DIR:volta>
-
-        COMMAND ${CMAKE_COMMAND} -E create_symlink
-            $<TARGET_FILE_NAME:SDL3::SDL3>
-            $<TARGET_FILE_DIR:volta>/libSDL3.so.0
-
-        COMMAND ${CMAKE_COMMAND} -E create_symlink
-            $<TARGET_FILE_NAME:SDL3_image::SDL3_image>
-            $<TARGET_FILE_DIR:volta>/libSDL3_image.so.0
-
-        COMMAND ${CMAKE_COMMAND} -E create_symlink
-            $<TARGET_FILE_NAME:SDL3_mixer::SDL3_mixer>
-            $<TARGET_FILE_DIR:volta>/libSDL3_mixer.so.0
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${APPDIR}/usr/bin
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:volta> ${APPDIR}/usr/bin/volta
     )
+
+    # AppImage requires a .desktop file and an icon
+    file(WRITE ${CMAKE_BINARY_DIR}/volta.desktop
+"[Desktop Entry]
+Name=Volta
+Exec=volta
+Icon=volta
+Type=Application
+Categories=Game;
+")
+
+    find_program(LINUXDEPLOY linuxdeploy)
+    find_program(APPIMAGETOOL appimagetool)
+
+    if (LINUXDEPLOY)
+        add_custom_target(appimage
+            COMMAND ${CMAKE_COMMAND} -E env
+                OUTPUT="volta-x86_64.AppImage"
+                ${LINUXDEPLOY}
+                    --appdir ${APPDIR}
+                    --executable ${APPDIR}/usr/bin/volta
+                    --desktop-file ${CMAKE_BINARY_DIR}/volta.desktop
+                    --icon-file ${CMAKE_SOURCE_DIR}/assets/volta.png
+                    --library $<TARGET_FILE:SDL3_image::SDL3_image>
+                    --library $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
+                    --output appimage
+            DEPENDS volta
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        )
+    else()
+        message(STATUS "linuxdeploy not found — 'appimage' target unavailable. "
+                        "Download it from https://github.com/linuxdeploy/linuxdeploy/releases, "
+                        "chmod +x, and put it on PATH.")
+    endif()
 endif()
