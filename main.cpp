@@ -118,5 +118,14 @@ int main(int argc, char* argv[]) {
         SDL_RenderPresent(renderer);
     }
 
+    int exitFunc = lua_getglobal(L, "exit");
+
+    if (exitFunc != LUA_TFUNCTION) {
+        lua_pop(L, 1);
+    } else if (lua_pcall(L, 0, 1, 0) != 0) {
+        printf("Exit function error: %s\n", lua_tostring(L, -1));
+        return 1;
+    }
+
     return 0;
 }

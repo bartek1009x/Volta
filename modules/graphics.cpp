@@ -7,6 +7,7 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_rect.h>
 #include <SDL3_image/SDL_image.h>
+#include <SDL3/SDL_mouse.h>
 
 using namespace std;
 
@@ -15,6 +16,15 @@ static ResourceState* resourceState = nullptr;
 unordered_map<int, SDL_Texture*> loadedTextures;
 Uint32 textureIDCounter = 0;
 SDL_FRect rect;
+
+int setCursorVisibility(lua_State *L) {
+    if (lua_toboolean(L, 1)) {
+        SDL_ShowCursor();
+    } else {
+        SDL_HideCursor();
+    }
+    return 0;
+}
 
 int setVsync(lua_State *L) {
     SDL_SetRenderVSync(renderer, lua_toboolean(L, 1) ? 1 : SDL_RENDERER_VSYNC_DISABLED);
@@ -91,6 +101,8 @@ void registerGraphicsFunctions(ResourceState* state) {
 
     lua_createtable(L, 1, 0);
 
+    lua_pushcfunction(L, setCursorVisibility, "setCursorVisibility");
+    lua_setfield(L, -2, "setCursorVisibility");
     lua_pushcfunction(L, setVsync, "setVsync");
     lua_setfield(L, -2, "setVsync");
     lua_pushcfunction(L, setDrawColor, "setDrawColor");

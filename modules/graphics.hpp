@@ -4,6 +4,7 @@
 #include "../dependencies/luau/VM/include/lua.h"
 #include "../utils/ResourceState.hpp"
 
+int setCursorVisibility(lua_State* L);
 int setVsync(lua_State* L);
 int setDrawColor(lua_State* L);
 int clear(lua_State* L);
