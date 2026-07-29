@@ -77,7 +77,7 @@ int rename(lua_State* L) {
     return 0;
 }
 
-int deleteFile(lua_State* L) {
+int deleteF(lua_State* L) {
     try {
         fs::remove(lua_tostring(L, 1));
     } catch (const fs::filesystem_error& err) {
@@ -98,7 +98,7 @@ int removeAll(lua_State *L) {
     return 0;
 }
 
-int listFiles(lua_State *L) {
+int list(lua_State *L) {
     lua_createtable(L, 1, 1);
 
     int i = 1;
@@ -135,12 +135,12 @@ void registerFilesystemFunctions(ResourceState* state) {
     lua_setfield(L, -2, "readFile");
     lua_pushcfunction(L, writeFile, "writeFile");
     lua_setfield(L, -2, "writeFile");
-    lua_pushcfunction(L, deleteFile, "deleteFile");
-    lua_setfield(L, -2, "deleteFile");
+    lua_pushcfunction(L, deleteF, "delete");
+    lua_setfield(L, -2, "delete");
     lua_pushcfunction(L, rename, "rename");
     lua_setfield(L, -2, "rename");
-    lua_pushcfunction(L, listFiles, "listFiles");
-    lua_setfield(L, -2, "listFiles");
+    lua_pushcfunction(L, list, "list");
+    lua_setfield(L, -2, "list");
     lua_pushcfunction(L, createDirectories, "createDirectories");
     lua_setfield(L, -2, "createDirectories");
     lua_pushcfunction(L, removeAll, "removeAll");
