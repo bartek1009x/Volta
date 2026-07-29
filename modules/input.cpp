@@ -335,5 +335,5 @@ void registerInputFunctions(ResourceState* state) {
     lua_pushcfunction(L, getMousePosition, "getMousePosition");
     lua_setfield(L, -2, "getMousePosition");
 
-    lua_setglobal(L, "input");
+    lua_setfield(L, -2, "input");
 }

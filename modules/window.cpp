@@ -141,7 +141,7 @@ void registerWindowFunctions(ResourceState* state) {
     lua_pushcfunction(L, getMaxSize, "getMaxSize");
     lua_setfield(L, -2, "getMaxSize");
 
-    lua_setglobal(L, "window");
+    lua_setfield(L, -2, "window");
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());

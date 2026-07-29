@@ -153,5 +153,5 @@ void registerFilesystemFunctions(ResourceState* state) {
     lua_pushcfunction(L, getFileSize, "getFileSize");
     lua_setfield(L, -2, "getFileSize");
 
-    lua_setglobal(L, "filesystem");
+    lua_setfield(L, -2, "filesystem");
 }

@@ -51,12 +51,16 @@ int main(int argc, char* argv[]) {
     }
 
     // register modules
+    lua_createtable(L, 1, 0);
+
     registerWindowFunctions(&state);
     registerGraphicsFunctions(&state);
     registerInputFunctions(&state);
     registerAudioFunctions(&state);
     registerSystemFunctions(&state);
     registerFilesystemFunctions(&state);
+
+    lua_setglobal(L, "volta");
 
     // luau init
     lua_State* T = lua_newthread(L);

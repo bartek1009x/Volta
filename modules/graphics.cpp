@@ -216,5 +216,5 @@ void registerGraphicsFunctions(ResourceState* state) {
     lua_pushcfunction(L, drawImage, "drawImage");
     lua_setfield(L, -2, "drawImage");
 
-    lua_setglobal(L, "graphics");
+    lua_setfield(L, -2, "graphics");
 }
