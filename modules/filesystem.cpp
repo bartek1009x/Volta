@@ -111,6 +111,11 @@ int list(lua_State *L) {
     return 1;
 }
 
+int getFileSize(lua_State* L) {
+    lua_pushnumber(L, fs::file_size(lua_tostring(L, 1)));
+    return 1;
+}
+
 void registerFilesystemFunctions(ResourceState* state) {
     resourceState = state;
     lua_State* L = state->getL();
@@ -145,6 +150,8 @@ void registerFilesystemFunctions(ResourceState* state) {
     lua_setfield(L, -2, "createDirectories");
     lua_pushcfunction(L, removeAll, "removeAll");
     lua_setfield(L, -2, "removeAll");
+    lua_pushcfunction(L, getFileSize, "getFileSize");
+    lua_setfield(L, -2, "getFileSize");
 
     lua_setglobal(L, "filesystem");
 }
