@@ -1,8 +1,16 @@
 #include "system.hpp"
+
+#include <cstdlib>
+
 #include <SDL3/SDL_clipboard.h>
 
 int getOS(lua_State *L) {
     lua_pushstring(L, SDL_GetPlatform());
+    return 1;
+}
+
+int getEnv(lua_State *L) {
+    lua_pushstring(L, std::getenv(lua_tostring(L, 1)));
     return 1;
 }
 
@@ -23,6 +31,8 @@ void registerSystemFunctions(ResourceState* state) {
 
     lua_pushcfunction(L, getOS, "getOS");
     lua_setfield(L, -2, "getOS");
+    lua_pushcfunction(L, getEnv, "getEnv");
+    lua_setfield(L, -2, "getEnv");
     lua_pushcfunction(L, getClipboardText, "getClipboardText");
     lua_setfield(L, -2, "getClipboardText");
     lua_pushcfunction(L, setClipboardText, "setClipboardText");

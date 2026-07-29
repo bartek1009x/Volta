@@ -5,6 +5,7 @@
 #include "../utils/ResourceState.hpp"
 
 int getOS(lua_State* L);
+int getEnv(lua_State* L);
 int getClipboardText(lua_State* L);
 int setClipboardText(lua_State* L);
 void registerSystemFunctions(ResourceState* state);
