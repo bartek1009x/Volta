@@ -9,6 +9,7 @@ int setVsync(lua_State* L);
 int setDrawColor(lua_State* L);
 int clear(lua_State* L);
 int drawRect(lua_State* L);
+int drawCircle(lua_State* L);
 int loadImage(lua_State* L);
 int unloadImage(lua_State* L);
 int drawImage(lua_State* L);

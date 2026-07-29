@@ -58,6 +58,101 @@ int drawRect(lua_State *L) {
     return 0;
 }
 
+int roundUpToMultipleOfEight(int v)
+{
+    return (v + (8 - 1)) & -8;
+}
+
+int renderFillCircle(SDL_Renderer * renderer, int x, int y, int radius) {
+    int offsetx, offsety, d;
+    int status;
+
+    offsetx = 0;
+    offsety = radius;
+    d = radius -1;
+    status = 0;
+
+    while (offsety >= offsetx) {
+
+        status += SDL_RenderLine(renderer, x - offsety, y + offsetx, x + offsety, y + offsetx);
+        status += SDL_RenderLine(renderer, x - offsetx, y + offsety, x + offsetx, y + offsety);
+        status += SDL_RenderLine(renderer, x - offsetx, y - offsety, x + offsetx, y - offsety);
+        status += SDL_RenderLine(renderer, x - offsety, y - offsetx, x + offsety, y - offsetx);
+
+        if (status < 0) {
+            status = -1;
+            break;
+        }
+
+        if (d >= 2 * offsetx) {
+            d -= 2 * offsetx + 1;
+            offsetx +=1;
+        } else if (d < 2 * (radius - offsety)) {
+            d += 2 * offsety - 1;
+            offsety -= 1;
+        } else {
+            d += 2 * (offsety - offsetx - 1);
+            offsety -= 1;
+            offsetx += 1;
+        }
+    }
+
+    return status;
+}
+
+int drawCircle(lua_State *L) {
+    float centerX = lua_tonumber(L, 1);
+    float centerY = lua_tonumber(L, 2);
+    int radius = lua_tonumber(L, 3);
+    bool filled = lua_toboolean(L, 4);
+
+    if (filled) {
+        renderFillCircle(renderer, centerX, centerY, radius);
+    } else {
+        const int arrSize = roundUpToMultipleOfEight(radius * 8 * 35 / 49);
+        SDL_FPoint points[arrSize];
+        int drawCount = 0;
+
+        const int32_t diameter = (radius * 2);
+
+        int32_t x = (radius - 1);
+        int32_t y = 0;
+        int32_t tx = 1;
+        int32_t ty = 1;
+        int32_t error = (tx - diameter);
+
+        while( x >= y ) {
+            // Each of the following renders an octant of the circle
+            points[drawCount+0] = {centerX + x, centerY - y};
+            points[drawCount+1] = {centerX + x, centerY + y};
+            points[drawCount+2] = {centerX - x, centerY - y};
+            points[drawCount+3] = {centerX - x, centerY + y};
+            points[drawCount+4] = {centerX + y, centerY - x};
+            points[drawCount+5] = {centerX + y, centerY + x};
+            points[drawCount+6] = {centerX - y, centerY - x};
+            points[drawCount+7] = {centerX - y, centerY + x};
+
+            drawCount += 8;
+
+            if (error <= 0) {
+                ++y;
+                error += ty;
+                ty += 2;
+            }
+
+            if (error > 0) {
+                --x;
+                tx += 2;
+                error += (tx - diameter);
+            }
+        }
+
+        SDL_RenderPoints(renderer, points, drawCount);
+    }
+
+    return 0;
+}
+
 int loadImage(lua_State *L) {
     const char* path = lua_tostring(L, 1);
     std::filesystem::path finalPath = resourceState->getMainPath() / path;
@@ -112,6 +207,8 @@ void registerGraphicsFunctions(ResourceState* state) {
     lua_setfield(L, -2, "clear");
     lua_pushcfunction(L, drawRect, "drawRect");
     lua_setfield(L, -2, "drawRect");
+    lua_pushcfunction(L, drawCircle, "drawCircle");
+    lua_setfield(L, -2, "drawCircle");
     lua_pushcfunction(L, loadImage, "loadImage");
     lua_setfield(L, -2, "loadImage");
     lua_pushcfunction(L, unloadImage, "unloadImage");
