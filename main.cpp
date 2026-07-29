@@ -9,13 +9,14 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_render.h>
 
-#include "modules/system.hpp"
 #include "utils/ResourceState.hpp"
 #include "utils/require.cpp"
 #include "modules/window.hpp"
 #include "modules/graphics.hpp"
 #include "modules/input.hpp"
 #include "modules/audio.hpp"
+#include "modules/system.hpp"
+#include "modules/filesystem.hpp"
 
 using namespace std;
 
@@ -55,6 +56,7 @@ int main(int argc, char* argv[]) {
     registerInputFunctions(&state);
     registerAudioFunctions(&state);
     registerSystemFunctions(&state);
+    registerFilesystemFunctions(&state);
 
     // luau init
     lua_State* T = lua_newthread(L);
@@ -66,6 +68,7 @@ int main(int argc, char* argv[]) {
     if (status != LUA_OK) {
         const char* err = lua_tostring(T, -1);
         printf("Runtime error: %s\n", err ? err : "unknown error");
+        return 1;
     }
 
     if (lua_getglobal(L, "update") != LUA_TFUNCTION) {

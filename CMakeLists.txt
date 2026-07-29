@@ -18,6 +18,7 @@ set(SOURCE_FILES
     modules/input.cpp
     modules/audio.cpp
     modules/system.cpp
+    modules/filesystem.cpp
 )
 
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)

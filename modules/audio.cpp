@@ -4,6 +4,7 @@
 
 #include "SDL3_mixer/SDL_mixer.h"
 #include "../utils/Pool.hpp"
+#include "../dependencies/luau/VM/include/lualib.h"
 
 static ResourceState* resourceState = nullptr;
 MIX_Mixer* mixer;
@@ -20,8 +21,7 @@ int loadAudio(lua_State *L) {
     std::filesystem::path finalPath = resourceState->getMainPath() / path;
     MIX_Audio* audio = MIX_LoadAudio(mixer, finalPath.c_str(), false);
     if (audio == nullptr) {
-        lua_pushfstring(L, "Could not load audio: %s", finalPath.c_str());
-        lua_error(L);
+        luaL_error(L, "Could not load audio: %s", finalPath.c_str());
         return 0;
     }
 

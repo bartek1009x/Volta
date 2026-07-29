@@ -9,6 +9,8 @@
 #include <SDL3_image/SDL_image.h>
 #include <SDL3/SDL_mouse.h>
 
+#include "../dependencies/luau/VM/include/lualib.h"
+
 using namespace std;
 
 SDL_Renderer *renderer = nullptr;
@@ -61,8 +63,7 @@ int loadImage(lua_State *L) {
     std::filesystem::path finalPath = resourceState->getMainPath() / path;
     SDL_Texture* texture = IMG_LoadTexture(renderer, finalPath.c_str());
     if (texture == nullptr) {
-        lua_pushfstring(L, "Could not load texture: %s", finalPath.c_str());
-        lua_error(L);
+        luaL_error(L, "Could not load texture: %s", finalPath.c_str());
         return 0;
     }
 
