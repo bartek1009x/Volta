@@ -24,9 +24,10 @@ set(SOURCE_FILES
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 find_package(SDL3_image REQUIRED CONFIG)
 find_package(SDL3_mixer REQUIRED CONFIG)
+find_package(SDL3_ttf REQUIRED CONFIG)
 add_executable(volta ${SOURCE_FILES})
 
-target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image SDL3_mixer Luau.Compiler Luau.VM)
+target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image SDL3_mixer SDL3_ttf Luau.Compiler Luau.VM)
 
 if (WIN32)
     add_custom_command(TARGET volta POST_BUILD
@@ -34,6 +35,7 @@ if (WIN32)
             $<TARGET_FILE:SDL3::SDL3>
             $<TARGET_FILE:SDL3_image::SDL3_image>
             $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
+            $<TARGET_FILE:SDL3_ttf::SDL3_ttf>
             $<TARGET_FILE_DIR:volta>
         COMMAND ${CMAKE_COMMAND} -E make_directory
             $<TARGET_FILE_DIR:volta>/extras
@@ -51,6 +53,7 @@ elseif (APPLE)
             $<TARGET_FILE:SDL3::SDL3>
             $<TARGET_FILE:SDL3_image::SDL3_image>
             $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
+            $<TARGET_FILE:SDL3_ttf::SDL3_ttf>
             $<TARGET_FILE_DIR:volta>
         COMMAND ${CMAKE_COMMAND} -E make_directory
             $<TARGET_FILE_DIR:volta>/extras
@@ -89,7 +92,7 @@ Categories=Game;
     if (LINUXDEPLOY)
         add_custom_target(appimage
             COMMAND ${CMAKE_COMMAND} -E env
-                OUTPUT="volta-x86_64.AppImage"
+                OUTPUT="volta.AppImage"
                 ${LINUXDEPLOY}
                     --appdir ${APPDIR}
                     --executable ${APPDIR}/usr/bin/volta
@@ -98,6 +101,7 @@ Categories=Game;
                     --library $<TARGET_FILE:SDL3::SDL3>
                     --library $<TARGET_FILE:SDL3_image::SDL3_image>
                     --library $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
+                    --library $<TARGET_FILE:SDL3_ttf::SDL3_ttf>
                     --output appimage
             DEPENDS volta
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}

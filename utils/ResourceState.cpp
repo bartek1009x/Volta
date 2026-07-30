@@ -3,6 +3,7 @@
 #include "../dependencies/luau/VM/include/lualib.h"
 #include <SDL3/SDL_render.h>
 #include <SDL3_mixer/SDL_mixer.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 ResourceState::ResourceState() : L(luaL_newstate()) {
     luaL_openlibs(L);
@@ -13,6 +14,7 @@ ResourceState::~ResourceState() {
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
     }
+    TTF_Quit();
     MIX_Quit();
     SDL_Quit();
 }

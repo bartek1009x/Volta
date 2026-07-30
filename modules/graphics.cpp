@@ -1,5 +1,8 @@
 #include "graphics.hpp"
 
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_surface.h>
 #include <iostream>
 #include <filesystem>
 #include <unordered_map>
@@ -8,6 +11,7 @@
 #include <SDL3/SDL_rect.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3/SDL_mouse.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 #include "../dependencies/luau/VM/include/lualib.h"
 
@@ -17,6 +21,8 @@ SDL_Renderer *renderer = nullptr;
 static ResourceState* resourceState = nullptr;
 unordered_map<int, SDL_Texture*> loadedTextures;
 Uint32 textureIDCounter = 0;
+unordered_map<int, TTF_Font*> loadedFonts;
+Uint32 fontIDCounter = 0;
 SDL_FRect rect;
 
 int setCursorVisibility(lua_State *L) {
@@ -58,12 +64,11 @@ int drawRect(lua_State *L) {
     return 0;
 }
 
-int roundUpToMultipleOfEight(int v)
-{
+int roundUpToMultipleOfEight(int v) {
     return (v + (8 - 1)) & -8;
 }
 
-int renderFillCircle(SDL_Renderer * renderer, int x, int y, int radius) {
+void renderFillCircle(float x, float y, int radius) {
     int offsetx, offsety, d;
     int status;
 
@@ -96,8 +101,48 @@ int renderFillCircle(SDL_Renderer * renderer, int x, int y, int radius) {
             offsetx += 1;
         }
     }
+}
 
-    return status;
+void renderCircle(float centerX, float centerY, int radius) {
+    const int arrSize = roundUpToMultipleOfEight(radius * 8 * 35 / 49);
+    SDL_FPoint points[arrSize];
+    int drawCount = 0;
+
+    const int32_t diameter = (radius * 2);
+
+    int32_t x = (radius - 1);
+    int32_t y = 0;
+    int32_t tx = 1;
+    int32_t ty = 1;
+    int32_t error = (tx - diameter);
+
+    while (x >= y) {
+        // Each of the following renders an octant of the circle
+        points[drawCount+0] = {centerX + x, centerY - y};
+        points[drawCount+1] = {centerX + x, centerY + y};
+        points[drawCount+2] = {centerX - x, centerY - y};
+        points[drawCount+3] = {centerX - x, centerY + y};
+        points[drawCount+4] = {centerX + y, centerY - x};
+        points[drawCount+5] = {centerX + y, centerY + x};
+        points[drawCount+6] = {centerX - y, centerY - x};
+        points[drawCount+7] = {centerX - y, centerY + x};
+
+        drawCount += 8;
+
+        if (error <= 0) {
+            ++y;
+            error += ty;
+            ty += 2;
+        }
+
+        if (error > 0) {
+            --x;
+            tx += 2;
+            error += (tx - diameter);
+        }
+    }
+
+    SDL_RenderPoints(renderer, points, drawCount);
 }
 
 int drawCircle(lua_State *L) {
@@ -107,47 +152,9 @@ int drawCircle(lua_State *L) {
     bool filled = lua_toboolean(L, 4);
 
     if (filled) {
-        renderFillCircle(renderer, centerX, centerY, radius);
+        renderFillCircle(centerX, centerY, radius);
     } else {
-        const int arrSize = roundUpToMultipleOfEight(radius * 8 * 35 / 49);
-        SDL_FPoint points[arrSize];
-        int drawCount = 0;
-
-        const int32_t diameter = (radius * 2);
-
-        int32_t x = (radius - 1);
-        int32_t y = 0;
-        int32_t tx = 1;
-        int32_t ty = 1;
-        int32_t error = (tx - diameter);
-
-        while( x >= y ) {
-            // Each of the following renders an octant of the circle
-            points[drawCount+0] = {centerX + x, centerY - y};
-            points[drawCount+1] = {centerX + x, centerY + y};
-            points[drawCount+2] = {centerX - x, centerY - y};
-            points[drawCount+3] = {centerX - x, centerY + y};
-            points[drawCount+4] = {centerX + y, centerY - x};
-            points[drawCount+5] = {centerX + y, centerY + x};
-            points[drawCount+6] = {centerX - y, centerY - x};
-            points[drawCount+7] = {centerX - y, centerY + x};
-
-            drawCount += 8;
-
-            if (error <= 0) {
-                ++y;
-                error += ty;
-                ty += 2;
-            }
-
-            if (error > 0) {
-                --x;
-                tx += 2;
-                error += (tx - diameter);
-            }
-        }
-
-        SDL_RenderPoints(renderer, points, drawCount);
+        renderCircle(centerX, centerY, radius);
     }
 
     return 0;
@@ -188,7 +195,103 @@ int drawImage(lua_State *L) {
     return 0;
 }
 
+int loadFont(lua_State *L) {
+    const char* path = lua_tostring(L, 1);
+    std::filesystem::path finalPath = resourceState->getMainPath() / path;
+    TTF_Font* font = TTF_OpenFont(finalPath.c_str(), lua_tonumber(L, 2));
+    if (font == nullptr) {
+        luaL_error(L, "Could not load font: %s, error: %s", finalPath.c_str(), SDL_GetError());
+        return 0;
+    }
+
+    loadedFonts[fontIDCounter] = font;
+
+    lua_pushnumber(L, fontIDCounter);
+
+    fontIDCounter++;
+
+    return 1;
+}
+
+int unloadFont(lua_State *L) {
+    int index = lua_tonumber(L, 1);
+    TTF_CloseFont(loadedFonts[index]);
+    loadedFonts.erase(index);
+
+    return 0;
+}
+
+struct textInfo {
+    Uint32 fontId;
+    SDL_Texture* texture;
+    float width;
+    float height;
+    int lastFrameUsed;
+} typedef textInfo;
+
+unordered_map<std::string, textInfo> textCache;
+
+extern Uint32 currentFrame;
+
+static const SDL_Color white = {255, 255, 255, 255};
+int drawText(lua_State *L) {
+    SDL_Color color;
+    SDL_GetRenderDrawColor(renderer, &color.r, &color.g, &color.b, &color.a);
+    SDL_Texture *texture;
+    float width, height;
+
+    const char* text = lua_tostring(L, 2);
+    Uint32 fontId = lua_tonumber(L, 1);
+    auto it = textCache.find(text);
+    if (it != textCache.end()) {
+        if (it->second.fontId == fontId) {
+            texture = it->second.texture;
+            width = it->second.width;
+            height = it->second.height;
+            it->second.lastFrameUsed = currentFrame;
+        } else {
+            SDL_DestroyTexture(it->second.texture);
+
+            SDL_Surface *surface = TTF_RenderText_Blended(loadedFonts[fontId], text, 0, white);
+            SDL_Texture *newTexture = SDL_CreateTextureFromSurface(renderer, surface);
+            textInfo info = {.fontId = fontId, .texture = newTexture, .width = surface->w, .height = surface->h, .lastFrameUsed = currentFrame};
+            textCache[text] = info;
+
+            width = surface->w;
+            height = surface->h;
+
+            SDL_DestroySurface(surface);
+
+            texture = newTexture;
+        }
+    } else {
+        SDL_Surface *surface = TTF_RenderText_Blended(loadedFonts[fontId], text, 0, white);
+        SDL_Texture *newTexture = SDL_CreateTextureFromSurface(renderer, surface);
+        textInfo info = {.fontId = fontId, .texture = newTexture, .width = surface->w, .height = surface->h, .lastFrameUsed = currentFrame};
+        textCache[text] = info;
+
+        width = surface->w;
+        height = surface->h;
+
+        SDL_DestroySurface(surface);
+
+        texture = newTexture;
+    }
+
+    rect.x = lua_tonumber(L, 3);
+    rect.y = lua_tonumber(L, 4);
+    rect.w = width;
+    rect.h = height;
+
+    SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
+    SDL_SetTextureAlphaMod(texture, color.a);
+    SDL_RenderTexture(renderer, texture, nullptr, &rect);
+
+    return 0;
+}
+
 void registerGraphicsFunctions(ResourceState* state) {
+    TTF_Init();
     resourceState = state;
     if (renderer == nullptr) {
         renderer = state->getRenderer();
@@ -215,6 +318,23 @@ void registerGraphicsFunctions(ResourceState* state) {
     lua_setfield(L, -2, "unloadImage");
     lua_pushcfunction(L, drawImage, "drawImage");
     lua_setfield(L, -2, "drawImage");
+    lua_pushcfunction(L, loadFont, "loadFont");
+    lua_setfield(L, -2, "loadFont");
+    lua_pushcfunction(L, unloadFont, "unloadFont");
+    lua_setfield(L, -2, "unloadFont");
+    lua_pushcfunction(L, drawText, "drawText");
+    lua_setfield(L, -2, "drawText");
 
     lua_setfield(L, -2, "graphics");
+}
+
+void updateFontTextCache() {
+    for (auto it = textCache.begin(); it != textCache.end();) {
+        if (currentFrame - it->second.lastFrameUsed >= 20000) {
+            SDL_DestroyTexture(it->second.texture);
+            it = textCache.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }

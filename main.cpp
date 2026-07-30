@@ -20,6 +20,8 @@
 
 using namespace std;
 
+Uint32 currentFrame;
+
 int main(int argc, char* argv[]) {
     // luau
     ResourceState state{};
@@ -123,6 +125,12 @@ int main(int argc, char* argv[]) {
         lua_pop(L, 1);
 
         SDL_RenderPresent(renderer);
+
+        ++currentFrame;
+
+        if (currentFrame % 30 == 0) {
+            updateFontTextCache();
+        }
     }
 
     int exitFunc = lua_getglobal(L, "exit");
