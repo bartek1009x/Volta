@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
     }
 
     // register modules
-    lua_createtable(L, 1, 0);
+    lua_createtable(L, 0, 6);
 
     registerWindowFunctions(&state);
     registerGraphicsFunctions(&state);
@@ -61,6 +61,8 @@ int main(int argc, char* argv[]) {
     registerAudioFunctions(&state);
     registerSystemFunctions(&state);
     registerFilesystemFunctions(&state);
+
+    lua_setreadonly(L, -1, 1);
 
     lua_setglobal(L, "volta");
 

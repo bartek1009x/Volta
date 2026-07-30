@@ -38,5 +38,7 @@ void registerSystemFunctions(ResourceState* state) {
     lua_pushcfunction(L, setClipboardText, "setClipboardText");
     lua_setfield(L, -2, "setClipboardText");
 
+    lua_setreadonly(L, -1, 1);
+
     lua_setfield(L, -2, "system");
 }

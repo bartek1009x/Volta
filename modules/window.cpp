@@ -141,6 +141,8 @@ void registerWindowFunctions(ResourceState* state) {
     lua_pushcfunction(L, getMaxSize, "getMaxSize");
     lua_setfield(L, -2, "getMaxSize");
 
+    lua_setreadonly(L, -1, 1);
+
     lua_setfield(L, -2, "window");
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {

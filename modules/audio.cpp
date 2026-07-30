@@ -106,5 +106,7 @@ void registerAudioFunctions(ResourceState* state) {
     lua_pushcfunction(L, setMasterVolume, "setMasterVolume");
     lua_setfield(L, -2, "setMasterVolume");
 
+    lua_setreadonly(L, -1, 1);
+
     lua_setfield(L, -2, "audio");
 }

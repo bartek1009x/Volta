@@ -317,11 +317,13 @@ void registerInputFunctions(ResourceState* state) {
     lua_pushstring(L, "keys");
     lua_createtable(L, 0, keyCodes.size());
     registerKeyCodes(L);
+    lua_setreadonly(L, -1, 1);
     lua_settable(L, -3);
 
     lua_pushstring(L, "mouseButtons");
     lua_createtable(L, 0, mouseButtonCodes.size());
     registerMouseButtonCodes(L);
+    lua_setreadonly(L, -1, 1);
     lua_settable(L, -3);
 
     lua_pushcfunction(L, isKeyDown, "isKeyDown");
@@ -334,6 +336,8 @@ void registerInputFunctions(ResourceState* state) {
     lua_setfield(L, -2, "isMouseButtonUp");
     lua_pushcfunction(L, getMousePosition, "getMousePosition");
     lua_setfield(L, -2, "getMousePosition");
+
+    lua_setreadonly(L, -1, 1);
 
     lua_setfield(L, -2, "input");
 }

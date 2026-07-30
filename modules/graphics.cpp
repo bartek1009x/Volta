@@ -325,6 +325,8 @@ void registerGraphicsFunctions(ResourceState* state) {
     lua_pushcfunction(L, drawText, "drawText");
     lua_setfield(L, -2, "drawText");
 
+    lua_setreadonly(L, -1, 1);
+
     lua_setfield(L, -2, "graphics");
 }
 
