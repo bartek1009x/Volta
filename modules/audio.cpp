@@ -79,6 +79,12 @@ int setVolume(lua_State *L) {
     return 0;
 }
 
+int setPanning(lua_State *L) {
+    const MIX_StereoGains gains {.left = lua_tonumber(L, 2), .right = lua_tonumber(L, 3)};
+    MIX_SetTrackStereo(playingTracks[lua_tointeger(L, 1)], &gains);
+    return 0;
+}
+
 int setMasterVolume(lua_State *L) {
     MIX_SetMixerGain(mixer, lua_tonumber(L, 1));
     return 0;
@@ -103,6 +109,8 @@ void registerAudioFunctions(ResourceState* state) {
     lua_setfield(L, -2, "stop");
     lua_pushcfunction(L, setVolume, "setVolume");
     lua_setfield(L, -2, "setVolume");
+    lua_pushcfunction(L, setPanning, "setPanning");
+    lua_setfield(L, -2, "setPanning");
     lua_pushcfunction(L, setMasterVolume, "setMasterVolume");
     lua_setfield(L, -2, "setMasterVolume");
 

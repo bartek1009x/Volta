@@ -9,6 +9,7 @@ int unloadAudio(lua_State* L);
 int play(lua_State* L);
 int stop(lua_State* L);
 int setVolume(lua_State* L);
+int setPanning(lua_State* L);
 int setMasterVolume(lua_State* L);
 void registerAudioFunctions(ResourceState* state);
 
