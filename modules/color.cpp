@@ -4,8 +4,6 @@
 
 #include "../dependencies/luau/VM/include/lualib.h"
 
-int lerp(lua_State *L);
-
 int toHex(lua_State *L) {
     // self at index 1
 
