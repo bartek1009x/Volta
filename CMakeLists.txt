@@ -19,6 +19,7 @@ set(SOURCE_FILES
     modules/audio.cpp
     modules/system.cpp
     modules/filesystem.cpp
+    modules/color.cpp
 )
 
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)

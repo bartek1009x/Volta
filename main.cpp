@@ -17,6 +17,7 @@
 #include "modules/audio.hpp"
 #include "modules/system.hpp"
 #include "modules/filesystem.hpp"
+#include "modules/color.hpp"
 
 using namespace std;
 
@@ -61,6 +62,8 @@ int main(int argc, char* argv[]) {
     registerAudioFunctions(&state);
     registerSystemFunctions(&state);
     registerFilesystemFunctions(&state);
+
+    registerColorObject(&state);
 
     lua_setreadonly(L, -1, 1);
 

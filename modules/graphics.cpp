@@ -40,7 +40,23 @@ int setVsync(lua_State *L) {
 }
 
 int setDrawColor(lua_State *L) {
-    SDL_SetRenderDrawColor(renderer, lua_tonumber(L, 1), lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4));
+    if (lua_isnumber(L, 1)) {
+        SDL_SetRenderDrawColor(renderer, lua_tonumber(L, 1), lua_tonumber(L, 2), lua_tonumber(L, 3), lua_tonumber(L, 4));
+    } else {
+        luaL_checktype(L, 1, LUA_TTABLE);
+
+        lua_rawgetfield(L, 1, "r");
+        lua_rawgetfield(L, 1, "g");
+        lua_rawgetfield(L, 1, "b");
+        lua_rawgetfield(L, 1, "a");
+
+        Uint8 r = lua_tointeger(L, -4);
+        Uint8 g = lua_tointeger(L, -3);
+        Uint8 b = lua_tointeger(L, -2);
+        Uint8 a = lua_tointeger(L, -1);
+
+        SDL_SetRenderDrawColor(renderer, r, g, b, a);
+    }
     return 0;
 }
 
