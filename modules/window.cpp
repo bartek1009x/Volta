@@ -1,11 +1,33 @@
 #include "window.hpp"
+
 #include <SDL3/SDL_render.h>
+#include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
+#include <SDL3_image/SDL_image.h>
+
+#include "../dependencies/luau/VM/include/lualib.h"
 
 SDL_Window* window;
+static ResourceState* resourceState = nullptr;
 
 int setTitle(lua_State* L) {
     SDL_SetWindowTitle(window, lua_tostring(L, 1));
+    return 0;
+}
+
+int setWindowIcon(lua_State* L) {
+    const char* path = lua_tostring(L, 1);
+    std::filesystem::path finalPath = resourceState->getMainPath() / path;
+    SDL_Surface* icon = IMG_Load(finalPath.c_str());
+    if (icon == nullptr) {
+        luaL_error(L, "Could not load image: %s", finalPath.c_str());
+        return 0;
+    }
+
+    SDL_SetWindowIcon(window, icon);
+
+    SDL_DestroySurface(icon);
+
     return 0;
 }
 
@@ -102,12 +124,15 @@ int getMaxSize(lua_State* L) {
 }
 
 void registerWindowFunctions(ResourceState* state) {
+    resourceState = state;
     lua_State* L = state->getL();
 
     lua_createtable(L, 1, 0);
 
     lua_pushcfunction(L, setTitle, "setTitle");
     lua_setfield(L, -2, "setTitle");
+    lua_pushcfunction(L, setWindowIcon, "setWindowIcon");
+    lua_setfield(L, -2, "setWindowIcon");
     lua_pushcfunction(L, setFullscreen, "setFullscreen");
     lua_setfield(L, -2, "setFullscreen");
     lua_pushcfunction(L, setBorderless, "setBorderless");

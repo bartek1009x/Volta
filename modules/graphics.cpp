@@ -258,8 +258,11 @@ int drawText(lua_State *L) {
 
     const char* text = lua_tostring(L, 2);
     Uint32 fontId = lua_tonumber(L, 1);
+    bool dontCache = lua_toboolean(L, 5);
+    printf("%b", dontCache);
+
     auto it = textCache.find(text);
-    if (it != textCache.end()) {
+    if (!dontCache && it != textCache.end()) {
         if (it->second.fontId == fontId) {
             texture = it->second.texture;
             width = it->second.width;
@@ -283,8 +286,6 @@ int drawText(lua_State *L) {
     } else {
         SDL_Surface *surface = TTF_RenderText_Blended(loadedFonts[fontId], text, 0, white);
         SDL_Texture *newTexture = SDL_CreateTextureFromSurface(renderer, surface);
-        textInfo info = {.fontId = fontId, .texture = newTexture, .width = surface->w, .height = surface->h, .lastFrameUsed = CURRENT_FRAME};
-        textCache[text] = info;
 
         width = surface->w;
         height = surface->h;
@@ -292,6 +293,11 @@ int drawText(lua_State *L) {
         SDL_DestroySurface(surface);
 
         texture = newTexture;
+
+        if (!dontCache) {
+            textInfo info = {.fontId = fontId, .texture = newTexture, .width = width, .height = height, .lastFrameUsed = CURRENT_FRAME};
+            textCache[text] = info;
+        }
     }
 
     rect.x = lua_tonumber(L, 3);

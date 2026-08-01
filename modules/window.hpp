@@ -5,6 +5,7 @@
 #include "../utils/ResourceState.hpp"
 
 int setTitle(lua_State* L);
+int setWindowIcon(lua_State* L);
 int setFullscreen(lua_State* L);
 int setBorderless(lua_State* L);
 int setResizable(lua_State* L);
