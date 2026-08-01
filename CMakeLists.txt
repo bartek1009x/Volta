@@ -13,6 +13,7 @@ set(SOURCE_FILES
     utils/require.cpp
     utils/ResourceState.cpp
     utils/Pool.hpp
+    modules/volta.cpp
     modules/window.cpp
     modules/graphics.cpp
     modules/input.cpp

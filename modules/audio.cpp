@@ -42,6 +42,17 @@ int unloadAudio(lua_State *L) {
     return 0;
 }
 
+int getAudioDuration(lua_State *L) {
+    int index = lua_tonumber(L, 1);
+
+    Sint64 frames = MIX_GetAudioDuration(loadedAudio[index]);
+    double seconds = MIX_AudioFramesToMS(loadedAudio[index], frames) / 1000.0;
+
+    lua_pushnumber(L, seconds);
+
+    return 1;
+}
+
 void SDLCALL TrackStoppedCallback(void *userdata, MIX_Track *track) {
     for (auto it = playingTracks.begin(); it != playingTracks.end(); ++it) {
         if (it->second == track) {
@@ -74,6 +85,29 @@ int stop(lua_State *L) {
     return 0;
 }
 
+int pause(lua_State *L) {
+    int index = lua_tointeger(L, 1);
+    MIX_PauseTrack(playingTracks[index]);
+    return 0;
+}
+
+int resume(lua_State *L) {
+    int index = lua_tointeger(L, 1);
+    MIX_ResumeTrack(playingTracks[index]);
+    return 0;
+}
+
+int getRemaining(lua_State *L) {
+    int index = lua_tonumber(L, 1);
+
+    Sint64 frames = MIX_GetTrackRemaining(playingTracks[index]);
+    double seconds = MIX_TrackFramesToMS(playingTracks[index], frames) / 1000.0;
+
+    lua_pushnumber(L, seconds);
+
+    return 1;
+}
+
 int setVolume(lua_State *L) {
     MIX_SetTrackGain(playingTracks[lua_tointeger(L, 1)], lua_tonumber(L, 2));
     return 0;
@@ -103,10 +137,18 @@ void registerAudioFunctions(ResourceState* state) {
     lua_setfield(L, -2, "loadAudio");
     lua_pushcfunction(L, unloadAudio, "unloadAudio");
     lua_setfield(L, -2, "unloadAudio");
+    lua_pushcfunction(L, getAudioDuration, "getAudioDuration");
+    lua_setfield(L, -2, "getAudioDuration");
     lua_pushcfunction(L, play, "play");
     lua_setfield(L, -2, "play");
     lua_pushcfunction(L, stop, "stop");
     lua_setfield(L, -2, "stop");
+    lua_pushcfunction(L, pause, "pause");
+    lua_setfield(L, -2, "pause");
+    lua_pushcfunction(L, resume, "resume");
+    lua_setfield(L, -2, "resume");
+    lua_pushcfunction(L, getRemaining, "getRemaining");
+    lua_setfield(L, -2, "getRemaining");
     lua_pushcfunction(L, setVolume, "setVolume");
     lua_setfield(L, -2, "setVolume");
     lua_pushcfunction(L, setPanning, "setPanning");

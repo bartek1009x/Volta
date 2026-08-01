@@ -247,7 +247,7 @@ struct textInfo {
 
 unordered_map<std::string, textInfo> textCache;
 
-extern Uint32 currentFrame;
+extern Uint32 CURRENT_FRAME;
 
 static const SDL_Color white = {255, 255, 255, 255};
 int drawText(lua_State *L) {
@@ -264,13 +264,13 @@ int drawText(lua_State *L) {
             texture = it->second.texture;
             width = it->second.width;
             height = it->second.height;
-            it->second.lastFrameUsed = currentFrame;
+            it->second.lastFrameUsed = CURRENT_FRAME;
         } else {
             SDL_DestroyTexture(it->second.texture);
 
             SDL_Surface *surface = TTF_RenderText_Blended(loadedFonts[fontId], text, 0, white);
             SDL_Texture *newTexture = SDL_CreateTextureFromSurface(renderer, surface);
-            textInfo info = {.fontId = fontId, .texture = newTexture, .width = surface->w, .height = surface->h, .lastFrameUsed = currentFrame};
+            textInfo info = {.fontId = fontId, .texture = newTexture, .width = surface->w, .height = surface->h, .lastFrameUsed = CURRENT_FRAME};
             textCache[text] = info;
 
             width = surface->w;
@@ -283,7 +283,7 @@ int drawText(lua_State *L) {
     } else {
         SDL_Surface *surface = TTF_RenderText_Blended(loadedFonts[fontId], text, 0, white);
         SDL_Texture *newTexture = SDL_CreateTextureFromSurface(renderer, surface);
-        textInfo info = {.fontId = fontId, .texture = newTexture, .width = surface->w, .height = surface->h, .lastFrameUsed = currentFrame};
+        textInfo info = {.fontId = fontId, .texture = newTexture, .width = surface->w, .height = surface->h, .lastFrameUsed = CURRENT_FRAME};
         textCache[text] = info;
 
         width = surface->w;
@@ -348,7 +348,7 @@ void registerGraphicsFunctions(ResourceState* state) {
 
 void updateFontTextCache() {
     for (auto it = textCache.begin(); it != textCache.end();) {
-        if (currentFrame - it->second.lastFrameUsed >= 20000) {
+        if (CURRENT_FRAME - it->second.lastFrameUsed >= 20000) {
             SDL_DestroyTexture(it->second.texture);
             it = textCache.erase(it);
         } else {

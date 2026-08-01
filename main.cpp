@@ -11,6 +11,7 @@
 
 #include "utils/ResourceState.hpp"
 #include "utils/require.cpp"
+#include "modules/volta.hpp"
 #include "modules/window.hpp"
 #include "modules/graphics.hpp"
 #include "modules/input.hpp"
@@ -21,7 +22,8 @@
 
 using namespace std;
 
-Uint32 currentFrame;
+Uint32 CURRENT_FRAME;
+bool SHOULD_QUIT;
 
 int main(int argc, char* argv[]) {
     // luau
@@ -65,6 +67,8 @@ int main(int argc, char* argv[]) {
 
     registerColorObject(&state);
 
+    registerVoltaFunctions(&state);
+
     lua_setreadonly(L, -1, 1);
 
     lua_setglobal(L, "volta");
@@ -106,11 +110,11 @@ int main(int argc, char* argv[]) {
 
     SDL_Renderer* renderer = state.getRenderer();
 
-    while (!closeWindow) {
+    while (!SHOULD_QUIT) {
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_EVENT_QUIT:
-                    closeWindow = true;
+                    SHOULD_QUIT = true;
                     break;
             }
         }
@@ -131,9 +135,9 @@ int main(int argc, char* argv[]) {
 
         SDL_RenderPresent(renderer);
 
-        ++currentFrame;
+        ++CURRENT_FRAME;
 
-        if (currentFrame % 30 == 0) {
+        if (CURRENT_FRAME % 30 == 0) {
             updateFontTextCache();
         }
     }
