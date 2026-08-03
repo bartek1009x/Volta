@@ -5,6 +5,7 @@
 #include "../utils/ResourceState.hpp"
 
 int exit(lua_State* L);
+int getVersion(lua_State* L);
 void registerVoltaFunctions(ResourceState* state);
 
 #endif

@@ -19,9 +19,10 @@ Uint32 trackIDCounter = 0;
 int loadAudio(lua_State *L) {
     const char* path = lua_tostring(L, 1);
     std::filesystem::path finalPath = resourceState->getMainPath() / path;
-    MIX_Audio* audio = MIX_LoadAudio(mixer, finalPath.c_str(), false);
+    const char* pathCStr = finalPath.u8string().c_str();
+    MIX_Audio* audio = MIX_LoadAudio(mixer, pathCStr, false);
     if (audio == nullptr) {
-        luaL_error(L, "Could not load audio: %s", finalPath.c_str());
+        luaL_error(L, "Could not load audio: %s", pathCStr);
         return 0;
     }
 
@@ -42,7 +43,7 @@ int unloadAudio(lua_State *L) {
     return 0;
 }
 
-int getAudioDuration(lua_State *L) {
+int getDuration(lua_State *L) {
     int index = lua_tonumber(L, 1);
 
     Sint64 frames = MIX_GetAudioDuration(loadedAudio[index]);
@@ -137,8 +138,8 @@ void registerAudioFunctions(ResourceState* state) {
     lua_setfield(L, -2, "loadAudio");
     lua_pushcfunction(L, unloadAudio, "unloadAudio");
     lua_setfield(L, -2, "unloadAudio");
-    lua_pushcfunction(L, getAudioDuration, "getAudioDuration");
-    lua_setfield(L, -2, "getAudioDuration");
+    lua_pushcfunction(L, getDuration, "getDuration");
+    lua_setfield(L, -2, "getDuration");
     lua_pushcfunction(L, play, "play");
     lua_setfield(L, -2, "play");
     lua_pushcfunction(L, stop, "stop");

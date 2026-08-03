@@ -6,7 +6,7 @@
 
 int loadAudio(lua_State* L);
 int unloadAudio(lua_State* L);
-int getAudioDuration(lua_State* L);
+int getDuration(lua_State* L);
 int play(lua_State* L);
 int stop(lua_State* L);
 int pause(lua_State* L);

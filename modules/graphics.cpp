@@ -179,9 +179,10 @@ int drawCircle(lua_State *L) {
 int loadImage(lua_State *L) {
     const char* path = lua_tostring(L, 1);
     std::filesystem::path finalPath = resourceState->getMainPath() / path;
-    SDL_Texture* texture = IMG_LoadTexture(renderer, finalPath.c_str());
+    const char* pathCStr = finalPath.u8string().c_str();
+    SDL_Texture* texture = IMG_LoadTexture(renderer, pathCStr);
     if (texture == nullptr) {
-        luaL_error(L, "Could not load texture: %s", finalPath.c_str());
+        luaL_error(L, "Could not load texture: %s", pathCStr);
         return 0;
     }
 
@@ -213,10 +214,10 @@ int drawImage(lua_State *L) {
 
 int loadFont(lua_State *L) {
     const char* path = lua_tostring(L, 1);
-    std::filesystem::path finalPath = resourceState->getMainPath() / path;
-    TTF_Font* font = TTF_OpenFont(finalPath.c_str(), lua_tonumber(L, 2));
+    const char* pathCStr = (resourceState->getMainPath() / path).u8string().c_str();
+    TTF_Font* font = TTF_OpenFont(pathCStr, lua_tonumber(L, 2));
     if (font == nullptr) {
-        luaL_error(L, "Could not load font: %s, error: %s", finalPath.c_str(), SDL_GetError());
+        luaL_error(L, "Could not load font: %s, error: %s", pathCStr, SDL_GetError());
         return 0;
     }
 

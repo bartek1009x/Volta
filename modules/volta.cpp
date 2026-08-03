@@ -7,9 +7,16 @@ int exit(lua_State* L) {
     return 0;
 }
 
+int getVersion(lua_State* L) {
+    lua_pushstring(L, "0.0.1");
+    return 1;
+}
+
 void registerVoltaFunctions(ResourceState* state) {
     lua_State* L = state->getL();
 
     lua_pushcfunction(L, exit, "exit");
     lua_setfield(L, -2, "exit");
+    lua_pushcfunction(L, getVersion, "getVersion");
+    lua_setfield(L, -2, "getVersion");
 }

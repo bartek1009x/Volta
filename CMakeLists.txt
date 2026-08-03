@@ -29,7 +29,7 @@ find_package(SDL3_mixer REQUIRED CONFIG)
 find_package(SDL3_ttf REQUIRED CONFIG)
 add_executable(volta ${SOURCE_FILES})
 
-target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image SDL3_mixer SDL3_ttf Luau.Compiler Luau.VM)
+target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image::SDL3_image SDL3_mixer::SDL3_mixer SDL3_ttf::SDL3_ttf Luau.Compiler Luau.VM)
 
 if (WIN32)
     add_custom_command(TARGET volta POST_BUILD

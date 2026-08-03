@@ -18,9 +18,10 @@ int setTitle(lua_State* L) {
 int setWindowIcon(lua_State* L) {
     const char* path = lua_tostring(L, 1);
     std::filesystem::path finalPath = resourceState->getMainPath() / path;
-    SDL_Surface* icon = IMG_Load(finalPath.c_str());
+    const char* pathCStr = finalPath.u8string().c_str();
+    SDL_Surface* icon = IMG_Load(pathCStr);
     if (icon == nullptr) {
-        luaL_error(L, "Could not load image: %s", finalPath.c_str());
+        luaL_error(L, "Could not load image: %s", pathCStr);
         return 0;
     }
 

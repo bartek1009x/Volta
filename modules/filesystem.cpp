@@ -13,17 +13,20 @@ namespace fs = filesystem;
 static ResourceState* resourceState = nullptr;
 
 int absolute(lua_State *L) {
-    lua_pushstring(L, fs::absolute(lua_tostring(L, 1)).c_str());
+    const char* pathCStr = fs::absolute(lua_tostring(L, 1)).u8string().c_str();
+    lua_pushstring(L, pathCStr);
     return 1;
 }
 
 int getWorkingDir(lua_State *L) {
-    lua_pushstring(L, fs::current_path().c_str());
+    const char* pathCStr = fs::current_path().u8string().c_str();
+    lua_pushstring(L, pathCStr);
     return 1;
 }
 
 int getLuauMainDir(lua_State *L) {
-    lua_pushstring(L, resourceState->getMainPath().c_str());
+    const char* pathCStr = resourceState->getMainPath().u8string().c_str();
+    lua_pushstring(L, pathCStr);
     return 1;
 }
 
@@ -103,7 +106,8 @@ int list(lua_State *L) {
 
     int i = 1;
     for (const auto & entry : fs::directory_iterator(lua_tostring(L, 1))) {
-        lua_pushstring(L, entry.path().c_str());
+        const char* pathCStr = entry.path().u8string().c_str();
+        lua_pushstring(L, pathCStr);
         lua_rawseti(L, -2, i);
         i++;
     }
