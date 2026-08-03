@@ -1,5 +1,8 @@
 # Volta
-Volta is a WIP 2D game development framework for Luau written in C++. This is a passion project and one I'll use to learn more about C++, so expect the code to not be of the highest quality. Will try to use AI as sparingly as possible for the code itself, to learn as much myself as possible.
+Volta is a WIP 2D game development framework for Luau written in C++. This is a passion project and one I'll use to learn more about C++, so expect the code to not be of the highest quality.
+
+# AI usage in the project
+Used AI to write code sparingly - not to vibecode too much, just to assist with some tasks, explain some things, find bugs, etc. Except for the CMake configuration for building, that's pretty much all AI. And the require.cpp/ExecutablePath.cpp utilities. Besides that only a little AI code here and there, sparingly.
 
 # Usage
 You can run your game by running your luau script through the Volta executable like this: `volta main.luau` (where the filename can be anything other than main too)
