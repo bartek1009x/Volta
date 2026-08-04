@@ -58,6 +58,8 @@ int main(int argc, char* argv[]) {
     // register modules
     lua_createtable(L, 0, 6);
 
+    registerVoltaFunctions(&state);
+
     registerWindowFunctions(&state);
     registerGraphicsFunctions(&state);
     registerInputFunctions(&state);
@@ -67,10 +69,7 @@ int main(int argc, char* argv[]) {
 
     registerColorObject(&state);
 
-    registerVoltaFunctions(&state);
-
     lua_setreadonly(L, -1, 1);
-
     lua_setglobal(L, "volta");
 
     // luau init

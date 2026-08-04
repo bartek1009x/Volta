@@ -19,7 +19,8 @@ Uint32 trackIDCounter = 0;
 int loadAudio(lua_State *L) {
     const char* path = lua_tostring(L, 1);
     std::filesystem::path finalPath = resourceState->getMainPath() / path;
-    const char* pathCStr = finalPath.u8string().c_str();
+    const std::string stringPath = finalPath.string(); // we need to convert it here, because if we don't, path.c_str() will return const wchar_t* on windows (we need const char*)
+    const char* pathCStr = stringPath.c_str();
     MIX_Audio* audio = MIX_LoadAudio(mixer, pathCStr, false);
     if (audio == nullptr) {
         luaL_error(L, "Could not load audio: %s", pathCStr);
@@ -125,6 +126,21 @@ int setMasterVolume(lua_State *L) {
     return 0;
 }
 
+static const luaL_Reg audio_lib[] = {
+    {"loadAudio", loadAudio},
+    {"unloadAudio", unloadAudio},
+    {"getDuration", getDuration},
+    {"play", play},
+    {"stop", stop},
+    {"pause", pause},
+    {"resume", resume},
+    {"getRemaining", getRemaining},
+    {"setVolume", setVolume},
+    {"setPanning", setPanning},
+    {"setMasterVolume", setMasterVolume},
+    {nullptr, nullptr},
+};
+
 void registerAudioFunctions(ResourceState* state) {
     resourceState = state;
 
@@ -132,32 +148,7 @@ void registerAudioFunctions(ResourceState* state) {
     mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
     lua_State* L = state->getL();
 
-    lua_createtable(L, 1, 0);
-
-    lua_pushcfunction(L, loadAudio, "loadAudio");
-    lua_setfield(L, -2, "loadAudio");
-    lua_pushcfunction(L, unloadAudio, "unloadAudio");
-    lua_setfield(L, -2, "unloadAudio");
-    lua_pushcfunction(L, getDuration, "getDuration");
-    lua_setfield(L, -2, "getDuration");
-    lua_pushcfunction(L, play, "play");
-    lua_setfield(L, -2, "play");
-    lua_pushcfunction(L, stop, "stop");
-    lua_setfield(L, -2, "stop");
-    lua_pushcfunction(L, pause, "pause");
-    lua_setfield(L, -2, "pause");
-    lua_pushcfunction(L, resume, "resume");
-    lua_setfield(L, -2, "resume");
-    lua_pushcfunction(L, getRemaining, "getRemaining");
-    lua_setfield(L, -2, "getRemaining");
-    lua_pushcfunction(L, setVolume, "setVolume");
-    lua_setfield(L, -2, "setVolume");
-    lua_pushcfunction(L, setPanning, "setPanning");
-    lua_setfield(L, -2, "setPanning");
-    lua_pushcfunction(L, setMasterVolume, "setMasterVolume");
-    lua_setfield(L, -2, "setMasterVolume");
-
+    luaL_register(L, "audio", audio_lib);
     lua_setreadonly(L, -1, 1);
-
     lua_setfield(L, -2, "audio");
 }

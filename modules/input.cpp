@@ -4,6 +4,8 @@
 #include <SDL3/SDL_scancode.h>
 #include <unordered_map>
 
+#include "../dependencies/luau/VM/include/lualib.h"
+
 int isKeyDown(lua_State *L) {
     const bool *key_states = SDL_GetKeyboardState(NULL);
     lua_pushboolean(L, key_states[(int) lua_tonumber(L, 1)]);
@@ -309,10 +311,19 @@ void registerMouseButtonCodes(lua_State* L) {
     }
 }
 
+static const luaL_Reg input_lib[] = {
+    {"isKeyDown", isKeyDown},
+    {"isKeyUp", isKeyUp},
+    {"isMouseButtonDown", isMouseButtonDown},
+    {"isMouseButtonUp", isMouseButtonUp},
+    {"getMousePosition", getMousePosition},
+    {nullptr, nullptr},
+};
+
 void registerInputFunctions(ResourceState* state) {
     lua_State* L = state->getL();
 
-    lua_createtable(L, 1, 0);
+    luaL_register(L, "input", input_lib);
 
     lua_pushstring(L, "keys");
     lua_createtable(L, 0, keyCodes.size());
@@ -326,18 +337,6 @@ void registerInputFunctions(ResourceState* state) {
     lua_setreadonly(L, -1, 1);
     lua_settable(L, -3);
 
-    lua_pushcfunction(L, isKeyDown, "isKeyDown");
-    lua_setfield(L, -2, "isKeyDown");
-    lua_pushcfunction(L, isKeyUp, "isKeyUp");
-    lua_setfield(L, -2, "isKeyUp");
-    lua_pushcfunction(L, isMouseButtonDown, "isMouseButtonDown");
-    lua_setfield(L, -2, "isMouseButtonDown");
-    lua_pushcfunction(L, isMouseButtonUp, "isMouseButtonUp");
-    lua_setfield(L, -2, "isMouseButtonUp");
-    lua_pushcfunction(L, getMousePosition, "getMousePosition");
-    lua_setfield(L, -2, "getMousePosition");
-
     lua_setreadonly(L, -1, 1);
-
     lua_setfield(L, -2, "input");
 }

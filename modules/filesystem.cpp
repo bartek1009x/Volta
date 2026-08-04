@@ -13,19 +13,25 @@ namespace fs = filesystem;
 static ResourceState* resourceState = nullptr;
 
 int absolute(lua_State *L) {
-    const char* pathCStr = fs::absolute(lua_tostring(L, 1)).u8string().c_str();
+    const fs::path finalPath = fs::absolute(lua_tostring(L, 1));
+    const std::string stringPath = finalPath.string(); // we need to convert it here, because if we don't, path.c_str() will return const wchar_t* on windows (we need const char*)
+    const char* pathCStr = stringPath.c_str();
     lua_pushstring(L, pathCStr);
     return 1;
 }
 
 int getWorkingDir(lua_State *L) {
-    const char* pathCStr = fs::current_path().u8string().c_str();
+    const fs::path finalPath = fs::current_path();
+    const std::string stringPath = finalPath.string(); // we need to convert it here, because if we don't, path.c_str() will return const wchar_t* on windows (we need const char*)
+    const char* pathCStr = stringPath.c_str();
     lua_pushstring(L, pathCStr);
     return 1;
 }
 
 int getLuauMainDir(lua_State *L) {
-    const char* pathCStr = resourceState->getMainPath().u8string().c_str();
+    const fs::path finalPath = resourceState->getMainPath();
+    const std::string stringPath = finalPath.string(); // we need to convert it here, because if we don't, path.c_str() will return const wchar_t* on windows (we need const char*)
+    const char* pathCStr = stringPath.c_str();
     lua_pushstring(L, pathCStr);
     return 1;
 }
@@ -90,7 +96,7 @@ int deleteF(lua_State* L) {
     return 0;
 }
 
-int createDirectories(lua_State *L) {
+int createDirs(lua_State *L) {
     fs::path dir = lua_tostring(L, 1);
     fs::create_directories(dir);
     return 0;
@@ -106,7 +112,9 @@ int list(lua_State *L) {
 
     int i = 1;
     for (const auto & entry : fs::directory_iterator(lua_tostring(L, 1))) {
-        const char* pathCStr = entry.path().u8string().c_str();
+        const fs::path finalPath = entry.path();
+        const std::string stringPath = finalPath.string(); // we need to convert it here, because if we don't, path.c_str() will return const wchar_t* on windows (we need const char*)
+        const char* pathCStr = stringPath.c_str();
         lua_pushstring(L, pathCStr);
         lua_rawseti(L, -2, i);
         i++;
@@ -120,44 +128,30 @@ int getFileSize(lua_State* L) {
     return 1;
 }
 
+static const luaL_Reg fs_lib[] = {
+    {"absolute", absolute},
+    {"getWorkingDir", getWorkingDir},
+    {"getLuauMainDir", getLuauMainDir},
+    {"exists", exists},
+    {"isFile", isFile},
+    {"isDirectory", isDirectory},
+    {"isSymlink", isSymlink},
+    {"readFile", readFile},
+    {"writeFile", writeFile},
+    {"delete", deleteF},
+    {"rename", rename},
+    {"list", list},
+    {"createDirs", createDirs},
+    {"removeAll", removeAll},
+    {"getFileSize", getFileSize},
+    {nullptr, nullptr},
+};
+
 void registerFilesystemFunctions(ResourceState* state) {
     resourceState = state;
     lua_State* L = state->getL();
 
-    lua_createtable(L, 1, 0);
-
-    lua_pushcfunction(L, absolute, "absolute");
-    lua_setfield(L, -2, "absolute");
-    lua_pushcfunction(L, getWorkingDir, "getWorkingDir");
-    lua_setfield(L, -2, "getWorkingDir");
-    lua_pushcfunction(L, getLuauMainDir, "getLuauMainDir");
-    lua_setfield(L, -2, "getLuauMainDir");
-    lua_pushcfunction(L, exists, "exists");
-    lua_setfield(L, -2, "exists");
-    lua_pushcfunction(L, isFile, "isFile");
-    lua_setfield(L, -2, "isFile");
-    lua_pushcfunction(L, isDirectory, "isDirectory");
-    lua_setfield(L, -2, "isDirectory");
-    lua_pushcfunction(L, isSymlink, "isSymlink");
-    lua_setfield(L, -2, "isSymlink");
-    lua_pushcfunction(L, readFile, "readFile");
-    lua_setfield(L, -2, "readFile");
-    lua_pushcfunction(L, writeFile, "writeFile");
-    lua_setfield(L, -2, "writeFile");
-    lua_pushcfunction(L, deleteF, "delete");
-    lua_setfield(L, -2, "delete");
-    lua_pushcfunction(L, rename, "rename");
-    lua_setfield(L, -2, "rename");
-    lua_pushcfunction(L, list, "list");
-    lua_setfield(L, -2, "list");
-    lua_pushcfunction(L, createDirectories, "createDirectories");
-    lua_setfield(L, -2, "createDirectories");
-    lua_pushcfunction(L, removeAll, "removeAll");
-    lua_setfield(L, -2, "removeAll");
-    lua_pushcfunction(L, getFileSize, "getFileSize");
-    lua_setfield(L, -2, "getFileSize");
-
+    luaL_register(L, "filesystem", fs_lib);
     lua_setreadonly(L, -1, 1);
-
     lua_setfield(L, -2, "filesystem");
 }

@@ -1,5 +1,7 @@
 #include "volta.hpp"
 
+#include "../dependencies/luau/VM/include/lualib.h"
+
 extern bool SHOULD_QUIT;
 
 int exit(lua_State* L) {
@@ -8,15 +10,18 @@ int exit(lua_State* L) {
 }
 
 int getVersion(lua_State* L) {
-    lua_pushstring(L, "0.0.1");
+    lua_pushstring(L, "0.0.2");
     return 1;
 }
+
+static const luaL_Reg volta_lib[] = {
+    {"exit", exit},
+    {"getVersion", getVersion},
+    {nullptr, nullptr},
+};
 
 void registerVoltaFunctions(ResourceState* state) {
     lua_State* L = state->getL();
 
-    lua_pushcfunction(L, exit, "exit");
-    lua_setfield(L, -2, "exit");
-    lua_pushcfunction(L, getVersion, "getVersion");
-    lua_setfield(L, -2, "getVersion");
+    luaL_register(L, nullptr, volta_lib);
 }

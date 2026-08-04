@@ -1,8 +1,5 @@
 #include "graphics.hpp"
 
-#include <SDL3/SDL_error.h>
-#include <SDL3/SDL_pixels.h>
-#include <SDL3/SDL_surface.h>
 #include <iostream>
 #include <filesystem>
 #include <unordered_map>
@@ -12,6 +9,9 @@
 #include <SDL3_image/SDL_image.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_surface.h>
 
 #include "../dependencies/luau/VM/include/lualib.h"
 
@@ -179,7 +179,8 @@ int drawCircle(lua_State *L) {
 int loadImage(lua_State *L) {
     const char* path = lua_tostring(L, 1);
     std::filesystem::path finalPath = resourceState->getMainPath() / path;
-    const char* pathCStr = finalPath.u8string().c_str();
+    const std::string stringPath = finalPath.string(); // we need to convert it here, because if we don't, path.c_str() will return const wchar_t* on windows (we need const char*)
+    const char* pathCStr = stringPath.c_str();
     SDL_Texture* texture = IMG_LoadTexture(renderer, pathCStr);
     if (texture == nullptr) {
         luaL_error(L, "Could not load texture: %s", pathCStr);
@@ -214,7 +215,9 @@ int drawImage(lua_State *L) {
 
 int loadFont(lua_State *L) {
     const char* path = lua_tostring(L, 1);
-    const char* pathCStr = (resourceState->getMainPath() / path).u8string().c_str();
+    std::filesystem::path finalPath = resourceState->getMainPath() / path;
+    const std::string stringPath = finalPath.string(); // we need to convert it here, because if we don't, path.c_str() will return const wchar_t* on windows (we need const char*)
+    const char* pathCStr = stringPath.c_str();
     TTF_Font* font = TTF_OpenFont(pathCStr, lua_tonumber(L, 2));
     if (font == nullptr) {
         luaL_error(L, "Could not load font: %s, error: %s", pathCStr, SDL_GetError());
@@ -260,7 +263,6 @@ int drawText(lua_State *L) {
     const char* text = lua_tostring(L, 2);
     Uint32 fontId = lua_tonumber(L, 1);
     bool dontCache = lua_toboolean(L, 5);
-    printf("%b", dontCache);
 
     auto it = textCache.find(text);
     if (!dontCache && it != textCache.end()) {
@@ -313,6 +315,22 @@ int drawText(lua_State *L) {
     return 0;
 }
 
+static const luaL_Reg graphics_lib[] = {
+    {"setCursorVisibility", setCursorVisibility},
+    {"setVsync", setVsync},
+    {"setDrawColor", setDrawColor},
+    {"clear", clear},
+    {"drawRect", drawRect},
+    {"drawCircle", drawCircle},
+    {"loadImage", loadImage},
+    {"unloadImage", unloadImage},
+    {"drawImage", drawImage},
+    {"loadFont", loadFont},
+    {"unloadFont", unloadFont},
+    {"drawText", drawText},
+    {nullptr, nullptr},
+};
+
 void registerGraphicsFunctions(ResourceState* state) {
     TTF_Init();
     resourceState = state;
@@ -321,35 +339,8 @@ void registerGraphicsFunctions(ResourceState* state) {
     }
     lua_State* L = state->getL();
 
-    lua_createtable(L, 1, 0);
-
-    lua_pushcfunction(L, setCursorVisibility, "setCursorVisibility");
-    lua_setfield(L, -2, "setCursorVisibility");
-    lua_pushcfunction(L, setVsync, "setVsync");
-    lua_setfield(L, -2, "setVsync");
-    lua_pushcfunction(L, setDrawColor, "setDrawColor");
-    lua_setfield(L, -2, "setDrawColor");
-    lua_pushcfunction(L, clear, "clear");
-    lua_setfield(L, -2, "clear");
-    lua_pushcfunction(L, drawRect, "drawRect");
-    lua_setfield(L, -2, "drawRect");
-    lua_pushcfunction(L, drawCircle, "drawCircle");
-    lua_setfield(L, -2, "drawCircle");
-    lua_pushcfunction(L, loadImage, "loadImage");
-    lua_setfield(L, -2, "loadImage");
-    lua_pushcfunction(L, unloadImage, "unloadImage");
-    lua_setfield(L, -2, "unloadImage");
-    lua_pushcfunction(L, drawImage, "drawImage");
-    lua_setfield(L, -2, "drawImage");
-    lua_pushcfunction(L, loadFont, "loadFont");
-    lua_setfield(L, -2, "loadFont");
-    lua_pushcfunction(L, unloadFont, "unloadFont");
-    lua_setfield(L, -2, "unloadFont");
-    lua_pushcfunction(L, drawText, "drawText");
-    lua_setfield(L, -2, "drawText");
-
+    luaL_register(L, "graphics", graphics_lib);
     lua_setreadonly(L, -1, 1);
-
     lua_setfield(L, -2, "graphics");
 }
 

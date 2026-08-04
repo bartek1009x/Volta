@@ -4,6 +4,8 @@
 
 #include <SDL3/SDL_clipboard.h>
 
+#include "../dependencies/luau/VM/include/lualib.h"
+
 int getOS(lua_State *L) {
     lua_pushstring(L, SDL_GetPlatform());
     return 1;
@@ -24,21 +26,18 @@ int setClipboardText(lua_State *L) {
     return 0;
 }
 
+static const luaL_Reg system_lib[] = {
+    {"getOS", getOS},
+    {"getEnv", getEnv},
+    {"getClipboardText", getClipboardText},
+    {"setClipboardText", setClipboardText},
+    {nullptr, nullptr},
+};
+
 void registerSystemFunctions(ResourceState* state) {
     lua_State* L = state->getL();
 
-    lua_createtable(L, 1, 0);
-
-    lua_pushcfunction(L, getOS, "getOS");
-    lua_setfield(L, -2, "getOS");
-    lua_pushcfunction(L, getEnv, "getEnv");
-    lua_setfield(L, -2, "getEnv");
-    lua_pushcfunction(L, getClipboardText, "getClipboardText");
-    lua_setfield(L, -2, "getClipboardText");
-    lua_pushcfunction(L, setClipboardText, "setClipboardText");
-    lua_setfield(L, -2, "setClipboardText");
-
+    luaL_register(L, "system", system_lib);
     lua_setreadonly(L, -1, 1);
-
     lua_setfield(L, -2, "system");
 }
