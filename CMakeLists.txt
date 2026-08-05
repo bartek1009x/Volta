@@ -9,9 +9,9 @@ set(VOLTA_EXTRAS_DIR ${CMAKE_SOURCE_DIR}/volta_extras)
 
 set(SOURCE_FILES
     main.cpp
-    utils/ExecutablePath.hpp
-    utils/require.cpp
+    utils/Require.cpp
     utils/ResourceState.cpp
+    utils/RequireContext.hpp
     utils/Pool.hpp
     modules/volta.cpp
     modules/window.cpp
@@ -29,7 +29,7 @@ find_package(SDL3_mixer REQUIRED CONFIG)
 find_package(SDL3_ttf REQUIRED CONFIG)
 add_executable(volta ${SOURCE_FILES})
 
-target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image::SDL3_image SDL3_mixer::SDL3_mixer SDL3_ttf::SDL3_ttf Luau.Compiler Luau.VM)
+target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image::SDL3_image SDL3_mixer::SDL3_mixer SDL3_ttf::SDL3_ttf Luau.Compiler Luau.Require Luau.VM)
 
 if (WIN32)
     add_custom_command(TARGET volta POST_BUILD
@@ -40,10 +40,10 @@ if (WIN32)
             $<TARGET_FILE:SDL3_ttf::SDL3_ttf>
             $<TARGET_FILE_DIR:volta>
         COMMAND ${CMAKE_COMMAND} -E make_directory
-            $<TARGET_FILE_DIR:volta>/extras
+            $<TARGET_FILE_DIR:volta>/volta_extras
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${VOLTA_EXTRAS_DIR}
-            $<TARGET_FILE_DIR:volta>/extras
+            $<TARGET_FILE_DIR:volta>/volta_extras
     )
 elseif (APPLE)
     set_target_properties(volta PROPERTIES
@@ -58,10 +58,10 @@ elseif (APPLE)
             $<TARGET_FILE:SDL3_ttf::SDL3_ttf>
             $<TARGET_FILE_DIR:volta>
         COMMAND ${CMAKE_COMMAND} -E make_directory
-            $<TARGET_FILE_DIR:volta>/extras
+            $<TARGET_FILE_DIR:volta>/volta_extras
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${VOLTA_EXTRAS_DIR}
-            $<TARGET_FILE_DIR:volta>/extras
+            $<TARGET_FILE_DIR:volta>/volta_extras
     )
 elseif (UNIX)
     set_target_properties(volta PROPERTIES
@@ -72,10 +72,14 @@ elseif (UNIX)
     set(APPDIR ${CMAKE_BINARY_DIR}/AppDir)
 
     add_custom_command(TARGET volta POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            $<TARGET_FILE_DIR:volta>/volta_extras
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${VOLTA_EXTRAS_DIR}
+            $<TARGET_FILE_DIR:volta>/volta_extras
         COMMAND ${CMAKE_COMMAND} -E make_directory ${APPDIR}/usr/bin
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:volta> ${APPDIR}/usr/bin/volta
         COMMAND ${CMAKE_COMMAND} -E make_directory ${APPDIR}/usr/bin/extras
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${VOLTA_EXTRAS_DIR} ${APPDIR}/usr/bin/extras
     )
 
     # AppImage requires a .desktop file and an icon

@@ -10,7 +10,7 @@ int exit(lua_State* L) {
 }
 
 int getVersion(lua_State* L) {
-    lua_pushstring(L, "0.0.2");
+    lua_pushstring(L, "0.0.3");
     return 1;
 }
 

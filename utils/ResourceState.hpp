@@ -2,10 +2,14 @@
 #define RESOURCE_STATE_H
 
 #include <filesystem>
+#include <memory>
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
+
 #include "../dependencies/luau/VM/include/lua.h"
+#include "RequireContext.hpp"
 
 class ResourceState {
     SDL_Window *window;
@@ -22,6 +26,7 @@ class ResourceState {
         std::filesystem::path getMainPath() const;
         void setMainPath(std::filesystem::path);
         void setWinRen(SDL_Window* win, SDL_Renderer* ren);
+        std::unique_ptr<RequireContext> requireContext;
 };
 
 #endif

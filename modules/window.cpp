@@ -17,7 +17,7 @@ int setTitle(lua_State* L) {
 
 int setWindowIcon(lua_State* L) {
     const char* path = lua_tostring(L, 1);
-    const std::filesystem::path finalPath = resourceState->getMainPath() / path; // we need to convert it here, because if we don't, path.c_str() will return const wchar_t* on windows (we need const char*)
+    const std::filesystem::path finalPath = resourceState->getMainPath() / path;
     const std::string stringPath = finalPath.string(); // we need to convert it here, because if we don't, path.c_str() will return const wchar_t* on windows (we need const char*)
     const char* pathCStr = stringPath.c_str();
     SDL_Surface* icon = IMG_Load(pathCStr);

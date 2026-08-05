@@ -10,7 +10,7 @@
 #include <SDL3/SDL_render.h>
 
 #include "utils/ResourceState.hpp"
-#include "utils/require.cpp"
+#include "utils/Require.hpp"
 #include "modules/volta.hpp"
 #include "modules/window.hpp"
 #include "modules/graphics.hpp"
@@ -31,9 +31,6 @@ int main(int argc, char* argv[]) {
 
     lua_State* L = state.getL();
 
-    lua_pushcfunction(L, luau_require, "require");
-    lua_setglobal(L, "require");
-
     filesystem::path scriptPath = filesystem::current_path() / argv[1];
     state.setMainPath(scriptPath.parent_path());
     auto size = filesystem::file_size(scriptPath);
@@ -41,9 +38,11 @@ int main(int argc, char* argv[]) {
     ifstream in{scriptPath};
     in.read(&script[0], size);
 
+    registerRequireLib(&state);
+
     size_t bytecode_size;
     char* bytecode = luau_compile(script.c_str(), script.length(), nullptr, &bytecode_size);
-    string chunkname = "=" + scriptPath.string();
+    string chunkname = "@" + scriptPath.generic_string();
     int res = luau_load(L, chunkname.c_str(), bytecode, bytecode_size, 0);
     free(bytecode);
 
