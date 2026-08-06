@@ -21,6 +21,7 @@ set(SOURCE_FILES
     modules/system.cpp
     modules/filesystem.cpp
     modules/color.cpp
+    modules/sprite.cpp
 )
 
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)

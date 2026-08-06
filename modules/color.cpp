@@ -101,8 +101,6 @@ int lerp(lua_State *L) {
 }
 
 int colorNew(lua_State *L) {
-    // 1 = Color table
-
     Uint8 r = luaL_optinteger(L, 1, 255);
     Uint8 g = luaL_optinteger(L, 2, 255);
     Uint8 b = luaL_optinteger(L, 3, 255);
@@ -158,7 +156,7 @@ int fromHexa(lua_State *L) {
     return 1;
 }
 
-void push_class(lua_State *L) {
+void pushColorClass(lua_State *L) {
     lua_newtable(L);
 
     lua_pushvalue(L, -1);
@@ -195,7 +193,7 @@ void push_class(lua_State *L) {
 void registerColorObject(ResourceState* state) {
     lua_State* L = state->getL();
 
-    push_class(L);
+    pushColorClass(L);
     lua_setreadonly(L, -1, 1);
     lua_setfield(L, -2, "Color");
 }
