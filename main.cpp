@@ -9,6 +9,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_render.h>
 
+#include "modules/network.hpp"
 #include "utils/ResourceState.hpp"
 #include "utils/Require.hpp"
 #include "modules/volta.hpp"
@@ -66,6 +67,7 @@ int main(int argc, char* argv[]) {
     registerAudioFunctions(&state);
     registerSystemFunctions(&state);
     registerFilesystemFunctions(&state);
+    registerNetworkFunctions(&state);
 
     registerColorObject(&state);
     registerSpriteObject(&state);

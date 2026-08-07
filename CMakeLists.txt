@@ -20,6 +20,7 @@ set(SOURCE_FILES
     modules/audio.cpp
     modules/system.cpp
     modules/filesystem.cpp
+    modules/network.cpp
     modules/color.cpp
     modules/sprite.cpp
 )
@@ -28,9 +29,10 @@ find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
 find_package(SDL3_image REQUIRED CONFIG)
 find_package(SDL3_mixer REQUIRED CONFIG)
 find_package(SDL3_ttf REQUIRED CONFIG)
+find_package(OpenSSL REQUIRED MODULE)
 add_executable(volta ${SOURCE_FILES})
 
-target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image::SDL3_image SDL3_mixer::SDL3_mixer SDL3_ttf::SDL3_ttf Luau.Compiler Luau.Require Luau.VM)
+target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image::SDL3_image SDL3_mixer::SDL3_mixer SDL3_ttf::SDL3_ttf OpenSSL::SSL OpenSSL::Crypto Luau.Compiler Luau.Require Luau.VM)
 
 if (WIN32)
     add_custom_command(TARGET volta POST_BUILD
@@ -39,6 +41,8 @@ if (WIN32)
             $<TARGET_FILE:SDL3_image::SDL3_image>
             $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
             $<TARGET_FILE:SDL3_ttf::SDL3_ttf>
+            $<TARGET_FILE:OpenSSL::SSL>
+            $<TARGET_FILE:OpenSSL::Crypto>
             $<TARGET_FILE_DIR:volta>
         COMMAND ${CMAKE_COMMAND} -E make_directory
             $<TARGET_FILE_DIR:volta>/volta_extras
@@ -57,6 +61,8 @@ elseif (APPLE)
             $<TARGET_FILE:SDL3_image::SDL3_image>
             $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
             $<TARGET_FILE:SDL3_ttf::SDL3_ttf>
+            $<TARGET_FILE:OpenSSL::SSL>
+            $<TARGET_FILE:OpenSSL::Crypto>
             $<TARGET_FILE_DIR:volta>
         COMMAND ${CMAKE_COMMAND} -E make_directory
             $<TARGET_FILE_DIR:volta>/volta_extras
@@ -109,6 +115,8 @@ Categories=Game;
                     --library $<TARGET_FILE:SDL3_image::SDL3_image>
                     --library $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
                     --library $<TARGET_FILE:SDL3_ttf::SDL3_ttf>
+                    --library $<TARGET_FILE:OpenSSL::SSL>
+                    --library $<TARGET_FILE:OpenSSL::Crypto>
                     --output appimage
             DEPENDS volta
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
