@@ -2,3 +2,4 @@ build/
 dependencies/
 .cache/
 build-windows/
+.clangd
