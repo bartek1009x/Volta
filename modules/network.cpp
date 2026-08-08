@@ -26,12 +26,62 @@ httplib::Headers parseLuauHeaders(lua_State* L, int tableStackIdx) {
     return headers;
 }
 
-void cppHeaderToLuauTable(lua_State* L, httplib::Headers headers) {
+void cppHeadersToLuauTable(lua_State* L, const httplib::Headers& headers) {
     lua_createtable(L, 0, headers.size());
-    for (auto const& header : headers) {
-        lua_pushstring(L, header.second.c_str());
-        lua_setfield(L, -2, header.first.c_str());
+
+    for (auto it = headers.begin(); it != headers.end();) {
+        auto range = headers.equal_range(it->first);
+
+        std::string name = it->first;
+        std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) {
+            return std::tolower(c);
+        });
+
+        lua_createtable(L, 0, 0);
+
+        int index = 1;
+        for (auto valueIt = range.first; valueIt != range.second; ++valueIt) {
+            lua_pushlstring(L, valueIt->second.data(), valueIt->second.size());
+            lua_rawseti(L, -2, index++);
+        }
+
+        lua_setfield(L, -2, name.c_str());
+        it = range.second;
     }
+}
+
+void pushResponse(lua_State* L, const httplib::Result& res) {
+    lua_newtable(L);
+
+    lua_pushnumber(L, res->status);
+    lua_setfield(L, -2, "status");
+
+    lua_pushlstring(L, res->body.data(), res->body.size());
+    lua_setfield(L, -2, "body");
+
+    lua_pushstring(L, res->reason.c_str());
+    lua_setfield(L, -2, "reason");
+
+    cppHeadersToLuauTable(L, res->headers);
+    lua_setfield(L, -2, "headers");
+
+    cppHeadersToLuauTable(L, res->trailers);
+    lua_setfield(L, -2, "trailers");
+}
+
+httplib::Client* getClient(lua_State* L) {
+    lua_rawgetfield(L, 1, "id");
+    int id = lua_tointeger(L, -1);
+
+    if (clients.find(id) == clients.end()) {
+        luaL_error(L, "Could not find the client. Are you sure it's still running?");
+        return nullptr;
+    }
+
+    httplib::Client* client = clients[id];
+    lua_pop(L, 1);
+
+    return client;
 }
 
 int clientNew(lua_State *L) {
@@ -76,6 +126,7 @@ int stopC(lua_State *L) {
 
     if (clients.find(id) == clients.end()) {
         luaL_error(L, "Could not find the client. Are you sure it's still running?");
+        return 0;
     }
 
     httplib::Client* client = clients[id];
@@ -112,15 +163,8 @@ int getPort(lua_State *L) {
 
 int setDefaultHeaders(lua_State *L) {
     // self at index 1
-    lua_rawgetfield(L, 1, "id");
-    int id = lua_tointeger(L, -1);
-
-    if (clients.find(id) == clients.end()) {
-        luaL_error(L, "Could not find the client. Are you sure it's still running?");
-    }
-
-    httplib::Client* client = clients[id];
-    lua_pop(L, 1);
+    httplib::Client* client = getClient(L);
+    if (client == nullptr) return 0;
 
     httplib::Headers headers = parseLuauHeaders(L, 2);
 
@@ -131,15 +175,8 @@ int setDefaultHeaders(lua_State *L) {
 
 int setConnectionTimeout(lua_State *L) {
     // self at index 1
-    lua_rawgetfield(L, 1, "id");
-    int id = lua_tointeger(L, -1);
-
-    if (clients.find(id) == clients.end()) {
-        luaL_error(L, "Could not find the client. Are you sure it's still running?");
-    }
-
-    httplib::Client* client = clients[id];
-    lua_pop(L, 1);
+    httplib::Client* client = getClient(L);
+    if (client == nullptr) return 0;
 
     int milliseconds = lua_tointeger(L, 2);
     time_t seconds = milliseconds / 1000;
@@ -151,15 +188,8 @@ int setConnectionTimeout(lua_State *L) {
 
 int setReadTimeout(lua_State *L) {
     // self at index 1
-    lua_rawgetfield(L, 1, "id");
-    int id = lua_tointeger(L, -1);
-
-    if (clients.find(id) == clients.end()) {
-        luaL_error(L, "Could not find the client. Are you sure it's still running?");
-    }
-
-    httplib::Client* client = clients[id];
-    lua_pop(L, 1);
+    httplib::Client* client = getClient(L);
+    if (client == nullptr) return 0;
 
     int milliseconds = lua_tointeger(L, 2);
     time_t seconds = milliseconds / 1000;
@@ -171,15 +201,8 @@ int setReadTimeout(lua_State *L) {
 
 int setWriteTimeout(lua_State *L) {
     // self at index 1
-    lua_rawgetfield(L, 1, "id");
-    int id = lua_tointeger(L, -1);
-
-    if (clients.find(id) == clients.end()) {
-        luaL_error(L, "Could not find the client. Are you sure it's still running?");
-    }
-
-    httplib::Client* client = clients[id];
-    lua_pop(L, 1);
+    httplib::Client* client = getClient(L);
+    if (client == nullptr) return 0;
 
     int milliseconds = lua_tointeger(L, 2);
     time_t seconds = milliseconds / 1000;
@@ -191,15 +214,8 @@ int setWriteTimeout(lua_State *L) {
 
 int get(lua_State *L) {
     // self at index 1
-    lua_rawgetfield(L, 1, "id");
-    int id = lua_tointeger(L, -1);
-
-    if (clients.find(id) == clients.end()) {
-        luaL_error(L, "Could not find the client. Are you sure it's still running?");
-    }
-
-    httplib::Client* client = clients[id];
-    lua_pop(L, 1);
+    httplib::Client* client = getClient(L);
+    if (client == nullptr) return 0;
 
     httplib::Result res;
     if (!lua_isnoneornil(L, 3)) {
@@ -211,45 +227,43 @@ int get(lua_State *L) {
     }
 
     if (!res) {
-        lua_pushnil(L);
+        luaL_error(L, to_string(res.error()).c_str());
         return 1;
     }
 
-    int status = res->status;
-    std::string body = res->body;
-    std::string reason = res->reason;
+    pushResponse(L, res);
 
-    lua_newtable(L);
+    return 1;
+}
 
-    lua_pushnumber(L, status);
-    lua_setfield(L, -2, "status");
+int head(lua_State *L) {
+    // self at index 1
+    httplib::Client* client = getClient(L);
+    if (client == nullptr) return 0;
 
-    lua_pushlstring(L, res->body.data(), res->body.size());
-    lua_setfield(L, -2, "body");
+    httplib::Result res;
+    if (!lua_isnoneornil(L, 3)) {
+        httplib::Headers headers = parseLuauHeaders(L, 3);
 
-    lua_pushstring(L, reason.c_str());
-    lua_setfield(L, -2, "reason");
+        res = client->Head(lua_tostring(L, 2), headers);
+    } else {
+        res = client->Head(lua_tostring(L, 2));
+    }
 
-    cppHeaderToLuauTable(L, res->headers);
-    lua_setfield(L, -2, "headers");
+    if (!res) {
+        luaL_error(L, to_string(res.error()).c_str());
+        return 1;
+    }
 
-    cppHeaderToLuauTable(L, res->trailers);
-    lua_setfield(L, -2, "trailers");
+    pushResponse(L, res);
 
     return 1;
 }
 
 int post(lua_State *L) {
     // self at index 1
-    lua_rawgetfield(L, 1, "id");
-    int id = lua_tointeger(L, -1);
-
-    if (clients.find(id) == clients.end()) {
-        luaL_error(L, "Could not find the client. Are you sure it's still running?");
-    }
-
-    httplib::Client* client = clients[id];
-    lua_pop(L, 1);
+    httplib::Client* client = getClient(L);
+    if (client == nullptr) return 0;
 
     size_t length;
     const char* data = luaL_checklstring(L, 3, &length);
@@ -265,26 +279,99 @@ int post(lua_State *L) {
     }
 
     if (!res) {
-        lua_pushnil(L);
+        luaL_error(L, to_string(res.error()).c_str());
         return 1;
     }
 
-    lua_newtable(L);
+    pushResponse(L, res);
 
-    lua_pushnumber(L, res->status);
-    lua_setfield(L, -2, "status");
+    return 1;
+}
 
-    lua_pushlstring(L, res->body.data(), res->body.size());
-    lua_setfield(L, -2, "body");
+int put(lua_State *L) {
+    // self at index 1
+    httplib::Client* client = getClient(L);
+    if (client == nullptr) return 0;
 
-    lua_pushstring(L, res->reason.c_str());
-    lua_setfield(L, -2, "reason");
+    size_t length;
+    const char* data = luaL_checklstring(L, 3, &length);
+    std::string requestBody(data, length);
 
-    cppHeaderToLuauTable(L, res->headers);
-    lua_setfield(L, -2, "headers");
+    httplib::Result res;
+    if (!lua_isnoneornil(L, 5)) {
+        httplib::Headers headers = parseLuauHeaders(L, 5);
 
-    cppHeaderToLuauTable(L, res->trailers);
-    lua_setfield(L, -2, "trailers");
+        res = client->Put(lua_tostring(L, 2), headers, requestBody, lua_tostring(L, 4));
+    } else {
+        res = client->Put(lua_tostring(L, 2), requestBody, lua_tostring(L, 4));
+    }
+
+    if (!res) {
+        luaL_error(L, to_string(res.error()).c_str());
+        return 1;
+    }
+
+    pushResponse(L, res);
+
+    return 1;
+}
+
+int patch(lua_State *L) {
+    // self at index 1
+    httplib::Client* client = getClient(L);
+    if (client == nullptr) return 0;
+
+    size_t length;
+    const char* data = luaL_checklstring(L, 3, &length);
+    std::string requestBody(data, length);
+
+    httplib::Result res;
+    if (!lua_isnoneornil(L, 5)) {
+        httplib::Headers headers = parseLuauHeaders(L, 5);
+
+        res = client->Patch(lua_tostring(L, 2), headers, requestBody, lua_tostring(L, 4));
+    } else {
+        res = client->Patch(lua_tostring(L, 2), requestBody, lua_tostring(L, 4));
+    }
+
+    if (!res) {
+        luaL_error(L, to_string(res.error()).c_str());
+        return 1;
+    }
+
+    pushResponse(L, res);
+
+    return 1;
+}
+
+int deleteH(lua_State *L) {
+    // self at index 1
+    httplib::Client* client = getClient(L);
+    if (client == nullptr) return 0;
+
+    httplib::Result res;
+    if (!lua_isnoneornil(L, 3)) {
+        size_t length;
+        const char* data = luaL_checklstring(L, 3, &length);
+        std::string requestBody(data, length);
+
+        if (!lua_isnoneornil(L, 5)) {
+            httplib::Headers headers = parseLuauHeaders(L, 5);
+
+            res = client->Delete(lua_tostring(L, 2), headers, requestBody, lua_tostring(L, 4));
+        } else {
+            res = client->Delete(lua_tostring(L, 2), requestBody, lua_tostring(L, 4));
+        }
+    } else {
+        res = client->Delete(lua_tostring(L, 2));
+    }
+
+    if (!res) {
+        luaL_error(L, to_string(res.error()).c_str());
+        return 1;
+    }
+
+    pushResponse(L, res);
 
     return 1;
 }
@@ -330,8 +417,20 @@ void pushClientClass(lua_State *L) {
     lua_pushcfunction(L, get, "get");
     lua_setfield(L, -2, "get");
 
+    lua_pushcfunction(L, head, "head");
+    lua_setfield(L, -2, "head");
+
     lua_pushcfunction(L, post, "post");
     lua_setfield(L, -2, "post");
+
+    lua_pushcfunction(L, put, "put");
+    lua_setfield(L, -2, "put");
+
+    lua_pushcfunction(L, patch, "patch");
+    lua_setfield(L, -2, "patch");
+
+    lua_pushcfunction(L, deleteH, "delete");
+    lua_setfield(L, -2, "delete");
 
     // class table remains on stack
 }

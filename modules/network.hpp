@@ -17,7 +17,11 @@ int setConnectionTimeout(lua_State *L);
 int setReadTimeout(lua_State *L);
 int setWriteTimeout(lua_State *L);
 int get(lua_State *L);
+int head(lua_State *L);
 int post(lua_State *L);
+int put(lua_State *L);
+int patch(lua_State *L);
+int deleteH(lua_State *L);
 void pushClientClass(lua_State* L);
 void registerNetworkFunctions(ResourceState* state);
 
