@@ -1,8 +1,9 @@
 #include "graphics.hpp"
 
-#include <iostream>
+#include <string>
 #include <filesystem>
 #include <unordered_map>
+#include <algorithm>
 
 #include <SDL3/SDL_rect.h>
 #include <SDL3_image/SDL_image.h>
@@ -11,6 +12,7 @@
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_surface.h>
+#include <SDL3/SDL_render.h>
 
 #include "../dependencies/luau/VM/include/lualib.h"
 
@@ -194,6 +196,30 @@ int loadImagePath(lua_State *L, const char* path) {
     return textureIDCounter++;
 }
 
+int setTextureScaleMode(lua_State *L) {
+    int index = lua_tonumber(L, 1);
+    std::string modeS = lua_tostring(L, 2);
+    std::transform(modeS.begin(), modeS.end(), modeS.begin(), [](unsigned char c) {
+        return std::tolower(c);
+    });
+
+    SDL_ScaleMode mode;
+
+    if (modeS == "nearest") {
+        mode = SDL_SCALEMODE_NEAREST;
+    } else if (modeS == "linear") {
+        mode = SDL_SCALEMODE_LINEAR;
+    } else if (modeS == "pixelart") {
+        mode = SDL_SCALEMODE_PIXELART;
+    } else {
+        luaL_error(L, "%s is not a valid scale mode.", modeS.c_str());
+        return 0;
+    }
+    SDL_SetTextureScaleMode(loadedTextures[index], mode);
+
+    return 0;
+}
+
 int loadImage(lua_State *L) {
     lua_pushnumber(L, loadImagePath(L, lua_tostring(L, 1)));
 
@@ -327,6 +353,7 @@ static const luaL_Reg graphics_lib[] = {
     {"drawRect", drawRect},
     {"drawCircle", drawCircle},
     {"loadImage", loadImage},
+    {"setTextureScaleMode", setTextureScaleMode},
     {"unloadImage", unloadImage},
     {"drawImage", drawImage},
     {"loadFont", loadFont},

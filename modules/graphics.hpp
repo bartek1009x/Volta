@@ -15,6 +15,7 @@ int drawRect(lua_State* L);
 int drawCircle(lua_State* L);
 int loadImagePath(lua_State* L, const char* path);
 int loadImage(lua_State* L);
+int setTextureScaleMode(lua_State* L);
 int unloadImage(lua_State* L);
 int drawImage(lua_State* L);
 int loadFont(lua_State* L);

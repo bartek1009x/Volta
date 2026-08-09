@@ -11,6 +11,7 @@ int setTextureId(lua_State* L);
 int setPositionS(lua_State* L);
 int setSizeS(lua_State* L);
 int setRotation(lua_State* L);
+int setTextureRegion(lua_State* L);
 int flipHorizontal(lua_State* L);
 int flipVertical(lua_State* L);
 int getTextureId(lua_State* L);

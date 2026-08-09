@@ -52,6 +52,18 @@ int spriteNew(lua_State *L) {
     lua_pushboolean(L, false);
     lua_setfield(L, -2, "flipV");
 
+    lua_pushnumber(L, 0);
+    lua_setfield(L, -2, "regionX");
+
+    lua_pushnumber(L, 0);
+    lua_setfield(L, -2, "regionY");
+
+    lua_pushnumber(L, 0);
+    lua_setfield(L, -2, "regionW");
+
+    lua_pushnumber(L, 0);
+    lua_setfield(L, -2, "regionH");
+
     lua_pushvalue(L, lua_upvalueindex(1));
     lua_setmetatable(L, -2);
 
@@ -59,6 +71,7 @@ int spriteNew(lua_State *L) {
 }
 
 static SDL_FRect SPRITE_RECT;
+static SDL_FRect SPRITE_SRC_RECT;
 
 int draw(lua_State *L) {
     // self at index 1
@@ -85,8 +98,29 @@ int draw(lua_State *L) {
     SPRITE_RECT.y = y;
     SPRITE_RECT.w = w;
     SPRITE_RECT.h = h;
+
+    lua_rawgetfield(L, 1, "regionW");
+    float regionW = lua_tonumber(L, -1);
+    float regionH;
+    float regionX;
+    float regionY;
+    if (regionW != 0) {
+        lua_rawgetfield(L, 1, "regionH");
+        lua_rawgetfield(L, 1, "regionX");
+        lua_rawgetfield(L, 1, "regionY");
+
+        regionH = lua_tonumber(L, -3);
+        regionX = lua_tonumber(L, -2);
+        regionY = lua_tonumber(L, -1);
+
+        SPRITE_SRC_RECT.x = regionX;
+        SPRITE_SRC_RECT.y = regionY;
+        SPRITE_SRC_RECT.w = regionW;
+        SPRITE_SRC_RECT.h = regionH;
+    }
+
     if (r == 0 && !flipH && !flipV) {
-        SDL_RenderTexture(renderer, getTextureById(textureId), nullptr, &SPRITE_RECT);
+        SDL_RenderTexture(renderer, getTextureById(textureId), regionW != 0 ? &SPRITE_SRC_RECT : nullptr, &SPRITE_RECT);
     } else {
         SDL_FlipMode flip;
         if (flipH && flipV) {
@@ -98,7 +132,7 @@ int draw(lua_State *L) {
         } else {
             flip = SDL_FLIP_NONE;
         }
-        SDL_RenderTextureRotated(renderer, getTextureById(textureId), nullptr, &SPRITE_RECT, r, nullptr, flip);
+        SDL_RenderTextureRotated(renderer, getTextureById(textureId), regionW != 0 ? &SPRITE_SRC_RECT : nullptr, &SPRITE_RECT, r, nullptr, flip);
     }
 
     return 0;
@@ -149,6 +183,24 @@ int setRotation(lua_State *L) {
 
     lua_pushinteger(L, lua_tointeger(L, 2));
     lua_setfield(L, -3, "r");
+
+    return 0;
+}
+
+int setTextureRegion(lua_State *L) {
+    // self at index 1
+
+    lua_pushinteger(L, lua_tointeger(L, 2));
+    lua_setfield(L, 1, "regionX");
+
+    lua_pushinteger(L, lua_tointeger(L, 3));
+    lua_setfield(L, 1, "regionY");
+
+    lua_pushinteger(L, lua_tointeger(L, 4));
+    lua_setfield(L, 1, "regionW");
+
+    lua_pushinteger(L, lua_tointeger(L, 5));
+    lua_setfield(L, 1, "regionH");
 
     return 0;
 }
@@ -240,6 +292,9 @@ void pushSpriteClass(lua_State *L) {
 
     lua_pushcfunction(L, setRotation, "setRotation");
     lua_setfield(L, -2, "setRotation");
+
+    lua_pushcfunction(L, setTextureRegion, "setTextureRegion");
+    lua_setfield(L, -2, "setTextureRegion");
 
     lua_pushcfunction(L, flipHorizontal, "flipHorizontal");
     lua_setfield(L, -2, "flipHorizontal");
