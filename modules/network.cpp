@@ -228,7 +228,7 @@ int get(lua_State *L) {
 
     if (!res) {
         luaL_error(L, to_string(res.error()).c_str());
-        return 1;
+        return 0;
     }
 
     pushResponse(L, res);
@@ -252,7 +252,7 @@ int head(lua_State *L) {
 
     if (!res) {
         luaL_error(L, to_string(res.error()).c_str());
-        return 1;
+        return 0;
     }
 
     pushResponse(L, res);
@@ -280,7 +280,7 @@ int post(lua_State *L) {
 
     if (!res) {
         luaL_error(L, to_string(res.error()).c_str());
-        return 1;
+        return 0;
     }
 
     pushResponse(L, res);
@@ -308,7 +308,7 @@ int put(lua_State *L) {
 
     if (!res) {
         luaL_error(L, to_string(res.error()).c_str());
-        return 1;
+        return 0;
     }
 
     pushResponse(L, res);
@@ -336,7 +336,7 @@ int patch(lua_State *L) {
 
     if (!res) {
         luaL_error(L, to_string(res.error()).c_str());
-        return 1;
+        return 0;
     }
 
     pushResponse(L, res);
@@ -368,7 +368,7 @@ int deleteH(lua_State *L) {
 
     if (!res) {
         luaL_error(L, to_string(res.error()).c_str());
-        return 1;
+        return 0;
     }
 
     pushResponse(L, res);
