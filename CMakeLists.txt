@@ -23,6 +23,7 @@ set(SOURCE_FILES
     modules/network.cpp
     modules/color.cpp
     modules/sprite.cpp
+    modules/animatedSprite.cpp
 )
 
 find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)

@@ -142,7 +142,7 @@ int setTexture(lua_State *L) {
     // self at index 1
 
     lua_pushinteger(L, loadImagePath(L, lua_tostring(L, 2)));
-    lua_setfield(L, -3, "textureId");
+    lua_setfield(L, 1, "textureId");
 
     return 0;
 }
@@ -151,7 +151,7 @@ int setTextureId(lua_State *L) {
     // self at index 1
 
     lua_pushinteger(L, lua_tointeger(L, 2));
-    lua_setfield(L, -3, "textureId");
+    lua_setfield(L, 1, "textureId");
 
     return 0;
 }
@@ -160,9 +160,9 @@ int setPositionS(lua_State *L) {
     // self at index 1
 
     lua_pushinteger(L, lua_tonumber(L, 2));
-    lua_setfield(L, -3, "x");
+    lua_setfield(L, 1, "x");
     lua_pushinteger(L, lua_tonumber(L, 3));
-    lua_setfield(L, -3, "y");
+    lua_setfield(L, 1, "y");
 
     return 0;
 }
@@ -171,9 +171,9 @@ int setSizeS(lua_State *L) {
     // self at index 1
 
     lua_pushinteger(L, lua_tonumber(L, 2));
-    lua_setfield(L, -3, "w");
+    lua_setfield(L, 1, "w");
     lua_pushinteger(L, lua_tonumber(L, 3));
-    lua_setfield(L, -3, "h");
+    lua_setfield(L, 1, "h");
 
     return 0;
 }
@@ -182,7 +182,7 @@ int setRotation(lua_State *L) {
     // self at index 1
 
     lua_pushinteger(L, lua_tointeger(L, 2));
-    lua_setfield(L, -3, "r");
+    lua_setfield(L, 1, "r");
 
     return 0;
 }
@@ -209,7 +209,7 @@ int flipHorizontal(lua_State *L) {
     // self at index 1
 
     lua_pushboolean(L, lua_toboolean(L, 2));
-    lua_setfield(L, -3, "flipH");
+    lua_setfield(L, 1, "flipH");
 
     return 0;
 }
@@ -218,7 +218,7 @@ int flipVertical(lua_State *L) {
     // self at index 1
 
     lua_pushboolean(L, lua_toboolean(L, 2));
-    lua_setfield(L, -3, "flipV");
+    lua_setfield(L, 1, "flipV");
 
     return 0;
 }

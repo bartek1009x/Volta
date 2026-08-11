@@ -21,6 +21,7 @@
 #include "modules/filesystem.hpp"
 #include "modules/color.hpp"
 #include "modules/sprite.hpp"
+#include "modules/animatedSprite.hpp"
 
 using namespace std;
 
@@ -71,6 +72,7 @@ int main(int argc, char* argv[]) {
 
     registerColorObject(&state);
     registerSpriteObject(&state);
+    registerAnimatedSpriteObject(&state);
 
     lua_setreadonly(L, -1, 1);
     lua_setglobal(L, "volta");
