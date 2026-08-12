@@ -24,7 +24,7 @@ function spritesheet.new(textureId: number, regions: {{number}}): Spritesheet
     return setmetatable(self, spritesheet)
 end
 
-function spritesheet.getRegionDimensions(self: Spritesheet, regionIndex: number): {number}
+function spritesheet.getRegionData(self: Spritesheet, regionIndex: number): {number}
     return self.regions[regionIndex]
 end
 
