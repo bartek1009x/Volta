@@ -5,6 +5,7 @@
 #include "../utils/ResourceState.hpp"
 
 int animatedSpriteNew(lua_State *L);
+int fromSpritesheet(lua_State *L);
 int drawA(lua_State *L);
 int setPositionA(lua_State* L);
 int setSizeA(lua_State* L);

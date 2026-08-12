@@ -3,7 +3,7 @@
 
 type SpritesheetData = {
     textureId: number,
-    regions: {number: {number}}
+    regions: {{number}}
 }
 
 local spritesheet = {}
@@ -15,7 +15,7 @@ spritesheet.__len = function(self: Spritesheet)
 	return #self.regions
 end
 
-function spritesheet.new(textureId: number, regions: {number: {number}}): Spritesheet
+function spritesheet.new(textureId: number, regions: {{number}}): Spritesheet
     local self = {} :: SpritesheetData
     self.textureId = textureId
     self.regions = regions

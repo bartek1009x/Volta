@@ -84,7 +84,7 @@ int animatedSpriteNew(lua_State *L) {
     return 1;
 }
 
-int animatedSpriteFromSpritesheet(lua_State* L) {
+int fromSpritesheet(lua_State* L) {
     double x = luaL_optnumber(L, 1, 0);
     double y = luaL_optnumber(L, 2, 0);
     double w = luaL_optnumber(L, 3, 10);
@@ -392,7 +392,7 @@ void pushASpriteClass(lua_State *L) {
     lua_setfield(L, -2, "new");
 
     lua_pushvalue(L, -1);
-    lua_pushcclosure(L, animatedSpriteFromSpritesheet, "animatedSpriteFromSpritesheet", 1);
+    lua_pushcclosure(L, fromSpritesheet, "fromSpritesheet", 1);
     lua_setfield(L, -2, "fromSpritesheet");
 
     lua_pushcfunction(L, drawA, "drawA");
