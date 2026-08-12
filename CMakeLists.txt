@@ -26,11 +26,96 @@ set(SOURCE_FILES
     modules/animatedSprite.cpp
 )
 
-find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
-find_package(SDL3_image REQUIRED CONFIG)
-find_package(SDL3_mixer REQUIRED CONFIG)
-find_package(SDL3_ttf REQUIRED CONFIG)
-find_package(OpenSSL REQUIRED MODULE)
+# SDL3
+find_package(SDL3 QUIET CONFIG COMPONENTS SDL3-shared)
+
+if (NOT SDL3_FOUND)
+    message(STATUS "SDL3 not found locally; fetching SDL3")
+
+    set(SDL_SHARED ON)
+    set(SDL_STATIC OFF)
+    set(SDL_TEST_LIBRARY OFF)
+    set(SDL_TESTS OFF)
+    set(SDL_EXAMPLES OFF)
+    set(SDL_INSTALL OFF)
+
+    FetchContent_Declare(
+        SDL3
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+        GIT_TAG release-3.4.14
+        GIT_SHALLOW TRUE
+    )
+
+    FetchContent_MakeAvailable(SDL3)
+endif()
+
+# SDL3_image
+find_package(SDL3_image QUIET CONFIG)
+
+if (NOT SDL3_image_FOUND)
+    message(STATUS "SDL3_image not found locally; fetching SDL3_image")
+
+    set(BUILD_SHARED_LIBS ON)
+    set(SDLIMAGE_VENDORED ON)
+    set(SDLIMAGE_TESTS OFF)
+    set(SDLIMAGE_SAMPLES OFF)
+    set(SDLIMAGE_INSTALL OFF)
+
+    FetchContent_Declare(
+        SDL3_image
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
+        GIT_TAG release-3.4.4
+        GIT_SHALLOW TRUE
+    )
+
+    FetchContent_MakeAvailable(SDL3_image)
+endif()
+
+# SDL3_mixer
+find_package(SDL3_mixer QUIET CONFIG)
+
+if (NOT SDL3_mixer_FOUND)
+    message(STATUS "SDL3_mixer not found locally; fetching SDL3_mixer")
+
+    set(BUILD_SHARED_LIBS ON)
+    set(SDLMIXER_VENDORED ON)
+    set(SDLMIXER_TESTS OFF)
+    set(SDLMIXER_EXAMPLES OFF)
+    set(SDLMIXER_INSTALL OFF)
+
+    FetchContent_Declare(
+        SDL3_mixer
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL_mixer.git
+        GIT_TAG release-3.2.4
+        GIT_SHALLOW TRUE
+    )
+
+    FetchContent_MakeAvailable(SDL3_mixer)
+endif()
+
+# SDL3_ttf
+find_package(SDL3_ttf QUIET CONFIG)
+
+if (NOT SDL3_ttf_FOUND)
+    message(STATUS "SDL3_ttf not found locally; fetching SDL3_ttf")
+
+    set(BUILD_SHARED_LIBS ON)
+    set(SDLTTF_VENDORED ON)
+    set(SDLTTF_TESTS OFF)
+    set(SDLTTF_SAMPLES OFF)
+    set(SDLTTF_INSTALL OFF)
+
+    FetchContent_Declare(
+        SDL3_ttf
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf.git
+        GIT_TAG release-3.2.2
+        GIT_SHALLOW TRUE
+    )
+
+    FetchContent_MakeAvailable(SDL3_ttf)
+endif()
+
+find_package(OpenSSL REQUIRED)
 add_executable(volta ${SOURCE_FILES})
 
 target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image::SDL3_image SDL3_mixer::SDL3_mixer SDL3_ttf::SDL3_ttf OpenSSL::SSL OpenSSL::Crypto Luau.Compiler Luau.Require Luau.VM)
@@ -107,6 +192,7 @@ Categories=Game;
         add_custom_target(appimage
             COMMAND ${CMAKE_COMMAND} -E env
                 OUTPUT="volta.AppImage"
+                NO_STRIP=1
                 ${LINUXDEPLOY}
                     --appdir ${APPDIR}
                     --executable ${APPDIR}/usr/bin/volta
