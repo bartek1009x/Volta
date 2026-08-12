@@ -1,11 +1,19 @@
 # Volta
 Volta is a WIP 2D game development framework for Luau written in C++. This is a passion project and one I'll use to learn more about C++, so expect the code to not be of the highest quality.
 
-# AI usage in the project
-Used AI to write code sparingly - not to vibecode too much, just to assist with some tasks, explain some things, find bugs, etc. Except for the CMake configuration for building, that's pretty much all AI. And the `require()` implementation. Besides that only a little AI code here and there, sparingly.
+It is theoretically cross platform, but currently only officially supports Windows, Linux and macOS (though **macOS has no official builds**, so you will have to compile the framework yourself for it). Android and iOS support is planned in the future.
 
 # Usage
 You can run your game by running your luau script through the Volta executable like this: `volta main.luau` (where the filename can be anything other than main too)
+
+# AI usage in the project
+Used AI to write code sparingly - not to vibecode too much, just to assist with some tasks, explain some things, find bugs, etc.
+The only parts of the project that used AI extensively were:
+- the CMake configuration for building,
+- the `require()` implementation,
+- the Animated Sprite object.
+
+Besides that only a little AI code here and there, sparingly.
 
 # Building and dependencies
 To build the framework yourself you need SDL3, SDL3_image, SDL3_mixer, SDL3_ttf and OpenSSL installed on your system.
