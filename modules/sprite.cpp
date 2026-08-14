@@ -159,16 +159,6 @@ int draw(lua_State *L) {
             );
         }
     } else {
-        SDL_FlipMode flip;
-        if (flipH && flipV) {
-            flip = SDL_FLIP_HORIZONTAL_AND_VERTICAL;
-        } else if (flipH) {
-            flip = SDL_FLIP_HORIZONTAL;
-        } else if (flipV) {
-            flip = SDL_FLIP_VERTICAL;
-        } else {
-            flip = SDL_FLIP_NONE;
-        }
         float pivotX = w / 2.0f;
         float pivotY = h / 2.0f;
 
