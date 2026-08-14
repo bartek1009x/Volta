@@ -11,6 +11,8 @@
 
 #include "../dependencies/luau/VM/include/lualib.h"
 #include "../dependencies/luau/Compiler/include/luacode.h"
+#include "../dependencies/luau/CodeGen/include/Luau/CodeGen.h"
+
 #include "RequireContext.hpp"
 
 namespace fs = std::filesystem;
@@ -150,7 +152,16 @@ static void LibRequire_InitConfiguration(luarequire_Configuration *config) {
 
 		if (compileResult != 0) {
 			lua_error(L);
-		}
+		} else if (Luau::CodeGen::isSupported()) {
+            Luau::CodeGen::CompilationOptions native_opts{};
+
+            native_opts.flags = Luau::CodeGen::CodeGenFlags::CodeGen_OnlyNativeModules;
+
+            Luau::CodeGen::CompilationResult res = Luau::CodeGen::compile(L, -1, native_opts);
+            if (res.hasErrors()) {
+                printf("%s native compilation failed: %d\n", loadname, res.result);
+            }
+        }
 
 		int base = lua_gettop(L) - 1;
 		lua_pushvalue(L, 6);

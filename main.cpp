@@ -5,6 +5,7 @@
 #include "dependencies/luau/VM/include/lua.h"
 #include "dependencies/luau/VM/include/lualib.h"
 #include "dependencies/luau/Compiler/include/luacode.h"
+#include "dependencies/luau/CodeGen/include/Luau/CodeGen.h"
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_render.h>
@@ -57,6 +58,17 @@ int main(int argc, char* argv[]) {
         lua_pop(L, 1);
         printf("Failed to compile: %s\n", msg);
         return 1;
+    }
+
+    if (Luau::CodeGen::isSupported()) {
+        Luau::CodeGen::CompilationOptions native_opts{};
+
+        native_opts.flags = Luau::CodeGen::CodeGenFlags::CodeGen_OnlyNativeModules;
+
+        Luau::CodeGen::CompilationResult res = Luau::CodeGen::compile(L, -1, native_opts);
+        if (res.hasErrors()) {
+            printf("main script native compilation failed: %d\n", res.result);
+        }
     }
 
     // register modules

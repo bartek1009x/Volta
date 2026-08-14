@@ -119,7 +119,7 @@ endif()
 find_package(OpenSSL REQUIRED)
 add_executable(volta ${SOURCE_FILES})
 
-target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image::SDL3_image SDL3_mixer::SDL3_mixer SDL3_ttf::SDL3_ttf OpenSSL::SSL OpenSSL::Crypto Luau.Compiler Luau.Require Luau.VM)
+target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image::SDL3_image SDL3_mixer::SDL3_mixer SDL3_ttf::SDL3_ttf OpenSSL::SSL OpenSSL::Crypto Luau.Compiler Luau.Require Luau.VM Luau.CodeGen)
 
 if (WIN32)
     add_custom_command(TARGET volta POST_BUILD

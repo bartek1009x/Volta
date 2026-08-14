@@ -1,11 +1,16 @@
 #include "ResourceState.hpp"
 
 #include "../dependencies/luau/VM/include/lualib.h"
+#include "../dependencies/luau/CodeGen/include/Luau/CodeGen.h"
+
 #include <SDL3/SDL_render.h>
 #include <SDL3_mixer/SDL_mixer.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
 ResourceState::ResourceState() : L(luaL_newstate()) {
+    if (Luau::CodeGen::isSupported()) {
+        Luau::CodeGen::create(L);
+    }
     luaL_openlibs(L);
 }
 ResourceState::~ResourceState() {
