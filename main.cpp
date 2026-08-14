@@ -28,6 +28,8 @@ using namespace std;
 Uint32 CURRENT_FRAME;
 bool SHOULD_QUIT;
 
+double deltaTime = 0;
+
 int main(int argc, char* argv[]) {
     // luau
     ResourceState state{};
@@ -110,7 +112,6 @@ int main(int argc, char* argv[]) {
 
     Uint64 NOW = SDL_GetPerformanceCounter();
     Uint64 LAST = 0;
-    double deltaTime = 0;
 
     SDL_Renderer* renderer = state.getRenderer();
 

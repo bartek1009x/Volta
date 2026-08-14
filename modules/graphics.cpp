@@ -1,6 +1,7 @@
 #include "graphics.hpp"
 
 #include <cmath>
+#include <lua.h>
 #include <string>
 #include <filesystem>
 #include <unordered_map>
@@ -543,6 +544,31 @@ int popCoord(lua_State *L) {
     return 0;
 }
 
+int setScissor(lua_State *L) {
+    if (lua_isnoneornil(L, 1)) {
+        SDL_SetRenderClipRect(renderer, nullptr);
+    } else {
+        SDL_Rect rect{lua_tointeger(L, 1), lua_tointeger(L, 2), lua_tointeger(L, 3), lua_tointeger(L, 4)};
+        SDL_SetRenderClipRect(renderer, &rect);
+    }
+    return 0;
+}
+
+int getScissor(lua_State *L) {
+    if (!SDL_RenderClipEnabled(renderer)) {
+        return 0;
+    }
+
+    SDL_Rect rect;
+    SDL_GetRenderClipRect(renderer, &rect);
+
+    lua_pushinteger(L, rect.x);
+    lua_pushinteger(L, rect.y);
+    lua_pushinteger(L, rect.w);
+    lua_pushinteger(L, rect.h);
+    return 4;
+}
+
 static const luaL_Reg graphics_lib[] = {
     {"setCursorVisibility", setCursorVisibility},
     {"setVsync", setVsync},
@@ -563,6 +589,8 @@ static const luaL_Reg graphics_lib[] = {
     {"rotateCoord", rotateCoord},
     {"shearCoord", shearCoord},
     {"popCoord", popCoord},
+    {"setScissor", setScissor},
+    {"getScissor", getScissor},
     {nullptr, nullptr},
 };
 

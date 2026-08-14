@@ -9,6 +9,12 @@ int exit(lua_State* L) {
     return 0;
 }
 
+extern double deltaTime;
+int getDelta(lua_State* L) {
+    lua_pushnumber(L, deltaTime);
+    return 1;
+}
+
 int getVersion(lua_State* L) {
     lua_pushstring(L, "0.0.7");
     return 1;
@@ -17,6 +23,7 @@ int getVersion(lua_State* L) {
 static const luaL_Reg volta_lib[] = {
     {"exit", exit},
     {"getVersion", getVersion},
+    {"getDelta", getDelta},
     {nullptr, nullptr},
 };
 

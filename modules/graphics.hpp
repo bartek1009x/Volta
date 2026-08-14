@@ -31,6 +31,8 @@ int scaleCoord(lua_State* L);
 int rotateCoord(lua_State* L);
 int shearCoord(lua_State* L);
 int popCoord(lua_State* L);
+int setScissor(lua_State* L);
+int getScissor(lua_State* L);
 void registerGraphicsFunctions(ResourceState* state);
 void updateFontTextCache();
 
