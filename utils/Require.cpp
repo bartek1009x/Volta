@@ -140,8 +140,7 @@ static void LibRequire_InitConfiguration(luarequire_Configuration *config) {
 	config->load = [](lua_State *L, void *ctx, const char *path, const char *chunkname, const char *loadname) -> int {
 		std::ifstream in(loadname);
 		if (!in) {
-			lua_pushfstring(L, "could not open module '%s'", loadname);
-			lua_error(L);
+			luaL_error(L, "could not open module '%s'", loadname);
 		}
 		std::string source((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
 
@@ -151,7 +150,7 @@ static void LibRequire_InitConfiguration(luarequire_Configuration *config) {
 		free(bytecode);
 
 		if (compileResult != 0) {
-			lua_error(L);
+    		luaL_error(L, "could not compile module '%s'", loadname);
 		} else if (Luau::CodeGen::isSupported()) {
             Luau::CodeGen::CompilationOptions native_opts{};
 
