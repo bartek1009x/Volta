@@ -35,4 +35,5 @@ I don't know man I don't even have a Mac. I think you should be able to build vo
 
 # License
 The Volta framework is licensed under the MIT license.
+It uses SDL3 and associated SDL libraries which are licensed under the zlib license.
 It uses OpenSSL as one if its dependencies (for HTTPS support), which is licensed under Apache License 2.0
