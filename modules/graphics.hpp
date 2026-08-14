@@ -5,6 +5,10 @@
 
 #include "../dependencies/luau/VM/include/lua.h"
 #include "../utils/ResourceState.hpp"
+#include "../utils/CoordinateTransformation.hpp"
+
+extern TransformationStack transformStack;
+extern Transform currentTransform;
 
 SDL_Texture* getTextureById(int id);
 int setCursorVisibility(lua_State* L);
@@ -21,6 +25,12 @@ int drawImage(lua_State* L);
 int loadFont(lua_State* L);
 int unloadFont(lua_State* L);
 int drawText(lua_State* L);
+int pushCoord(lua_State* L);
+int translateCoord(lua_State* L);
+int scaleCoord(lua_State* L);
+int rotateCoord(lua_State* L);
+int shearCoord(lua_State* L);
+int popCoord(lua_State* L);
 void registerGraphicsFunctions(ResourceState* state);
 void updateFontTextCache();
 

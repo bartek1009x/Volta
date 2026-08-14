@@ -12,6 +12,7 @@ set(SOURCE_FILES
     utils/Require.cpp
     utils/ResourceState.cpp
     utils/RequireContext.hpp
+    utils/CoordinateTransformation.hpp
     utils/Pool.hpp
     modules/volta.cpp
     modules/window.cpp

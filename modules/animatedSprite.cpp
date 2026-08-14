@@ -1,7 +1,5 @@
 #include "animatedSprite.hpp"
 
-#include <string>
-#include <unordered_map>
 #include <cmath>
 
 #include <SDL3/SDL_rect.h>
@@ -11,6 +9,9 @@
 #include "graphics.hpp"
 
 static SDL_Renderer *renderer = nullptr;
+
+extern SDL_FPoint transformPoint(float x, float y);
+extern SDL_FPoint transformSpritePoint(float px, float py, float spriteX, float spriteY, float pivotX, float pivotY, float radians);
 
 int animatedSpriteNew(lua_State *L) {
     int x = luaL_optnumber(L, 1, 0);
@@ -261,18 +262,40 @@ int drawA(lua_State* L) {
     float y = lua_tonumber(L, -6);
     float w = lua_tonumber(L, -5);
     float h = lua_tonumber(L, -4);
-    double rotation = lua_tonumber(L, -3);
+    int r = lua_tonumber(L, -3);
     bool flipH = lua_toboolean(L, -2);
     bool flipV = lua_toboolean(L, -1);
 
     lua_pop(L, 7);
 
-    SDL_FRect destinationRect{x, y, w, h};
-
     SDL_Texture* texture = getTextureById(textureId);
 
-    if (rotation == 0.0 && !flipH && !flipV) {
-        SDL_RenderTexture(renderer, texture, srcRectPointer, &destinationRect);
+    if (r == 0.0 && !flipH && !flipV) {
+        if (currentTransform.isDefault()) {
+            SDL_FRect drawingRect{x, y, w, h};
+            SDL_RenderTexture(renderer, getTextureById(textureId), srcRectPointer, &drawingRect);
+        } else {
+            SDL_FPoint origin = transformPoint(x, y);
+
+            SDL_FPoint right = {
+                origin.x + w * currentTransform.xAxisX,
+                origin.y + w * currentTransform.xAxisY
+            };
+
+            SDL_FPoint down = {
+                origin.x + h * currentTransform.yAxisX,
+                origin.y + h * currentTransform.yAxisY
+            };
+
+            SDL_RenderTextureAffine(
+                renderer,
+                texture,
+                srcRectPointer,
+                &origin,
+                &right,
+                &down
+            );
+        }
     } else {
         SDL_FlipMode flip = SDL_FLIP_NONE;
 
@@ -284,7 +307,47 @@ int drawA(lua_State* L) {
             flip = SDL_FLIP_VERTICAL;
         }
 
-        SDL_RenderTextureRotated(renderer, texture, srcRectPointer, &destinationRect, rotation, nullptr, flip);
+        float pivotX = w / 2.0f;
+        float pivotY = h / 2.0f;
+
+        SDL_FPoint topLeft = transformSpritePoint(0, 0, x, y, pivotX, pivotY, r);
+        SDL_FPoint topRight = transformSpritePoint(w, 0, x, y, pivotX, pivotY, r);
+        SDL_FPoint bottomLeft = transformSpritePoint(0, h, x, y, pivotX, pivotY, r);
+        SDL_FPoint bottomRight = transformSpritePoint(w, h, x, y, pivotX, pivotY, r);
+
+        SDL_FPoint origin;
+        SDL_FPoint right;
+        SDL_FPoint down;
+
+        if (flipH && flipV) {
+            origin = bottomRight;
+            right = bottomLeft;
+            down = topRight;
+        }
+        else if (flipH) {
+            origin = topRight;
+            right = topLeft;
+            down = bottomRight;
+        }
+        else if (flipV) {
+            origin = bottomLeft;
+            right = bottomRight;
+            down = topLeft;
+        }
+        else {
+            origin = topLeft;
+            right = topRight;
+            down = bottomLeft;
+        }
+
+        SDL_RenderTextureAffine(
+            renderer,
+            texture,
+            srcRectPointer,
+            &origin,
+            &right,
+            &down
+        );
     }
 
     return 0;

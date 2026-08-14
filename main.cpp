@@ -137,6 +137,9 @@ int main(int argc, char* argv[]) {
         }
         lua_pop(L, 1);
 
+        transformStack.reset();
+        currentTransform = Transform::identity();
+
         SDL_RenderPresent(renderer);
 
         ++CURRENT_FRAME;

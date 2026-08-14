@@ -1,5 +1,6 @@
 #include "graphics.hpp"
 
+#include <cmath>
 #include <string>
 #include <filesystem>
 #include <unordered_map>
@@ -24,10 +25,32 @@ static unordered_map<int, SDL_Texture*> loadedTextures;
 Uint32 textureIDCounter = 0;
 unordered_map<int, TTF_Font*> loadedFonts;
 Uint32 fontIDCounter = 0;
-static SDL_FRect DRAWING_RECT;
+TransformationStack transformStack{10};
+Transform currentTransform{
+    .xAxisX = 1,
+    .xAxisY = 0,
+
+    .yAxisX = 0,
+    .yAxisY = 1,
+
+    .originX = 0,
+    .originY = 0
+};
 
 SDL_Texture* getTextureById(int id) {
     return loadedTextures[id];
+}
+
+SDL_FPoint transformPoint(float x, float y) {
+    return {
+        currentTransform.originX +
+            x * currentTransform.xAxisX +
+            y * currentTransform.yAxisX,
+
+        currentTransform.originY +
+            x * currentTransform.xAxisY +
+            y * currentTransform.yAxisY
+    };
 }
 
 int setCursorVisibility(lua_State *L) {
@@ -71,15 +94,38 @@ int clear(lua_State *L) {
 }
 
 int drawRect(lua_State *L) {
-    DRAWING_RECT.x = lua_tonumber(L, 1);
-    DRAWING_RECT.y = lua_tonumber(L, 2);
-    DRAWING_RECT.w = lua_tonumber(L, 3);
-    DRAWING_RECT.h = lua_tonumber(L, 4);
+    float x = lua_tonumber(L, 1);
+    float y = lua_tonumber(L, 2);
+    float w = lua_tonumber(L, 3);
+    float h = lua_tonumber(L, 4);
+
+    SDL_FPoint topLeft = transformPoint(x, y);
+    SDL_FPoint topRight = transformPoint(x + w, y);
+    SDL_FPoint bottomRight = transformPoint(x + w, y + h);
+    SDL_FPoint bottomLeft = transformPoint(x, y + h);
 
     if (lua_toboolean(L, 5)) {
-        SDL_RenderFillRect(renderer, &DRAWING_RECT);
+        SDL_Color color;
+        SDL_GetRenderDrawColor(renderer, &color.r, &color.g, &color.b, &color.a);
+        SDL_FColor fColor = {(float) color.r, (float) color.g, (float) color.b, (float) color.a};
+
+        SDL_Vertex vertices[] = {
+            {topLeft, fColor, {0, 0}},
+            {topRight, fColor, {0, 0}},
+            {bottomRight, fColor, {0, 0}},
+            {bottomLeft, fColor, {0, 0}}
+        };
+
+        int indices[] = {
+            0, 1, 2,
+            0, 2, 3
+        };
+
+        SDL_RenderGeometry(renderer, nullptr, vertices, 4, indices, 6);
     } else {
-        SDL_RenderRect(renderer, &DRAWING_RECT);
+        SDL_FPoint points[] = {topLeft, topRight, bottomRight, bottomLeft, topLeft};
+
+        SDL_RenderLines(renderer, points, 5);
     }
 
     return 0;
@@ -89,39 +135,45 @@ int roundUpToMultipleOfEight(int v) {
     return (v + (8 - 1)) & -8;
 }
 
-void renderFillCircle(float x, float y, int radius) {
-    int offsetx, offsety, d;
-    int status;
+void renderFillCircle(float centerX, float centerY, float radius) {
+    constexpr int segments = 48;
 
-    offsetx = 0;
-    offsety = radius;
-    d = radius -1;
-    status = 0;
+    SDL_Color color;
+    SDL_GetRenderDrawColor(renderer, &color.r, &color.g, &color.b, &color.a);
+    SDL_FColor fColor = {(float) color.r, (float) color.g, (float) color.b, (float) color.a};
 
-    while (offsety >= offsetx) {
+    SDL_Vertex vertices[segments + 1];
 
-        status += SDL_RenderLine(renderer, x - offsety, y + offsetx, x + offsety, y + offsetx);
-        status += SDL_RenderLine(renderer, x - offsetx, y + offsety, x + offsetx, y + offsety);
-        status += SDL_RenderLine(renderer, x - offsetx, y - offsety, x + offsetx, y - offsety);
-        status += SDL_RenderLine(renderer, x - offsety, y - offsetx, x + offsety, y - offsetx);
+    vertices[0] = {
+        transformPoint(centerX, centerY),
+        fColor,
+        {0, 0}
+    };
 
-        if (status < 0) {
-            status = -1;
-            break;
-        }
+    for (int i = 0; i < segments; i++) {
+        float angle = (float) i / (float) segments * 2.0f * SDL_PI_F;
 
-        if (d >= 2 * offsetx) {
-            d -= 2 * offsetx + 1;
-            offsetx +=1;
-        } else if (d < 2 * (radius - offsety)) {
-            d += 2 * offsety - 1;
-            offsety -= 1;
-        } else {
-            d += 2 * (offsety - offsetx - 1);
-            offsety -= 1;
-            offsetx += 1;
-        }
+        float localX = centerX + cosf(angle) * radius;
+        float localY = centerY + sinf(angle) * radius;
+
+        vertices[i + 1] = {
+            transformPoint(localX, localY),
+            fColor,
+            {0, 0}
+        };
     }
+
+    int indices[segments * 3];
+
+    for (int i = 0; i < segments; i++) {
+        int next = (i + 1) % segments;
+
+        indices[i * 3 + 0] = 0;
+        indices[i * 3 + 1] = i + 1;
+        indices[i * 3 + 2] = next + 1;
+    }
+
+    SDL_RenderGeometry(renderer, nullptr, vertices, segments + 1, indices, segments * 3);
 }
 
 void renderCircle(float centerX, float centerY, int radius) {
@@ -138,15 +190,14 @@ void renderCircle(float centerX, float centerY, int radius) {
     int32_t error = (tx - diameter);
 
     while (x >= y) {
-        // Each of the following renders an octant of the circle
-        points[drawCount+0] = {centerX + x, centerY - y};
-        points[drawCount+1] = {centerX + x, centerY + y};
-        points[drawCount+2] = {centerX - x, centerY - y};
-        points[drawCount+3] = {centerX - x, centerY + y};
-        points[drawCount+4] = {centerX + y, centerY - x};
-        points[drawCount+5] = {centerX + y, centerY + x};
-        points[drawCount+6] = {centerX - y, centerY - x};
-        points[drawCount+7] = {centerX - y, centerY + x};
+        points[drawCount + 0] = transformPoint(centerX + x, centerY - y);
+        points[drawCount + 1] = transformPoint(centerX + x, centerY + y);
+        points[drawCount + 2] = transformPoint(centerX - x, centerY - y);
+        points[drawCount + 3] = transformPoint(centerX - x, centerY + y);
+        points[drawCount + 4] = transformPoint(centerX + y, centerY - x);
+        points[drawCount + 5] = transformPoint(centerX + y, centerY + x);
+        points[drawCount + 6] = transformPoint(centerX - y, centerY - x);
+        points[drawCount + 7] = transformPoint(centerX - y, centerY + x);
 
         drawCount += 8;
 
@@ -235,11 +286,39 @@ int unloadImage(lua_State *L) {
 }
 
 int drawImage(lua_State *L) {
-    DRAWING_RECT.x = lua_tonumber(L, 2);
-    DRAWING_RECT.y = lua_tonumber(L, 3);
-    DRAWING_RECT.w = lua_tonumber(L, 4);
-    DRAWING_RECT.h = lua_tonumber(L, 5);
-    SDL_RenderTexture(renderer, loadedTextures[lua_tonumber(L, 1)], nullptr, &DRAWING_RECT);
+    int textureId = lua_tonumber(L, 1);
+
+    float x = lua_tonumber(L, 2);
+    float y = lua_tonumber(L, 3);
+    float width = lua_tonumber(L, 4);
+    float height = lua_tonumber(L, 5);
+
+    if (currentTransform.isDefault()) {
+        SDL_FRect drawingRect{x, y, width, height};
+        SDL_RenderTexture(renderer, loadedTextures[lua_tonumber(L, 1)], nullptr, &drawingRect);
+    } else {
+        SDL_FPoint origin = transformPoint(x, y);
+
+        SDL_FPoint right = {
+            origin.x + width * currentTransform.xAxisX,
+            origin.y + width * currentTransform.xAxisY
+        };
+
+        SDL_FPoint down = {
+            origin.x + height * currentTransform.yAxisX,
+            origin.y + height * currentTransform.yAxisY
+        };
+
+        SDL_RenderTextureAffine(
+            renderer,
+            loadedTextures[textureId],
+            nullptr,
+            &origin,
+            &right,
+            &down
+        );
+    }
+
     return 0;
 }
 
@@ -333,15 +412,134 @@ int drawText(lua_State *L) {
         }
     }
 
-    DRAWING_RECT.x = lua_tonumber(L, 3);
-    DRAWING_RECT.y = lua_tonumber(L, 4);
-    DRAWING_RECT.w = width;
-    DRAWING_RECT.h = height;
+    float x = lua_tonumber(L, 3);
+    float y = lua_tonumber(L, 4);
 
-    SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
-    SDL_SetTextureAlphaMod(texture, color.a);
-    SDL_RenderTexture(renderer, texture, nullptr, &DRAWING_RECT);
+    if (currentTransform.isDefault()) {
+        SDL_FRect drawingRect{x, y, width, height};
+        SDL_RenderTexture(renderer, texture, nullptr, &drawingRect);
+    } else {
+        SDL_FPoint origin = transformPoint(x, y);
 
+        SDL_FPoint right = {
+            origin.x + width * currentTransform.xAxisX,
+            origin.y + width * currentTransform.xAxisY
+        };
+
+        SDL_FPoint down = {
+            origin.x + height * currentTransform.yAxisX,
+            origin.y + height * currentTransform.yAxisY
+        };
+
+        SDL_SetTextureColorMod(texture, color.r, color.g, color.b);
+        SDL_SetTextureAlphaMod(texture, color.a);
+        SDL_RenderTextureAffine(
+            renderer,
+            texture,
+            nullptr,
+            &origin,
+            &right,
+            &down
+        );
+    }
+
+    return 0;
+}
+
+int pushCoord(lua_State *L) {
+    if (!transformStack.push(currentTransform)) {
+        luaL_error(L, "The transformation stack is full.");
+    }
+
+    return 0;
+}
+
+int translateCoord(lua_State *L) {
+    float dx = lua_tonumber(L, 1);
+    float dy = lua_tonumber(L, 2);
+
+    currentTransform.originX +=
+        dx * currentTransform.xAxisX +
+        dy * currentTransform.yAxisX;
+
+    currentTransform.originY +=
+        dx * currentTransform.xAxisY +
+        dy * currentTransform.yAxisY;
+
+    return 0;
+}
+
+int scaleCoord(lua_State *L) {
+    float sx = lua_tonumber(L, 1);
+    float sy = lua_tonumber(L, 2);
+
+    currentTransform.xAxisX *= sx;
+    currentTransform.xAxisY *= sx;
+
+    currentTransform.yAxisX *= sy;
+    currentTransform.yAxisY *= sy;
+
+    return 0;
+}
+
+int rotateCoord(lua_State *L) {
+    float radians = lua_tonumber(L, 1);
+
+    float c = cos(radians);
+    float s = sin(radians);
+
+    float oldXAxisX = currentTransform.xAxisX;
+    float oldXAxisY = currentTransform.xAxisY;
+    float oldYAxisX = currentTransform.yAxisX;
+    float oldYAxisY = currentTransform.yAxisY;
+
+    currentTransform.xAxisX =
+        oldXAxisX * c + oldYAxisX * s;
+
+    currentTransform.xAxisY =
+        oldXAxisY * c + oldYAxisY * s;
+
+    currentTransform.yAxisX =
+        -oldXAxisX * s + oldYAxisX * c;
+
+    currentTransform.yAxisY =
+        -oldXAxisY * s + oldYAxisY * c;
+
+    return 0;
+}
+
+int shearCoord(lua_State *L) {
+    float shearX = lua_tonumber(L, 1);
+    float shearY = lua_tonumber(L, 2);
+
+    float oldXAxisX = currentTransform.xAxisX;
+    float oldXAxisY = currentTransform.xAxisY;
+    float oldYAxisX = currentTransform.yAxisX;
+    float oldYAxisY = currentTransform.yAxisY;
+
+    currentTransform.xAxisX =
+        oldXAxisX + shearY * oldYAxisX;
+
+    currentTransform.xAxisY =
+        oldXAxisY + shearY * oldYAxisY;
+
+    currentTransform.yAxisX =
+        oldYAxisX + shearX * oldXAxisX;
+
+    currentTransform.yAxisY =
+        oldYAxisY + shearX * oldXAxisY;
+
+    return 0;
+}
+
+int popCoord(lua_State *L) {
+    if (transformStack.isEmpty()) {
+        luaL_error(L, "The transformation stack is empty, cannot pop.");
+        return 0;
+    }
+
+    currentTransform = *transformStack.peek();
+    transformStack.pop();
     return 0;
 }
 
@@ -359,6 +557,12 @@ static const luaL_Reg graphics_lib[] = {
     {"loadFont", loadFont},
     {"unloadFont", unloadFont},
     {"drawText", drawText},
+    {"pushCoord", pushCoord},
+    {"translateCoord", translateCoord},
+    {"scaleCoord", scaleCoord},
+    {"rotateCoord", rotateCoord},
+    {"shearCoord", shearCoord},
+    {"popCoord", popCoord},
     {nullptr, nullptr},
 };
 

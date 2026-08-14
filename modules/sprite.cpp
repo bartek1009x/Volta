@@ -1,14 +1,33 @@
 #include "sprite.hpp"
 
+#include <cmath>
+
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
-#include <string>
-#include <unordered_map>
 
 #include "../dependencies/luau/VM/include/lualib.h"
 #include "graphics.hpp"
 
 static SDL_Renderer *renderer = nullptr;
+
+extern SDL_FPoint transformPoint(float x, float y);
+
+SDL_FPoint transformSpritePoint(float px, float py, float spriteX, float spriteY, float pivotX, float pivotY, float radians) {
+    float c = cosf(radians);
+    float s = sinf(radians);
+
+    float dx = px - pivotX;
+    float dy = py - pivotY;
+
+    float rotatedX = pivotX + dx * c - dy * s;
+
+    float rotatedY = pivotY + dx * s + dy * c;
+
+    return transformPoint(
+        spriteX + rotatedX,
+        spriteY + rotatedY
+    );
+}
 
 int spriteNew(lua_State *L) {
     int x = luaL_optnumber(L, 1, 0);
@@ -70,7 +89,6 @@ int spriteNew(lua_State *L) {
     return 1;
 }
 
-static SDL_FRect SPRITE_RECT;
 static SDL_FRect SPRITE_SRC_RECT;
 
 int draw(lua_State *L) {
@@ -94,11 +112,6 @@ int draw(lua_State *L) {
     bool flipH = lua_toboolean(L, -2);
     bool flipV = lua_toboolean(L, -1);
 
-    SPRITE_RECT.x = x;
-    SPRITE_RECT.y = y;
-    SPRITE_RECT.w = w;
-    SPRITE_RECT.h = h;
-
     lua_rawgetfield(L, 1, "regionW");
     float regionW = lua_tonumber(L, -1);
     float regionH;
@@ -120,7 +133,31 @@ int draw(lua_State *L) {
     }
 
     if (r == 0 && !flipH && !flipV) {
-        SDL_RenderTexture(renderer, getTextureById(textureId), regionW != 0 ? &SPRITE_SRC_RECT : nullptr, &SPRITE_RECT);
+        if (currentTransform.isDefault()) {
+            SDL_FRect drawingRect{x, y, w, h};
+            SDL_RenderTexture(renderer, getTextureById(textureId), regionW != 0 ? &SPRITE_SRC_RECT : nullptr, &drawingRect);
+        } else {
+            SDL_FPoint origin = transformPoint(x, y);
+
+            SDL_FPoint right = {
+                origin.x + w * currentTransform.xAxisX,
+                origin.y + w * currentTransform.xAxisY
+            };
+
+            SDL_FPoint down = {
+                origin.x + h * currentTransform.yAxisX,
+                origin.y + h * currentTransform.yAxisY
+            };
+
+            SDL_RenderTextureAffine(
+                renderer,
+                getTextureById(textureId),
+                regionW != 0 ? &SPRITE_SRC_RECT : nullptr,
+                &origin,
+                &right,
+                &down
+            );
+        }
     } else {
         SDL_FlipMode flip;
         if (flipH && flipV) {
@@ -132,7 +169,47 @@ int draw(lua_State *L) {
         } else {
             flip = SDL_FLIP_NONE;
         }
-        SDL_RenderTextureRotated(renderer, getTextureById(textureId), regionW != 0 ? &SPRITE_SRC_RECT : nullptr, &SPRITE_RECT, r, nullptr, flip);
+        float pivotX = w / 2.0f;
+        float pivotY = h / 2.0f;
+
+        SDL_FPoint topLeft = transformSpritePoint(0, 0, x, y, pivotX, pivotY, r);
+        SDL_FPoint topRight = transformSpritePoint(w, 0, x, y, pivotX, pivotY, r);
+        SDL_FPoint bottomLeft = transformSpritePoint(0, h, x, y, pivotX, pivotY, r);
+        SDL_FPoint bottomRight = transformSpritePoint(w, h, x, y, pivotX, pivotY, r);
+
+        SDL_FPoint origin;
+        SDL_FPoint right;
+        SDL_FPoint down;
+
+        if (flipH && flipV) {
+            origin = bottomRight;
+            right = bottomLeft;
+            down = topRight;
+        }
+        else if (flipH) {
+            origin = topRight;
+            right = topLeft;
+            down = bottomRight;
+        }
+        else if (flipV) {
+            origin = bottomLeft;
+            right = bottomRight;
+            down = topLeft;
+        }
+        else {
+            origin = topLeft;
+            right = topRight;
+            down = bottomLeft;
+        }
+
+        SDL_RenderTextureAffine(
+            renderer,
+            getTextureById(textureId),
+            regionW != 0 ? &SPRITE_SRC_RECT : nullptr,
+            &origin,
+            &right,
+            &down
+        );
     }
 
     return 0;
