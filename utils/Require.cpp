@@ -150,7 +150,7 @@ static void LibRequire_InitConfiguration(luarequire_Configuration *config) {
 		free(bytecode);
 
 		if (compileResult != 0) {
-    		luaL_error(L, "could not compile module '%s'", loadname);
+    		luaL_error(L, "could not compile module '%s'", path);
 		} else if (Luau::CodeGen::isSupported()) {
             Luau::CodeGen::CompilationOptions native_opts{};
 
@@ -158,7 +158,7 @@ static void LibRequire_InitConfiguration(luarequire_Configuration *config) {
 
             Luau::CodeGen::CompilationResult res = Luau::CodeGen::compile(L, -1, native_opts);
             if (res.hasErrors()) {
-                printf("%s native compilation failed: %d\n", loadname, res.result);
+                printf("%s native compilation failed: %d\n", path, res.result);
             }
         }
 
