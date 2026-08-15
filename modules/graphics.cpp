@@ -448,10 +448,7 @@ int drawText(lua_State *L) {
 }
 
 int pushCoord(lua_State *L) {
-    if (!transformStack.push(currentTransform)) {
-        luaL_error(L, "The transformation stack is full.");
-    }
-
+    transformStack.push(currentTransform);
     return 0;
 }
 

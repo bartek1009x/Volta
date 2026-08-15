@@ -37,9 +37,8 @@ private:
 public:
     TransformationStack(int size) : top(-1), arr(size) {}
 
-    bool push(Transform x) {
+    void push(Transform x) {
         arr[++top] = x;
-        return true;
     }
 
     bool pop() {
