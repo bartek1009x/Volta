@@ -374,6 +374,83 @@ int setRotationA(lua_State *L) {
     return 0;
 }
 
+void removeTextureIds(lua_State *L) {
+    int index = 1;
+    do {
+        lua_rawgeti(L, 1, index);
+        if (lua_isnoneornil(L, -1)) {
+            lua_pop(L, 1);
+            break;
+        }
+
+        lua_pop(L, 1);
+        lua_pushnil(L);
+        lua_rawseti(L, 1, index);
+    } while (++index);
+}
+
+int setTextureIds(lua_State *L) {
+    // self at index 1
+    int argumentCount = lua_gettop(L);
+
+    if (argumentCount < 2) {
+        luaL_error(L, "setTextureIds requires at least one texture ID");
+        return 0;
+    }
+
+    removeTextureIds(L);
+
+    lua_pushnil(L);
+    lua_setfield(L, 1, "textureId");
+
+    lua_pushnil(L);
+    lua_setfield(L, 1, "regions");
+
+    int firstFrameArgument = 2;
+    for (int argument = firstFrameArgument; argument <= argumentCount; ++argument) {
+        int textureId = lua_tointeger(L, argument);
+        int frameIndex = argument - firstFrameArgument + 1;
+
+        lua_pushinteger(L, textureId);
+        lua_rawseti(L, 1, frameIndex);
+    }
+
+    int frameCount = argumentCount - firstFrameArgument + 1;
+    lua_pushinteger(L, frameCount);
+    lua_setfield(L, 1, "frameCount");
+
+    return 0;
+}
+
+int setSpritesheet(lua_State *L) {
+    // self at index 1
+    removeTextureIds(L);
+
+    lua_rawgetfield(L, 2, "textureId");
+    int textureId = lua_tonumber(L, -1);
+
+    lua_rawgetfield(L, 2, "regions");
+    int regionsIndex = lua_gettop(L);
+
+    int frameCount = (int) (lua_objlen(L, regionsIndex));
+
+    if (frameCount <= 0) {
+        luaL_argerror(L, 2, "Spritesheet must contain at least one region");
+        return 0;
+    }
+
+    lua_pushinteger(L, textureId);
+    lua_setfield(L, 1, "textureId");
+
+    lua_pushinteger(L, frameCount);
+    lua_setfield(L, 1, "frameCount");
+
+    lua_pushvalue(L, regionsIndex);
+    lua_setfield(L, 1, "regions");
+
+    return 0;
+}
+
 int flipHorizontalA(lua_State *L) {
     // self at index 1
 
@@ -459,6 +536,12 @@ void pushASpriteClass(lua_State *L) {
 
     lua_pushcfunction(L, setRotationA, "setRotationA");
     lua_setfield(L, -2, "setRotation");
+
+    lua_pushcfunction(L, setTextureIds, "setTextureIds");
+    lua_setfield(L, -2, "setTextureIds");
+
+    lua_pushcfunction(L, setSpritesheet, "setSpritesheet");
+    lua_setfield(L, -2, "setSpritesheet");
 
     lua_pushcfunction(L, flipHorizontalA, "flipHorizontalA");
     lua_setfield(L, -2, "flipHorizontal");

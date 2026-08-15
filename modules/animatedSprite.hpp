@@ -10,6 +10,8 @@ int drawA(lua_State *L);
 int setPositionA(lua_State* L);
 int setSizeA(lua_State* L);
 int setRotationA(lua_State* L);
+int setTextureIds(lua_State* L);
+int setSpritesheet(lua_State* L);
 int flipHorizontalA(lua_State* L);
 int flipVerticalA(lua_State* L);
 int getTextureIdA(lua_State* L);
