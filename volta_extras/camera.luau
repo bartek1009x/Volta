@@ -175,11 +175,11 @@ end
 
 -- world coordinates to camera coordinates
 function camera.cameraCoords(self: Camera, x: number, y: number, ox: number?, oy: number?, w: number?, h: number?): number
-	local ox, oy = ox or 0, oy or 0
+	ox, oy = ox or 0, oy or 0
 	local vW, vH = volta.window.getSize()
 	local w, h = w or vW, h or vH
 
-	-- x,y = ((x,y) - (self.x, self.y)):rotated(self.rot) * self.scale + center
+	-- x, y = ((x, y) - (self.x, self.y)):rotated(self.rot) * self.scale + center
 	local c, s = cos(self.rot), sin(self.rot)
 	x -= self.x
 	y -= self.y
@@ -189,11 +189,11 @@ end
 
 -- camera coordinates to world coordinates
 function camera.worldCoords(self: Camera, x: number, y: number, ox: number?, oy: number?, w: number?, h: number?): number
-	local ox, oy = ox or 0, oy or 0
+	ox, oy = ox or 0, oy or 0
 	local vW, vH = volta.window.getSize()
 	local w, h = w or vW, h or vH
 
-	-- x,y = (((x,y) - center) / self.scale):rotated(-self.rot) + (self.x,self.y)
+	-- x, y = (((x, y) - center) / self.scale):rotated(-self.rot) + (self.x, self.y)
 	local c, s = cos(-self.rot), sin(-self.rot)
 	x, y = (x - w/2 - ox) / self.scale, (y - h/2 - oy) / self.scale
 	x, y = c*x - s*y, s*x + c*y
@@ -207,13 +207,13 @@ end
 
 -- camera scrolling utilities
 function camera.lockX(self: Camera, x: number, smoother: smootherFunction?, ...)
-	local dx, dy = (smoother or self.smoother) (x - self.x, self.y, ...)
+	local dx, _ = (smoother or self.smoother) (x - self.x, self.y, ...)
 	self.x += dx
 	return self
 end
 
 function camera.lockY(self: Camera, y: number, smoother: smootherFunction?, ...)
-	local dx, dy = (smoother or self.smoother)(self.x, y - self.y, ...)
+	local _, dy = (smoother or self.smoother)(self.x, y - self.y, ...)
 	self.y += dy
 	return self
 end
