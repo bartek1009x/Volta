@@ -11,6 +11,7 @@ Used AI to write code sparingly - not to vibecode too much, just to assist with 
 The only parts of the project that used AI extensively were:
 - the CMake configuration for building,
 - the `require()` implementation,
+- the coordinate system transformation functions,
 - the Animated Sprite object.
 
 Besides that only a little AI code here and there, sparingly.
