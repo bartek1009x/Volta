@@ -22,6 +22,7 @@ int loadImage(lua_State* L);
 int setTextureScaleMode(lua_State* L);
 int unloadImage(lua_State* L);
 int drawImage(lua_State* L);
+int drawImageRegion(lua_State* L);
 int loadFont(lua_State* L);
 int unloadFont(lua_State* L);
 int drawText(lua_State* L);

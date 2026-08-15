@@ -323,6 +323,50 @@ int drawImage(lua_State *L) {
     return 0;
 }
 
+int drawImageRegion(lua_State *L) {
+    int textureId = lua_tonumber(L, 1);
+
+    float x = lua_tonumber(L, 2);
+    float y = lua_tonumber(L, 3);
+    float width = lua_tonumber(L, 4);
+    float height = lua_tonumber(L, 5);
+
+    float regionX = lua_tonumber(L, 6);
+    float regionY = lua_tonumber(L, 7);
+    float regionW = lua_tonumber(L, 8);
+    float regionH = lua_tonumber(L, 9);
+
+    SDL_FRect srcRect{regionX, regionY, regionW, regionH};
+
+    if (currentTransform.isDefault()) {
+        SDL_FRect drawingRect{x, y, width, height};
+        SDL_RenderTexture(renderer, loadedTextures[lua_tonumber(L, 1)], &srcRect, &drawingRect);
+    } else {
+        SDL_FPoint origin = transformPoint(x, y);
+
+        SDL_FPoint right = {
+            origin.x + width * currentTransform.xAxisX,
+            origin.y + width * currentTransform.xAxisY
+        };
+
+        SDL_FPoint down = {
+            origin.x + height * currentTransform.yAxisX,
+            origin.y + height * currentTransform.yAxisY
+        };
+
+        SDL_RenderTextureAffine(
+            renderer,
+            loadedTextures[textureId],
+            &srcRect,
+            &origin,
+            &right,
+            &down
+        );
+    }
+
+    return 0;
+}
+
 int loadFont(lua_State *L) {
     const char* path = lua_tostring(L, 1);
     std::filesystem::path finalPath = resourceState->getMainPath() / path;
@@ -577,6 +621,7 @@ static const luaL_Reg graphics_lib[] = {
     {"setTextureScaleMode", setTextureScaleMode},
     {"unloadImage", unloadImage},
     {"drawImage", drawImage},
+    {"drawImageRegion", drawImageRegion},
     {"loadFont", loadFont},
     {"unloadFont", unloadFont},
     {"drawText", drawText},
