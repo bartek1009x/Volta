@@ -18,7 +18,7 @@ Besides that only a little AI code here and there, sparingly.
 
 # Building and dependencies
 To build the framework yourself you need SDL3, SDL3_image, SDL3_mixer, SDL3_ttf and OpenSSL installed on your system.
-Additionally, Luau has to be cloned into `dependencies/luau` (I'm currently developing the framework with Luau commit 5bc7f4b).
+Additionally, Luau has to be cloned into `dependencies/luau` (I'm currently developing the framework with Luau release 0.734).
 `httplib.h` also has to be put into `dependencies/cpp-httplib` (currently using the header from release v0.52.0).
 
 Specific OS notes are listed below.
