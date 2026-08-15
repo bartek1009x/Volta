@@ -54,6 +54,11 @@ SDL_FPoint transformPoint(float x, float y) {
     };
 }
 
+int isCursorVisible(lua_State *L) {
+    lua_pushboolean(L, SDL_CursorVisible());
+    return 1;
+}
+
 int setCursorVisibility(lua_State *L) {
     if (lua_toboolean(L, 1)) {
         SDL_ShowCursor();
@@ -66,6 +71,13 @@ int setCursorVisibility(lua_State *L) {
 int setVsync(lua_State *L) {
     SDL_SetRenderVSync(renderer, lua_toboolean(L, 1) ? 1 : SDL_RENDERER_VSYNC_DISABLED);
     return 0;
+}
+
+int isVsyncEnabled(lua_State *L) {
+    int vsync = 0;
+    SDL_GetRenderVSync(renderer, &vsync);
+    lua_pushboolean(L, vsync == 1 || vsync == -1);
+    return 1;
 }
 
 int setDrawColor(lua_State *L) {
@@ -612,7 +624,9 @@ int getScissor(lua_State *L) {
 
 static const luaL_Reg graphics_lib[] = {
     {"setCursorVisibility", setCursorVisibility},
+    {"isCursorVisible", isCursorVisible},
     {"setVsync", setVsync},
+    {"isVsyncEnabled", isVsyncEnabled},
     {"setDrawColor", setDrawColor},
     {"clear", clear},
     {"drawRect", drawRect},

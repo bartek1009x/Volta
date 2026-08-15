@@ -12,7 +12,9 @@ extern Transform currentTransform;
 
 SDL_Texture* getTextureById(int id);
 int setCursorVisibility(lua_State* L);
+int isCursorVisible(lua_State* L);
 int setVsync(lua_State* L);
+int isVsyncEnabled(lua_State* L);
 int setDrawColor(lua_State* L);
 int clear(lua_State* L);
 int drawRect(lua_State* L);
