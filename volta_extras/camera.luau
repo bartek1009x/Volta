@@ -129,10 +129,10 @@ function camera.zoomTo(self: Camera, zoom: number)
 	return self
 end
 
-function camera.attach(self: Camera, x: number, y: number, w: number, h: number, noclip: boolean)
+function camera.attach(self: Camera, x: number?, y: number?, w: number?, h: number?, noclip: boolean?)
 	x, y = x or 0, y or 0
 	local vW, vH = volta.window.getSize()
-	w, h = w or vW, h or vH
+	local w, h = w or vW, h or vH
 
 	self._sx, self._sy, self._sw, self._sh = volta.graphics.getScissor()
 	if not noclip then
