@@ -471,7 +471,17 @@ int flipVerticalA(lua_State *L) {
 
 int getTextureIdA(lua_State *L) {
     // self at index 1
-    lua_rawgetfield(L, 1, "textureId");
+
+    lua_rawgetfield(L, 1, "regions");
+    if (lua_isnoneornil(L, -1)) {
+        lua_pop(L, 1);
+        lua_rawgetfield(L, 1, "currentFrame");
+        int currentFrame = lua_tointeger(L, -1);
+        lua_rawgeti(L, 1, currentFrame);
+    } else {
+        lua_pop(L, 1);
+        lua_rawgetfield(L, 1, "textureId");
+    }
     return 1;
 }
 
