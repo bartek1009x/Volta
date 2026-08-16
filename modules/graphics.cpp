@@ -299,7 +299,7 @@ int unloadImage(lua_State *L) {
 }
 
 int drawImage(lua_State *L) {
-    int textureId = lua_tonumber(L, 1);
+    int textureId = lua_tointeger(L, 1);
 
     float x = lua_tonumber(L, 2);
     float y = lua_tonumber(L, 3);
@@ -336,7 +336,7 @@ int drawImage(lua_State *L) {
 }
 
 int drawImageRegion(lua_State *L) {
-    int textureId = lua_tonumber(L, 1);
+    int textureId = lua_tointeger(L, 1);
 
     float x = lua_tonumber(L, 2);
     float y = lua_tonumber(L, 3);
@@ -412,7 +412,8 @@ struct textInfo {
     SDL_Texture* texture;
     float width;
     float height;
-    int lastFrameUsed;
+    Uint32 lastFrameUsed;
+    Uint32 lifetime;
 } typedef textInfo;
 
 unordered_map<std::string, textInfo> textCache;
@@ -427,11 +428,14 @@ int drawText(lua_State *L) {
     float width, height;
 
     const char* text = lua_tostring(L, 2);
-    Uint32 fontId = lua_tonumber(L, 1);
-    bool dontCache = lua_toboolean(L, 5);
+    Uint32 fontId = lua_tointeger(L, 1);
+    Uint32 cacheLifetime = 10000;
+    if (lua_type(L, 5) == LUA_TINTEGER) {
+        cacheLifetime = lua_tointeger(L, 5);
+    }
 
     auto it = textCache.find(text);
-    if (!dontCache && it != textCache.end()) {
+    if (it != textCache.end()) {
         if (it->second.fontId == fontId) {
             texture = it->second.texture;
             width = it->second.width;
@@ -442,7 +446,7 @@ int drawText(lua_State *L) {
 
             SDL_Surface *surface = TTF_RenderText_Blended(loadedFonts[fontId], text, 0, white);
             SDL_Texture *newTexture = SDL_CreateTextureFromSurface(renderer, surface);
-            textInfo info = {.fontId = fontId, .texture = newTexture, .width = surface->w, .height = surface->h, .lastFrameUsed = CURRENT_FRAME};
+            textInfo info = {.fontId = fontId, .texture = newTexture, .width = surface->w, .height = surface->h, .lastFrameUsed = CURRENT_FRAME, .lifetime = cacheLifetime};
             textCache[text] = info;
 
             width = surface->w;
@@ -463,10 +467,8 @@ int drawText(lua_State *L) {
 
         texture = newTexture;
 
-        if (!dontCache) {
-            textInfo info = {.fontId = fontId, .texture = newTexture, .width = width, .height = height, .lastFrameUsed = CURRENT_FRAME};
-            textCache[text] = info;
-        }
+        textInfo info = {.fontId = fontId, .texture = newTexture, .width = width, .height = height, .lastFrameUsed = CURRENT_FRAME, .lifetime = cacheLifetime};
+        textCache[text] = info;
     }
 
     float x = lua_tonumber(L, 3);
@@ -665,7 +667,7 @@ void registerGraphicsFunctions(ResourceState* state) {
 
 void updateFontTextCache() {
     for (auto it = textCache.begin(); it != textCache.end();) {
-        if (CURRENT_FRAME - it->second.lastFrameUsed >= 20000) {
+        if (CURRENT_FRAME - it->second.lastFrameUsed >= it->second.lifetime) {
             SDL_DestroyTexture(it->second.texture);
             it = textCache.erase(it);
         } else {
