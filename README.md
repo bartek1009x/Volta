@@ -6,12 +6,15 @@ It is theoretically cross platform, but currently only officially supports Windo
 # Usage
 You can run your game by running your luau script through the Volta executable like this: `volta main.luau` (where the filename can be anything other than main too)
 
+Volta's documentation can be found [here](https://voltaframework.gitbook.io/volta)
+
 # AI usage in the project
 Used AI to write code sparingly - not to vibecode too much, just to assist with some tasks, explain some things, find bugs, etc.
 The only parts of the project that used AI extensively were:
 - the CMake configuration for building,
 - the `require()` implementation,
 - the coordinate system transformation functions,
+- the parts of drawing functions that use transformed coordinate systems,
 - the Animated Sprite object.
 
 Besides that only a little AI code here and there, sparingly.
