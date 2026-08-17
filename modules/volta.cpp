@@ -9,6 +9,14 @@ int exit(lua_State* L) {
     return 0;
 }
 
+extern time_t startTimestamp;
+int getPlaytime(lua_State* L) {
+    time_t now;
+    time(&now);
+    lua_pushnumber(L, now - startTimestamp);
+    return 1;
+}
+
 extern double deltaTime;
 int getDelta(lua_State* L) {
     lua_pushnumber(L, deltaTime);
@@ -22,6 +30,7 @@ int getVersion(lua_State* L) {
 
 static const luaL_Reg volta_lib[] = {
     {"exit", exit},
+    {"getPlaytime", getPlaytime},
     {"getVersion", getVersion},
     {"getDelta", getDelta},
     {nullptr, nullptr},

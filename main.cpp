@@ -30,6 +30,7 @@ using namespace std;
 Uint32 CURRENT_FRAME;
 bool SHOULD_QUIT;
 
+time_t startTimestamp;
 double deltaTime = 0;
 
 int main(int argc, char* argv[]) {
@@ -118,6 +119,8 @@ int main(int argc, char* argv[]) {
         printf("Init function error: %s\n", lua_tostring(L, -1));
         return 1;
     }
+
+    time(&startTimestamp);
 
     // sdl3
     SDL_Event event;
