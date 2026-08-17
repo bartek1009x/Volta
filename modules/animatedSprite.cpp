@@ -465,6 +465,25 @@ int setSpritesheet(lua_State *L) {
     return 0;
 }
 
+int setCurrentFrame(lua_State *L) {
+    // self at index 1
+
+    lua_pushinteger(L, lua_tointeger(L, 2));
+    lua_setfield(L, 1, "currentFrame");
+
+    bool resetElapsedTime = true;
+    if (lua_type(L, 3) == LUA_TBOOLEAN) {
+        resetElapsedTime = lua_toboolean(L, 3);
+    }
+
+    if (resetElapsedTime) {
+        lua_pushnumber(L, 0.0);
+        lua_setfield(L, 1, "elapsedTime");
+    }
+
+    return 0;
+}
+
 int flipHorizontalA(lua_State *L) {
     // self at index 1
 
@@ -580,6 +599,9 @@ void pushASpriteClass(lua_State *L) {
 
     lua_pushcfunction(L, setSpritesheet, "setSpritesheet");
     lua_setfield(L, -2, "setSpritesheet");
+
+    lua_pushcfunction(L, setCurrentFrame, "setCurrentFrame");
+    lua_setfield(L, -2, "setCurrentFrame");
 
     lua_pushcfunction(L, flipHorizontalA, "flipHorizontalA");
     lua_setfield(L, -2, "flipHorizontal");
