@@ -1,4 +1,5 @@
-# Volta
+![Volta logo](assets/volta_banner.png)
+
 Volta is a WIP 2D game development framework for Luau written in C++. This is a passion project and one I'll use to learn more about C++, so expect the code to not be of the highest quality.
 
 It is theoretically cross platform, but currently only officially supports Windows, Linux and macOS (though **macOS has no official builds**, so you will have to compile the framework yourself for it). Android and iOS support is planned in the future.
