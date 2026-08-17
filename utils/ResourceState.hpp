@@ -27,6 +27,8 @@ class ResourceState {
         void setMainPath(std::filesystem::path);
         void setWinRen(SDL_Window* win, SDL_Renderer* ren);
         std::unique_ptr<RequireContext> requireContext;
+
+        float mouseWheelX, mouseWheelY;
 };
 
 #endif

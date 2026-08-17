@@ -9,6 +9,7 @@ int isKeyUp(lua_State* L);
 int isMouseButtonDown(lua_State* L);
 int isMouseButtonUp(lua_State* L);
 int getMousePosition(lua_State* L);
+int getMouseWheelMove(lua_State* L);
 void registerInputFunctions(ResourceState* state);
 
 #endif

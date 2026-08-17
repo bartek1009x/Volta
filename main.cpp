@@ -1,3 +1,4 @@
+#include <SDL3/SDL_events.h>
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -128,10 +129,17 @@ int main(int argc, char* argv[]) {
     SDL_Renderer* renderer = state.getRenderer();
 
     while (!SHOULD_QUIT) {
+        state.mouseWheelX = 0.0;
+        state.mouseWheelY = 0.0;
+
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_EVENT_QUIT:
                     SHOULD_QUIT = true;
+                    break;
+                case SDL_EVENT_MOUSE_WHEEL:
+                    state.mouseWheelX += event.wheel.x;
+                    state.mouseWheelY += event.wheel.y;
                     break;
             }
         }

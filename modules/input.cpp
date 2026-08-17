@@ -6,6 +6,8 @@
 
 #include "../dependencies/luau/VM/include/lualib.h"
 
+static ResourceState* resourceState = nullptr;
+
 int isKeyDown(lua_State *L) {
     const bool *key_states = SDL_GetKeyboardState(NULL);
     lua_pushboolean(L, key_states[(int) lua_tonumber(L, 1)]);
@@ -35,6 +37,12 @@ int getMousePosition(lua_State *L) {
     SDL_GetMouseState(&x, &y);
     lua_pushnumber(L, (double) x);
     lua_pushnumber(L, (double) y);
+    return 2;
+}
+
+int getMouseWheelMove(lua_State *L) {
+    lua_pushnumber(L, resourceState->mouseWheelX);
+    lua_pushnumber(L, resourceState->mouseWheelY);
     return 2;
 }
 
@@ -317,10 +325,12 @@ static const luaL_Reg input_lib[] = {
     {"isMouseButtonDown", isMouseButtonDown},
     {"isMouseButtonUp", isMouseButtonUp},
     {"getMousePosition", getMousePosition},
+    {"getMouseWheelMove", getMouseWheelMove},
     {nullptr, nullptr},
 };
 
 void registerInputFunctions(ResourceState* state) {
+    resourceState = state;
     lua_State* L = state->getL();
 
     luaL_register(L, "input", input_lib);
