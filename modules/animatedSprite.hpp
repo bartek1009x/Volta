@@ -15,6 +15,8 @@ int setSpritesheet(lua_State* L);
 int flipHorizontalA(lua_State* L);
 int flipVerticalA(lua_State* L);
 int getTextureIdA(lua_State* L);
+int getCurrentFrame(lua_State* L);
+int getRegions(lua_State* L);
 int getPositionA(lua_State* L);
 int getSizeA(lua_State* L);
 int getRotationA(lua_State* L);

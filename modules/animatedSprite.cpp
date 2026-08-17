@@ -111,6 +111,14 @@ int fromSpritesheet(lua_State* L) {
         return 0;
     }
 
+    for (int i = 1; i <= frameCount; ++i) {
+        lua_rawgeti(L, regionsIndex, i);
+        lua_setreadonly(L, -1, true);
+        lua_pop(L, 1);
+    }
+
+    lua_setreadonly(L, regionsIndex, true);
+
     lua_newtable(L);
     int spriteIndex = lua_gettop(L);
 
@@ -439,6 +447,12 @@ int setSpritesheet(lua_State *L) {
         return 0;
     }
 
+    for (int i = 1; i <= frameCount; ++i) {
+        lua_rawgeti(L, regionsIndex, i);
+        lua_setreadonly(L, -1, true);
+        lua_pop(L, 1);
+    }
+
     lua_pushinteger(L, textureId);
     lua_setfield(L, 1, "textureId");
 
@@ -467,6 +481,20 @@ int flipVerticalA(lua_State *L) {
     lua_setfield(L, 1, "flipV");
 
     return 0;
+}
+
+int getCurrentFrame(lua_State *L) {
+    // self at index 1
+
+    lua_rawgetfield(L, 1, "currentFrame");
+    return 1;
+}
+
+int getRegions(lua_State *L) {
+    // self at index 1
+
+    lua_rawgetfield(L, 1, "regions");
+    return 1;
 }
 
 int getTextureIdA(lua_State *L) {
@@ -558,6 +586,12 @@ void pushASpriteClass(lua_State *L) {
 
     lua_pushcfunction(L, flipVerticalA, "flipVerticalA");
     lua_setfield(L, -2, "flipVertical");
+
+    lua_pushcfunction(L, getCurrentFrame, "getCurrentFrame");
+    lua_setfield(L, -2, "getCurrentFrame");
+
+    lua_pushcfunction(L, getRegions, "getRegions");
+    lua_setfield(L, -2, "getRegions");
 
     lua_pushcfunction(L, getTextureIdA, "getTextureId");
     lua_setfield(L, -2, "getTextureId");

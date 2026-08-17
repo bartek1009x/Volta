@@ -1,7 +1,6 @@
 #include "graphics.hpp"
 
 #include <cmath>
-#include <lua.h>
 #include <string>
 #include <filesystem>
 #include <unordered_map>
