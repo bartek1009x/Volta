@@ -16,6 +16,7 @@ The only parts of the project that used AI extensively were:
 - the `require()` implementation,
 - the coordinate system transformation functions,
 - the parts of drawing functions that use transformed coordinate systems,
+- vector2 functions other than vector2.create and the ones that are the same as the built-in vector's.
 - the Animated Sprite and Color objects.
 
 Besides that only a little AI code here and there, sparingly.
