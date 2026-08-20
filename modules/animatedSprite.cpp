@@ -636,11 +636,10 @@ void pushASpriteClass(lua_State *L) {
     // class table remains on stack
 }
 
-void registerAnimatedSpriteObject(ResourceState* state) {
+void registerAnimatedSpriteObject(lua_State* L, ResourceState* state) {
     if (renderer == nullptr) {
         renderer = state->getRenderer();
     }
-    lua_State* L = state->getL();
 
     pushASpriteClass(L);
     lua_setreadonly(L, -1, 1);

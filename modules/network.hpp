@@ -23,6 +23,6 @@ int put(lua_State *L);
 int patch(lua_State *L);
 int deleteH(lua_State *L);
 void pushClientClass(lua_State* L);
-void registerNetworkFunctions(ResourceState* state);
+void registerNetworkFunctions(lua_State* L, ResourceState* state);
 
 #endif

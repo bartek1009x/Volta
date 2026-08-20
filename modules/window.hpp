@@ -22,6 +22,6 @@ int getPosition(lua_State* L);
 int getSize(lua_State* L);
 int getMinSize(lua_State* L);
 int getMaxSize(lua_State* L);
-void registerWindowFunctions(ResourceState* state);
+void registerWindowFunctions(lua_State* L, ResourceState* state);
 
 #endif

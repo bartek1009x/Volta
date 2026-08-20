@@ -141,12 +141,11 @@ static const luaL_Reg audio_lib[] = {
     {nullptr, nullptr},
 };
 
-void registerAudioFunctions(ResourceState* state) {
+void registerAudioFunctions(lua_State* L, ResourceState* state) {
     resourceState = state;
 
     MIX_Init();
     mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
-    lua_State* L = state->getL();
 
     luaL_register(L, "audio", audio_lib);
     lua_setreadonly(L, -1, 1);

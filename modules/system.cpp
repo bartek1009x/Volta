@@ -34,9 +34,7 @@ static const luaL_Reg system_lib[] = {
     {nullptr, nullptr},
 };
 
-void registerSystemFunctions(ResourceState* state) {
-    lua_State* L = state->getL();
-
+void registerSystemFunctions(lua_State* L, ResourceState* state) {
     luaL_register(L, "system", system_lib);
     lua_setreadonly(L, -1, 1);
     lua_setfield(L, -2, "system");

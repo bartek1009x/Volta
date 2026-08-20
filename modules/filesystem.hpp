@@ -19,6 +19,6 @@ int list(lua_State* L);
 int createDirs(lua_State* L);
 int removeAll(lua_State* L);
 int getFileSize(lua_State* L);
-void registerFilesystemFunctions(ResourceState* state);
+void registerFilesystemFunctions(lua_State* L, ResourceState* state);
 
 #endif

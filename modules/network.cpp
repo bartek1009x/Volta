@@ -435,9 +435,7 @@ void pushClientClass(lua_State *L) {
     // class table remains on stack
 }
 
-void registerNetworkFunctions(ResourceState* state) {
-    lua_State* L = state->getL();
-
+void registerNetworkFunctions(lua_State* L, ResourceState* state) {
     lua_newtable(L);
 
     pushClientClass(L);

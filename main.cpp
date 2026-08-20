@@ -1,29 +1,17 @@
 #include <SDL3/SDL_events.h>
-#include <iostream>
 #include <fstream>
 #include <filesystem>
 
 #include "dependencies/luau/VM/include/lua.h"
-#include "dependencies/luau/VM/include/lualib.h"
 #include "dependencies/luau/Compiler/include/luacode.h"
 #include "dependencies/luau/CodeGen/include/Luau/CodeGen.h"
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_render.h>
 
-#include "modules/network.hpp"
 #include "utils/ResourceState.hpp"
 #include "utils/Require.hpp"
-#include "modules/volta.hpp"
-#include "modules/window.hpp"
 #include "modules/graphics.hpp"
-#include "modules/input.hpp"
-#include "modules/audio.hpp"
-#include "modules/system.hpp"
-#include "modules/filesystem.hpp"
-#include "modules/color.hpp"
-#include "modules/sprite.hpp"
-#include "modules/animatedSprite.hpp"
 
 using namespace std;
 
@@ -72,26 +60,6 @@ int main(int argc, char* argv[]) {
             printf("main script native compilation failed: %d\n", res.result);
         }
     }
-
-    // register modules
-    lua_createtable(L, 0, 6);
-
-    registerVoltaFunctions(&state);
-
-    registerWindowFunctions(&state);
-    registerGraphicsFunctions(&state);
-    registerInputFunctions(&state);
-    registerAudioFunctions(&state);
-    registerSystemFunctions(&state);
-    registerFilesystemFunctions(&state);
-    registerNetworkFunctions(&state);
-
-    registerColorObject(&state);
-    registerSpriteObject(&state);
-    registerAnimatedSpriteObject(&state);
-
-    lua_setreadonly(L, -1, 1);
-    lua_setglobal(L, "volta");
 
     // luau init
     lua_State* T = lua_newthread(L);

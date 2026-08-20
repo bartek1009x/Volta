@@ -390,11 +390,10 @@ void pushSpriteClass(lua_State *L) {
     // class table remains on stack
 }
 
-void registerSpriteObject(ResourceState* state) {
+void registerSpriteObject(lua_State* L, ResourceState* state) {
     if (renderer == nullptr) {
         renderer = state->getRenderer();
     }
-    lua_State* L = state->getL();
 
     pushSpriteClass(L);
     lua_setreadonly(L, -1, 1);

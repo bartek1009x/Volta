@@ -8,6 +8,6 @@ int getOS(lua_State* L);
 int getEnv(lua_State* L);
 int getClipboardText(lua_State* L);
 int setClipboardText(lua_State* L);
-void registerSystemFunctions(ResourceState* state);
+void registerSystemFunctions(lua_State* L, ResourceState* state);
 
 #endif

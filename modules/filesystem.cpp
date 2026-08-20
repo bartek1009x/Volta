@@ -147,9 +147,8 @@ static const luaL_Reg fs_lib[] = {
     {nullptr, nullptr},
 };
 
-void registerFilesystemFunctions(ResourceState* state) {
+void registerFilesystemFunctions(lua_State* L, ResourceState* state) {
     resourceState = state;
-    lua_State* L = state->getL();
 
     luaL_register(L, "filesystem", fs_lib);
     lua_setreadonly(L, -1, 1);

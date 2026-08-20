@@ -24,6 +24,6 @@ int getRotationA(lua_State* L);
 int getFlipHorizontalA(lua_State* L);
 int getFlipVerticalA(lua_State* L);
 void pushASpriteClass(lua_State* L);
-void registerAnimatedSpriteObject(ResourceState* state);
+void registerAnimatedSpriteObject(lua_State* L, ResourceState* state);
 
 #endif

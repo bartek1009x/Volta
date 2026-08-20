@@ -8,6 +8,6 @@ int exit(lua_State* L);
 int getPlaytime(lua_State* L);
 int getDelta(lua_State* L);
 int getVersion(lua_State* L);
-void registerVoltaFunctions(ResourceState* state);
+void registerVoltaFunctions(lua_State* L, ResourceState* state);
 
 #endif

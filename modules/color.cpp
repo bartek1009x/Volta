@@ -190,9 +190,7 @@ void pushColorClass(lua_State *L) {
     // class table remains on stack
 }
 
-void registerColorObject(ResourceState* state) {
-    lua_State* L = state->getL();
-
+void registerColorObject(lua_State* L, ResourceState* state) {
     pushColorClass(L);
     lua_setreadonly(L, -1, 1);
     lua_setfield(L, -2, "Color");

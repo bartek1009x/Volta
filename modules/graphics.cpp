@@ -651,13 +651,12 @@ static const luaL_Reg graphics_lib[] = {
     {nullptr, nullptr},
 };
 
-void registerGraphicsFunctions(ResourceState* state) {
+void registerGraphicsFunctions(lua_State* L, ResourceState* state) {
     TTF_Init();
     resourceState = state;
     if (renderer == nullptr) {
         renderer = state->getRenderer();
     }
-    lua_State* L = state->getL();
 
     luaL_register(L, "graphics", graphics_lib);
     lua_setreadonly(L, -1, 1);

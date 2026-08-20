@@ -147,9 +147,8 @@ static const luaL_Reg window_lib[] = {
     {nullptr, nullptr},
 };
 
-void registerWindowFunctions(ResourceState* state) {
+void registerWindowFunctions(lua_State* L, ResourceState* state) {
     resourceState = state;
-    lua_State* L = state->getL();
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());

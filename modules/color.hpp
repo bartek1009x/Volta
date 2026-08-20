@@ -11,6 +11,6 @@ int toHex(lua_State *L);
 int toHexa(lua_State *L);
 int lerp(lua_State *L);
 void pushColorClass(lua_State* L);
-void registerColorObject(ResourceState* state);
+void registerColorObject(lua_State* L, ResourceState* state);
 
 #endif

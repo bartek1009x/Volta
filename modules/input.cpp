@@ -329,9 +329,8 @@ static const luaL_Reg input_lib[] = {
     {nullptr, nullptr},
 };
 
-void registerInputFunctions(ResourceState* state) {
+void registerInputFunctions(lua_State* L, ResourceState* state) {
     resourceState = state;
-    lua_State* L = state->getL();
 
     luaL_register(L, "input", input_lib);
 

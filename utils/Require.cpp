@@ -13,9 +13,44 @@
 #include "../dependencies/luau/Compiler/include/luacode.h"
 #include "../dependencies/luau/CodeGen/include/Luau/CodeGen.h"
 
+#include "../modules/volta.hpp"
+#include "../modules/window.hpp"
+#include "../modules/graphics.hpp"
+#include "../modules/input.hpp"
+#include "../modules/audio.hpp"
+#include "../modules/system.hpp"
+#include "../modules/filesystem.hpp"
+#include "../modules/network.hpp"
+#include "../modules/color.hpp"
+#include "../modules/sprite.hpp"
+#include "../modules/animatedSprite.hpp"
+
 #include "RequireContext.hpp"
 
+static ResourceState* resourceState = nullptr;
+
 namespace fs = std::filesystem;
+
+static void pushVoltaModule(lua_State* L) {
+
+    lua_createtable(L, 0, 16);
+
+    registerVoltaFunctions(L, resourceState);
+
+    registerWindowFunctions(L, resourceState);
+    registerGraphicsFunctions(L, resourceState);
+    registerInputFunctions(L, resourceState);
+    registerAudioFunctions(L, resourceState);
+    registerSystemFunctions(L, resourceState);
+    registerFilesystemFunctions(L, resourceState);
+    registerNetworkFunctions(L, resourceState);
+
+    registerColorObject(L, resourceState);
+    registerSpriteObject(L, resourceState);
+    registerAnimatedSpriteObject(L, resourceState);
+
+    lua_setreadonly(L, -1, 1);
+}
 
 static luarequire_WriteResult CopyStringToBuffer(const std::string &str, char *buffer, size_t bufferSize, size_t *outputSize) {
 	*outputSize = str.size() + 1;
@@ -138,20 +173,26 @@ static void LibRequire_InitConfiguration(luarequire_Configuration *config) {
 	};
 
 	config->load = [](lua_State *L, void *ctx, const char *path, const char *chunkname, const char *loadname) -> int {
-		std::ifstream in(loadname);
-		if (!in) {
-			luaL_error(L, "could not open module '%s'", loadname);
+	    std::string pathStr{path};
+	    if (pathStr.substr(pathStr.size() - 5) == "volta") {
+			pushVoltaModule(L);
+            return 1;
 		}
-		std::string source((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
 
-		size_t bytecodeSize = 0;
-		char *bytecode = luau_compile(source.data(), source.size(), nullptr, &bytecodeSize);
-		int compileResult = luau_load(L, chunkname, bytecode, bytecodeSize, 0);
-		free(bytecode);
+  		std::ifstream in(loadname);
+  		if (!in) {
+ 			luaL_error(L, "could not open module '%s'", loadname);
+  		}
+  		std::string source((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
 
-		if (compileResult != 0) {
-    		luaL_error(L, "could not compile module '%s'", path);
-		} else if (Luau::CodeGen::isSupported()) {
+  		size_t bytecodeSize = 0;
+  		char *bytecode = luau_compile(source.data(), source.size(), nullptr, &bytecodeSize);
+  		int compileResult = luau_load(L, chunkname, bytecode, bytecodeSize, 0);
+  		free(bytecode);
+
+  		if (compileResult != 0) {
+      		luaL_error(L, "could not compile module '%s'", path);
+  		} else if (Luau::CodeGen::isSupported()) {
             Luau::CodeGen::CompilationOptions native_opts{};
 
             native_opts.flags = Luau::CodeGen::CodeGenFlags::CodeGen_OnlyNativeModules;
@@ -171,6 +212,7 @@ static void LibRequire_InitConfiguration(luarequire_Configuration *config) {
 }
 
 void registerRequireLib(ResourceState *state) {
+    resourceState = state;
 	lua_State *L = state->getL();
 
 	const std::filesystem::path scriptsRoot = state->getMainPath();

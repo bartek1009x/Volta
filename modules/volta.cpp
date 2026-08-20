@@ -36,8 +36,6 @@ static const luaL_Reg volta_lib[] = {
     {nullptr, nullptr},
 };
 
-void registerVoltaFunctions(ResourceState* state) {
-    lua_State* L = state->getL();
-
+void registerVoltaFunctions(lua_State* L, ResourceState* state) {
     luaL_register(L, nullptr, volta_lib);
 }

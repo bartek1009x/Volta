@@ -21,6 +21,6 @@ int getRotation(lua_State* L);
 int getFlipHorizontal(lua_State* L);
 int getFlipVertical(lua_State* L);
 void pushSpriteClass(lua_State* L);
-void registerSpriteObject(ResourceState* state);
+void registerSpriteObject(lua_State* L, ResourceState* state);
 
 #endif
