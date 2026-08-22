@@ -1,5 +1,5 @@
 --!strict
---
+
 local box2d = {}
 
 export type vec2 = {
@@ -82,6 +82,68 @@ export type bodyDef = {
     isEnabled: boolean?,
     allowFastRotation: boolean?,
     enableContactRecycling: boolean?
+}
+
+export type shapeId = {number}
+export type shapeType = number
+export type surfaceMaterial = {
+    friction: number,
+    restitution: number,
+    rollingResistance: number,
+    tangentSpeed: number,
+    userMaterialId: number,
+    customColor: number,
+}
+export type surfaceMaterialDef = {
+    friction: number?,
+    restitution: number?,
+    rollingResistance: number?,
+    tangentSpeed: number?,
+    userMaterialId: number?,
+    customColor: number?,
+}
+export type filter = {
+    categoryBits: number,
+    maskBits: number,
+    groupIndex: number,
+}
+export type filterDef = {
+    categoryBits: number?,
+    maskBits: number?,
+    groupIndex: number?,
+}
+export type shapeDef = {
+    material: surfaceMaterialDef?,
+    density: number?,
+    filter: filterDef?,
+    enableCustomFiltering: boolean?,
+    isSensor: boolean?,
+    enableSensorEvents: boolean?,
+    enableContactEvents: boolean?,
+    enableHitEvents: boolean?,
+    enablePreSolveEvents: boolean?,
+    invokeContactCreation: boolean?,
+    updateBodyMass: boolean?,
+}
+export type circle = {
+    center: vec2,
+    radius: number,
+}
+export type segment = {
+    point1: vec2,
+    point2: vec2,
+}
+export type capsule = {
+    center1: vec2,
+    center2: vec2,
+    radius: number,
+}
+export type polygon = {
+    vertices: {vec2},
+    normals: {vec2},
+    centroid: vec2,
+    radius: number,
+    count: number,
 }
 
 -- World
@@ -290,4 +352,111 @@ function box2d.bodyComputeAABB(bodyId: bodyId): (number, number, number, number)
     return 0, 0, 0, 0
 end
 
-return box2d
+-- Shape
+
+function box2d.createCircleShape(bodyId: bodyId, shapeDef: shapeDef, circle: circle): shapeId
+    return {0, 0, 0}
+end
+function box2d.createSegmentShape(bodyId: bodyId, shapeDef: shapeDef, segment: segment): shapeId
+    return {0, 0, 0}
+end
+function box2d.createCapsuleShape(bodyId: bodyId, shapeDef: shapeDef, capsule: capsule): shapeId
+    return {0, 0, 0}
+end
+function box2d.createPolygonShape(bodyId: bodyId, shapeDef: shapeDef, polygon: polygon): shapeId
+    return {0, 0, 0}
+end
+function box2d.destroyShape(shapeId: shapeId, updateBodyMass: boolean)
+end
+function box2d.shapeIsValid(shapeId: shapeId): boolean
+    return false
+end
+function box2d.shapeGetType(shapeId: shapeId): shapeType
+    return 0
+end
+function box2d.shapeGetBody(shapeId: shapeId): bodyId
+    return {0, 0, 0}
+end
+function box2d.shapeGetWorld(shapeId: shapeId): worldId
+    return {0, 0}
+end
+function box2d.shapeIsSensor(shapeId: shapeId): boolean
+    return false
+end
+function box2d.shapeSetDensity(shapeId: shapeId, density: number, updateBodyMass: boolean) end
+function box2d.shapeGetDensity(shapeId: shapeId): number
+    return 0
+end
+function box2d.shapeSetFriction(shapeId: shapeId, friction: number) end
+function box2d.shapeGetFriction(shapeId: shapeId): number
+    return 0
+end
+function box2d.shapeSetRestitution(shapeId: shapeId, restitution: number) end
+function box2d.shapeGetRestitution(shapeId: shapeId): number
+    return 0
+end
+function box2d.shapeSetUserMaterial(shapeId: shapeId, material: number) end
+function box2d.shapeGetUserMaterial(shapeId: shapeId): number
+    return 0
+end
+function box2d.shapeSetSurfaceMaterial(shapeId: shapeId, material: surfaceMaterialDef) end
+function box2d.shapeGetSurfaceMaterial(shapeId: shapeId): surfaceMaterial
+    return {} :: surfaceMaterial
+end
+function box2d.shapeGetFilter(shapeId: shapeId): filter
+    return {} :: filter
+end
+function box2d.shapeSetFilter(shapeId: shapeId, filter: filterDef) end
+function box2d.shapeEnableSensorEvents(shapeId: shapeId, flag: boolean) end
+function box2d.shapeAreSensorEventsEnabled(shapeId: shapeId): boolean
+    return false
+end
+function box2d.shapeEnableContactEvents(shapeId: shapeId, flag: boolean) end
+function box2d.shapeAreContactEventsEnabled(shapeId: shapeId): boolean
+    return false
+end
+function box2d.shapeEnablePreSolveEvents(shapeId: shapeId, flag: boolean) end
+function box2d.shapeArePreSolveEventsEnabled(shapeId: shapeId): boolean
+    return false
+end
+function box2d.shapeEnableHitEvents(shapeId: shapeId, flag: boolean) end
+function box2d.shapeAreHitEventsEnabled(shapeId: shapeId): boolean
+    return false
+end
+function box2d.shapeTestPoint(shapeId: shapeId, pointX: number, pointY: number): boolean
+    return false
+end
+function box2d.shapeGetCircle(shapeId: shapeId): circle
+    return {} :: circle
+end
+function box2d.shapeGetSegment(shapeId: shapeId): segment
+    return {} :: segment
+end
+function box2d.shapeGetCapsule(shapeId: shapeId): capsule
+    return {} :: capsule
+end
+function box2d.shapeGetPolygon(shapeId: shapeId): polygon
+    return {} :: polygon
+end
+function box2d.shapeSetCircle(shapeId: shapeId, circle: circle) end
+function box2d.shapeSetCapsule(shapeId: shapeId, capsule: capsule) end
+function box2d.shapeSetSegment(shapeId: shapeId, segment: segment) end
+function box2d.shapeSetPolygon(shapeId: shapeId, polygon: polygon) end
+function box2d.shapeGetContactCapacity(shapeId: shapeId): number
+    return 0
+end
+function box2d.shapeGetSensorCapacity(shapeId: shapeId): number
+    return 0
+end
+function box2d.shapeGetAABB(shapeId: shapeId): (number, number, number, number)
+    return 0, 0, 0, 0
+end
+function box2d.shapeComputeMassData(shapeId: shapeId): massData
+    return {} :: massData
+end
+function box2d.shapeGetClosestPoint(shapeId: shapeId, targetX: number, targetY: number): (number, number)
+    return 0, 0
+end
+function box2d.shapeApplyWind(shapeId: shapeId, windX: number, windY: number, drag: number, lift: number, wake: boolean) end
+
+return table.freeze(box2d)

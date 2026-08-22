@@ -426,7 +426,7 @@ int worldGetStateHash(lua_State* L) {
     b2WorldId id = getWorldIdFromLuau(L);
     uint64_t hash = b2World_GetStateHash(id);
 
-    lua_pushinteger64(L, static_cast<int64_t>(hash));
+    lua_pushinteger64(L, hash);
 
     return 1;
 }
@@ -793,13 +793,13 @@ int bodySetTransform(lua_State* L) {
     b2BodyId id = getBodyIdFromLuau(L);
 
     b2Pos position = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2Rot rotation = {
-        static_cast<float>(lua_tonumber(L, 4)),
-        static_cast<float>(lua_tonumber(L, 5))
+        (float) (lua_tonumber(L, 4)),
+        (float) (lua_tonumber(L, 5))
     };
 
     b2Body_SetTransform(id, position, rotation);
@@ -811,8 +811,8 @@ int bodyGetLocalPoint(lua_State* L) {
     b2BodyId id = getBodyIdFromLuau(L);
 
     b2Pos worldPoint = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2Vec2 point = b2Body_GetLocalPoint(id, worldPoint);
@@ -827,8 +827,8 @@ int bodyGetWorldPoint(lua_State* L) {
     b2BodyId id = getBodyIdFromLuau(L);
 
     b2Vec2 localPoint = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2Pos point = b2Body_GetWorldPoint(id, localPoint);
@@ -843,8 +843,8 @@ int bodyGetLocalVector(lua_State* L) {
     b2BodyId id = getBodyIdFromLuau(L);
 
     b2Vec2 worldVector = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2Vec2 vector = b2Body_GetLocalVector(id, worldVector);
@@ -859,8 +859,8 @@ int bodyGetWorldVector(lua_State* L) {
     b2BodyId id = getBodyIdFromLuau(L);
 
     b2Vec2 localVector = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2Vec2 vector = b2Body_GetWorldVector(id, localVector);
@@ -893,8 +893,8 @@ int bodySetLinearVelocity(lua_State* L) {
     b2BodyId id = getBodyIdFromLuau(L);
 
     b2Vec2 velocity = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2Body_SetLinearVelocity(id, velocity);
@@ -934,8 +934,8 @@ int bodyGetLocalPointVelocity(lua_State* L) {
     b2BodyId id = getBodyIdFromLuau(L);
 
     b2Vec2 localPoint = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2Vec2 velocity = b2Body_GetLocalPointVelocity(id, localPoint);
@@ -950,8 +950,8 @@ int bodyGetWorldPointVelocity(lua_State* L) {
     b2BodyId id = getBodyIdFromLuau(L);
 
     b2Pos worldPoint = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2Vec2 velocity = b2Body_GetWorldPointVelocity(id, worldPoint);
@@ -966,13 +966,13 @@ int bodyApplyForce(lua_State* L) {
     b2BodyId id = getBodyIdFromLuau(L);
 
     b2Vec2 force = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2Pos point = {
-        static_cast<float>(lua_tonumber(L, 4)),
-        static_cast<float>(lua_tonumber(L, 5))
+        (float) (lua_tonumber(L, 4)),
+        (float) (lua_tonumber(L, 5))
     };
 
     bool wake = lua_toboolean(L, 6);
@@ -986,8 +986,8 @@ int bodyApplyForceToCenter(lua_State* L) {
     b2BodyId id = getBodyIdFromLuau(L);
 
     b2Vec2 force = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     bool wake = lua_toboolean(L, 4);
@@ -1019,13 +1019,13 @@ int bodyApplyLinearImpulse(lua_State* L) {
     b2BodyId id = getBodyIdFromLuau(L);
 
     b2Vec2 impulse = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2Pos point = {
-        static_cast<float>(lua_tonumber(L, 4)),
-        static_cast<float>(lua_tonumber(L, 5))
+        (float) (lua_tonumber(L, 4)),
+        (float) (lua_tonumber(L, 5))
     };
 
     bool wake = lua_toboolean(L, 6);
@@ -1039,8 +1039,8 @@ int bodyApplyLinearImpulseToCenter(lua_State* L) {
     b2BodyId id = getBodyIdFromLuau(L);
 
     b2Vec2 impulse = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     bool wake = lua_toboolean(L, 4);
@@ -1389,6 +1389,963 @@ int bodyComputeAABB(lua_State* L) {
     return 4;
 }
 
+// Shape
+
+b2ShapeId getShapeIdFromLuau(lua_State* L) {
+    if (lua_type(L, 1) != LUA_TTABLE) {
+        luaL_argerror(L, 1, "The shape ID must be a table");
+        return {};
+    }
+
+    lua_rawgeti(L, 1, 1);
+    int index1 = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, 1, 2);
+    Uint16 world0 = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, 1, 3);
+    Uint16 generation = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    b2ShapeId id = {};
+    id.index1 = index1;
+    id.world0 = world0;
+    id.generation = generation;
+
+    return id;
+}
+
+void pushShapeId(lua_State* L, b2ShapeId id) {
+    lua_createtable(L, 3, 0);
+
+    lua_pushinteger(L, id.index1);
+    lua_rawseti(L, -2, 1);
+
+    lua_pushinteger(L, id.world0);
+    lua_rawseti(L, -2, 2);
+
+    lua_pushinteger(L, id.generation);
+    lua_rawseti(L, -2, 3);
+}
+
+void applyVec2(lua_State* L, int index, b2Vec2& value) {
+    if (lua_type(L, index) != LUA_TTABLE) {
+        return;
+    }
+
+    lua_getfield(L, index, "x");
+    if (!lua_isnil(L, -1)) {
+        value.x = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "y");
+    if (!lua_isnil(L, -1)) {
+        value.y = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+}
+
+void pushVec2(lua_State* L, b2Vec2 value) {
+    lua_createtable(L, 0, 2);
+
+    lua_pushnumber(L, value.x);
+    lua_setfield(L, -2, "x");
+
+    lua_pushnumber(L, value.y);
+    lua_setfield(L, -2, "y");
+}
+
+void applySurfaceMaterial(lua_State* L, int index, b2SurfaceMaterial& material) {
+    if (lua_type(L, index) != LUA_TTABLE) {
+        return;
+    }
+
+    lua_getfield(L, index, "friction");
+    if (!lua_isnil(L, -1)) {
+        material.friction = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "restitution");
+    if (!lua_isnil(L, -1)) {
+        material.restitution = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "rollingResistance");
+    if (!lua_isnil(L, -1)) {
+        material.rollingResistance = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "tangentSpeed");
+    if (!lua_isnil(L, -1)) {
+        material.tangentSpeed = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "userMaterialId");
+    if (!lua_isnil(L, -1)) {
+        material.userMaterialId = lua_tointeger64(L, -1, nullptr);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "customColor");
+    if (!lua_isnil(L, -1)) {
+        material.customColor = lua_tointeger(L, -1);
+    }
+    lua_pop(L, 1);
+}
+
+void pushSurfaceMaterial(lua_State* L, b2SurfaceMaterial material) {
+    lua_createtable(L, 0, 6);
+
+    lua_pushnumber(L, material.friction);
+    lua_setfield(L, -2, "friction");
+
+    lua_pushnumber(L, material.restitution);
+    lua_setfield(L, -2, "restitution");
+
+    lua_pushnumber(L, material.rollingResistance);
+    lua_setfield(L, -2, "rollingResistance");
+
+    lua_pushnumber(L, material.tangentSpeed);
+    lua_setfield(L, -2, "tangentSpeed");
+
+    lua_pushinteger64(L, material.userMaterialId);
+    lua_setfield(L, -2, "userMaterialId");
+
+    lua_pushnumber(L, material.customColor);
+    lua_setfield(L, -2, "customColor");
+}
+
+b2Segment constructSegment(lua_State* L, int index) {
+    b2Segment segment = {};
+
+    lua_getfield(L, index, "point1");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), segment.point1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "point2");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), segment.point2);
+    }
+    lua_pop(L, 1);
+
+    return segment;
+}
+
+void pushSegment(lua_State* L, b2Segment segment) {
+    lua_createtable(L, 0, 2);
+
+    pushVec2(L, segment.point1);
+    lua_setfield(L, -2, "point1");
+
+    pushVec2(L, segment.point2);
+    lua_setfield(L, -2, "point2");
+}
+
+b2Filter constructFilter(lua_State* L, int index) {
+    b2Filter filter = {};
+
+    lua_getfield(L, index, "categoryBits");
+    if (!lua_isnil(L, -1)) {
+        filter.categoryBits = lua_tointeger64(L, -1, nullptr);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maskBits");
+    if (!lua_isnil(L, -1)) {
+        filter.maskBits = lua_tointeger64(L, -1, nullptr);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "groupIndex");
+    if (!lua_isnil(L, -1)) {
+        filter.groupIndex = lua_tointeger(L, -1);
+    }
+    lua_pop(L, 1);
+
+    return filter;
+}
+
+void applyFilter(lua_State* L, int index, b2Filter& filter) {
+    if (!lua_istable(L, index)) {
+        return;
+    }
+
+    lua_getfield(L, index, "categoryBits");
+    if (!lua_isnil(L, -1)) {
+        filter.categoryBits = lua_tointeger64(L, -1, nullptr);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maskBits");
+    if (!lua_isnil(L, -1)) {
+        filter.maskBits = lua_tointeger64(L, -1, nullptr);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "groupIndex");
+    if (!lua_isnil(L, -1)) {
+        filter.groupIndex = lua_tointeger(L, -1);
+    }
+    lua_pop(L, 1);
+}
+
+void pushFilter(lua_State* L, b2Filter filter) {
+    lua_createtable(L, 0, 3);
+
+    lua_pushinteger64(L, filter.categoryBits);
+    lua_setfield(L, -2, "categoryBits");
+
+    lua_pushinteger64(L, filter.maskBits);
+    lua_setfield(L, -2, "maskBits");
+
+    lua_pushinteger(L, filter.groupIndex);
+    lua_setfield(L, -2, "groupIndex");
+}
+
+b2Circle constructCircle(lua_State* L, int index) {
+    b2Circle circle = {};
+
+    lua_getfield(L, index, "center");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), circle.center);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "radius");
+    if (!lua_isnil(L, -1)) {
+        circle.radius = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    return circle;
+}
+
+void pushCircle(lua_State* L, b2Circle circle) {
+    lua_createtable(L, 0, 2);
+
+    pushVec2(L, circle.center);
+    lua_setfield(L, -2, "center");
+
+    lua_pushnumber(L, circle.radius);
+    lua_setfield(L, -2, "radius");
+}
+
+b2Capsule constructCapsule(lua_State* L, int index) {
+    b2Capsule capsule = {};
+
+    lua_getfield(L, index, "center1");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), capsule.center1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "center2");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), capsule.center2);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "radius");
+    if (!lua_isnil(L, -1)) {
+        capsule.radius = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    return capsule;
+}
+
+void pushCapsule(lua_State* L, b2Capsule capsule) {
+    lua_createtable(L, 0, 3);
+
+    pushVec2(L, capsule.center1);
+    lua_setfield(L, -2, "center1");
+
+    pushVec2(L, capsule.center2);
+    lua_setfield(L, -2, "center2");
+
+    lua_pushnumber(L, capsule.radius);
+    lua_setfield(L, -2, "radius");
+}
+
+b2Polygon constructPolygon(lua_State* L, int index) {
+    b2Polygon polygon = {};
+
+    lua_getfield(L, index, "count");
+    if (!lua_isnil(L, -1)) {
+        polygon.count = lua_tointeger(L, -1);
+    }
+    lua_pop(L, 1);
+
+    if (polygon.count < 0) {
+        polygon.count = 0;
+    }
+    else if (polygon.count > B2_MAX_POLYGON_VERTICES) {
+        polygon.count = B2_MAX_POLYGON_VERTICES;
+    }
+
+    lua_getfield(L, index, "vertices");
+    if (lua_istable(L, -1)) {
+        int verticesIndex = lua_gettop(L);
+
+        for (int i = 0; i < polygon.count; ++i) {
+            lua_rawgeti(L, verticesIndex, i + 1);
+
+            if (lua_istable(L, -1)) {
+                applyVec2(L, lua_gettop(L), polygon.vertices[i]);
+            }
+
+            lua_pop(L, 1);
+        }
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "normals");
+    if (lua_istable(L, -1)) {
+        int normalsIndex = lua_gettop(L);
+
+        for (int i = 0; i < polygon.count; ++i) {
+            lua_rawgeti(L, normalsIndex, i + 1);
+
+            if (lua_istable(L, -1)) {
+                applyVec2(L, lua_gettop(L), polygon.normals[i]);
+            }
+
+            lua_pop(L, 1);
+        }
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "centroid");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), polygon.centroid);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "radius");
+    if (!lua_isnil(L, -1)) {
+        polygon.radius = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    return polygon;
+}
+
+void pushPolygon(lua_State* L, b2Polygon polygon) {
+    lua_createtable(L, 0, 5);
+
+    lua_createtable(L, polygon.count, 0);
+    for (int i = 0; i < polygon.count; ++i) {
+        pushVec2(L, polygon.vertices[i]);
+        lua_rawseti(L, -2, i + 1);
+    }
+    lua_setfield(L, -2, "vertices");
+
+    lua_createtable(L, polygon.count, 0);
+    for (int i = 0; i < polygon.count; ++i) {
+        pushVec2(L, polygon.normals[i]);
+        lua_rawseti(L, -2, i + 1);
+    }
+    lua_setfield(L, -2, "normals");
+
+    pushVec2(L, polygon.centroid);
+    lua_setfield(L, -2, "centroid");
+
+    lua_pushnumber(L, polygon.radius);
+    lua_setfield(L, -2, "radius");
+
+    lua_pushinteger(L, polygon.count);
+    lua_setfield(L, -2, "count");
+}
+
+b2ShapeDef constructShapeDef(lua_State* L, int defTableIndex) {
+    b2ShapeDef def = b2DefaultShapeDef();
+
+    lua_getfield(L, defTableIndex, "material");
+    if (lua_istable(L, -1)) {
+        applySurfaceMaterial(L, lua_gettop(L), def.material);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "density");
+    if (!lua_isnil(L, -1)) {
+        def.density = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "filter");
+    if (lua_istable(L, -1)) {
+        applyFilter(L, lua_gettop(L), def.filter);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "enableCustomFiltering");
+    if (!lua_isnil(L, -1)) {
+        def.enableCustomFiltering = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "isSensor");
+    if (!lua_isnil(L, -1)) {
+        def.isSensor = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "enableSensorEvents");
+    if (!lua_isnil(L, -1)) {
+        def.enableSensorEvents = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "enableContactEvents");
+    if (!lua_isnil(L, -1)) {
+        def.enableContactEvents = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "enableHitEvents");
+    if (!lua_isnil(L, -1)) {
+        def.enableHitEvents = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "enablePreSolveEvents");
+    if (!lua_isnil(L, -1)) {
+        def.enablePreSolveEvents = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "invokeContactCreation");
+    if (!lua_isnil(L, -1)) {
+        def.invokeContactCreation = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "updateBodyMass");
+    if (!lua_isnil(L, -1)) {
+        def.updateBodyMass = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    return def;
+}
+
+int createCircleShape(lua_State* L) {
+    b2BodyId bodyId = getBodyIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The shape definition must be a table");
+        return 0;
+    }
+
+    if (!lua_istable(L, 3)) {
+        luaL_argerror(L, 3, "The circle must be a table");
+        return 0;
+    }
+
+    b2ShapeDef def = constructShapeDef(L, 2);
+    b2Circle circle = constructCircle(L, 3);
+
+    b2ShapeId id = b2CreateCircleShape(bodyId, &def, &circle);
+
+    pushShapeId(L, id);
+
+    return 1;
+}
+
+int createSegmentShape(lua_State* L) {
+    b2BodyId bodyId = getBodyIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The shape definition must be a table");
+        return 0;
+    }
+
+    if (!lua_istable(L, 3)) {
+        luaL_argerror(L, 3, "The segment must be a table");
+        return 0;
+    }
+
+    b2ShapeDef def = constructShapeDef(L, 2);
+    b2Segment segment = constructSegment(L, 3);
+
+    b2ShapeId id = b2CreateSegmentShape(bodyId, &def, &segment);
+
+    pushShapeId(L, id);
+
+    return 1;
+}
+
+int createCapsuleShape(lua_State* L) {
+    b2BodyId bodyId = getBodyIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The shape definition must be a table");
+        return 0;
+    }
+
+    if (!lua_istable(L, 3)) {
+        luaL_argerror(L, 3, "The capsule must be a table");
+        return 0;
+    }
+
+    b2ShapeDef def = constructShapeDef(L, 2);
+    b2Capsule capsule = constructCapsule(L, 3);
+
+    b2ShapeId id = b2CreateCapsuleShape(bodyId, &def, &capsule);
+
+    pushShapeId(L, id);
+
+    return 1;
+}
+
+int createPolygonShape(lua_State* L) {
+    b2BodyId bodyId = getBodyIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The shape definition must be a table");
+        return 0;
+    }
+
+    if (!lua_istable(L, 3)) {
+        luaL_argerror(L, 3, "The polygon must be a table");
+        return 0;
+    }
+
+    b2ShapeDef def = constructShapeDef(L, 2);
+    b2Polygon polygon = constructPolygon(L, 3);
+
+    b2ShapeId id = b2CreatePolygonShape(bodyId, &def, &polygon);
+
+    pushShapeId(L, id);
+
+    return 1;
+}
+
+int destroyShape(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+    bool updateBodyMass = lua_toboolean(L, 2);
+
+    b2DestroyShape(id, updateBodyMass);
+
+    return 0;
+}
+
+int shapeIsValid(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    lua_pushboolean(L, b2Shape_IsValid(id));
+
+    return 1;
+}
+
+int shapeGetType(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    lua_pushinteger(L, b2Shape_GetType(id));
+
+    return 1;
+}
+
+int shapeGetBody(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    pushBodyId(L, b2Shape_GetBody(id));
+
+    return 1;
+}
+
+int shapeGetWorld(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    pushWorldId(L, b2Shape_GetWorld(id));
+
+    return 1;
+}
+
+int shapeIsSensor(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    lua_pushboolean(L, b2Shape_IsSensor(id));
+
+    return 1;
+}
+
+int shapeSetDensity(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+    float density = lua_tonumber(L, 2);
+    bool updateBodyMass = lua_toboolean(L, 3);
+
+    b2Shape_SetDensity(id, density, updateBodyMass);
+
+    return 0;
+}
+
+int shapeGetDensity(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    lua_pushnumber(L, b2Shape_GetDensity(id));
+
+    return 1;
+}
+
+int shapeSetFriction(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+    float friction = lua_tonumber(L, 2);
+
+    b2Shape_SetFriction(id, friction);
+
+    return 0;
+}
+
+int shapeGetFriction(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    lua_pushnumber(L, b2Shape_GetFriction(id));
+
+    return 1;
+}
+
+int shapeSetRestitution(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+    float restitution = lua_tonumber(L, 2);
+
+    b2Shape_SetRestitution(id, restitution);
+
+    return 0;
+}
+
+int shapeGetRestitution(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    lua_pushnumber(L, b2Shape_GetRestitution(id));
+
+    return 1;
+}
+
+int shapeSetUserMaterial(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    uint64_t material = lua_tointeger64(L, 2, nullptr);
+
+    b2Shape_SetUserMaterial(id, material);
+
+    return 0;
+}
+
+int shapeGetUserMaterial(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    uint64_t material = b2Shape_GetUserMaterial(id);
+
+    lua_pushinteger64(L, material);
+
+    return 1;
+}
+
+int shapeSetSurfaceMaterial(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "Surface material must be a table");
+        return 0;
+    }
+
+    b2SurfaceMaterial material = b2Shape_GetSurfaceMaterial(id);
+
+    applySurfaceMaterial(L, 2, material);
+
+    b2Shape_SetSurfaceMaterial(id, &material);
+
+    return 0;
+}
+
+int shapeGetSurfaceMaterial(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    pushSurfaceMaterial(L, b2Shape_GetSurfaceMaterial(id));
+
+    return 1;
+}
+
+int shapeGetFilter(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    b2Filter filter = b2Shape_GetFilter(id);
+    pushFilter(L, filter);
+
+    return 1;
+}
+
+int shapeSetFilter(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The filter must be a table");
+        return 0;
+    }
+
+    b2Filter filter = b2Shape_GetFilter(id);
+    applyFilter(L, 2, filter);
+
+    b2Shape_SetFilter(id, filter);
+
+    return 0;
+}
+
+int shapeEnableSensorEvents(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+    bool flag = lua_toboolean(L, 2);
+
+    b2Shape_EnableSensorEvents(id, flag);
+
+    return 0;
+}
+
+int shapeAreSensorEventsEnabled(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    lua_pushboolean(L, b2Shape_AreSensorEventsEnabled(id));
+
+    return 1;
+}
+
+int shapeEnableContactEvents(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+    bool flag = lua_toboolean(L, 2);
+
+    b2Shape_EnableContactEvents(id, flag);
+
+    return 0;
+}
+
+int shapeAreContactEventsEnabled(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    lua_pushboolean(L, b2Shape_AreContactEventsEnabled(id));
+
+    return 1;
+}
+
+int shapeEnablePreSolveEvents(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+    bool flag = lua_toboolean(L, 2);
+
+    b2Shape_EnablePreSolveEvents(id, flag);
+
+    return 0;
+}
+
+int shapeArePreSolveEventsEnabled(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    lua_pushboolean(L, b2Shape_ArePreSolveEventsEnabled(id));
+
+    return 1;
+}
+
+int shapeEnableHitEvents(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+    bool flag = lua_toboolean(L, 2);
+
+    b2Shape_EnableHitEvents(id, flag);
+
+    return 0;
+}
+
+int shapeAreHitEventsEnabled(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    lua_pushboolean(L, b2Shape_AreHitEventsEnabled(id));
+
+    return 1;
+}
+
+int shapeTestPoint(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    b2Pos point = {
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
+    };
+
+    lua_pushboolean(L, b2Shape_TestPoint(id, point));
+
+    return 1;
+}
+
+int shapeGetCircle(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    pushCircle(L, b2Shape_GetCircle(id));
+
+    return 1;
+}
+
+int shapeGetSegment(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    pushSegment(L, b2Shape_GetSegment(id));
+
+    return 1;
+}
+
+int shapeGetCapsule(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    pushCapsule(L, b2Shape_GetCapsule(id));
+
+    return 1;
+}
+
+int shapeGetPolygon(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    pushPolygon(L, b2Shape_GetPolygon(id));
+
+    return 1;
+}
+
+int shapeSetCircle(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The circle must be a table");
+        return 0;
+    }
+
+    b2Circle circle = constructCircle(L, 2);
+
+    b2Shape_SetCircle(id, &circle);
+
+    return 0;
+}
+
+int shapeSetCapsule(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The capsule must be a table");
+        return 0;
+    }
+
+    b2Capsule capsule = constructCapsule(L, 2);
+
+    b2Shape_SetCapsule(id, &capsule);
+
+    return 0;
+}
+
+int shapeSetSegment(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The segment must be a table");
+        return 0;
+    }
+
+    b2Segment segment = constructSegment(L, 2);
+
+    b2Shape_SetSegment(id, &segment);
+
+    return 0;
+}
+
+int shapeSetPolygon(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The polygon must be a table");
+        return 0;
+    }
+
+    b2Polygon polygon = constructPolygon(L, 2);
+
+    b2Shape_SetPolygon(id, &polygon);
+
+    return 0;
+}
+
+int shapeGetContactCapacity(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    lua_pushinteger(L, b2Shape_GetContactCapacity(id));
+
+    return 1;
+}
+
+int shapeGetSensorCapacity(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    lua_pushinteger(L, b2Shape_GetSensorCapacity(id));
+
+    return 1;
+}
+
+int shapeGetAABB(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    b2AABB aabb = b2Shape_GetAABB(id);
+
+    lua_pushnumber(L, aabb.lowerBound.x);
+    lua_pushnumber(L, aabb.lowerBound.y);
+    lua_pushnumber(L, aabb.upperBound.x);
+    lua_pushnumber(L, aabb.upperBound.y);
+
+    return 4;
+}
+
+int shapeComputeMassData(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    b2MassData massData = b2Shape_ComputeMassData(id);
+
+    pushMassData(L, massData);
+
+    return 1;
+}
+
+int shapeGetClosestPoint(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    b2Pos target = {
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
+    };
+
+    b2Pos point = b2Shape_GetClosestPoint(id, target);
+
+    lua_pushnumber(L, point.x);
+    lua_pushnumber(L, point.y);
+
+    return 2;
+}
+
+int shapeApplyWind(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    b2Vec2 wind = {
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
+    };
+
+    float drag = lua_tonumber(L, 4);
+    float lift = lua_tonumber(L, 5);
+    bool wake = lua_toboolean(L, 6);
+
+    b2Shape_ApplyWind(id, wind, drag, lift, wake);
+
+    return 0;
+}
+
 static const luaL_Reg box2d_lib[] = {
     // World
     {"createWorld", createWorld},
@@ -1474,11 +2431,57 @@ static const luaL_Reg box2d_lib[] = {
     {"bodyGetContactCapacity", bodyGetContactCapacity},
     {"bodyComputeAABB", bodyComputeAABB},
 
+    // Shape
+    {"createCircleShape", createCircleShape},
+    {"createSegmentShape", createSegmentShape},
+    {"createCapsuleShape", createCapsuleShape},
+    {"createPolygonShape", createPolygonShape},
+    {"destroyShape", destroyShape},
+    {"shapeIsValid", shapeIsValid},
+    {"shapeGetType", shapeGetType},
+    {"shapeGetBody", shapeGetBody},
+    {"shapeGetWorld", shapeGetWorld},
+    {"shapeIsSensor", shapeIsSensor},
+    {"shapeSetDensity", shapeSetDensity},
+    {"shapeGetDensity", shapeGetDensity},
+    {"shapeSetFriction", shapeSetFriction},
+    {"shapeGetFriction", shapeGetFriction},
+    {"shapeSetRestitution", shapeSetRestitution},
+    {"shapeGetRestitution", shapeGetRestitution},
+    {"shapeSetUserMaterial", shapeSetUserMaterial},
+    {"shapeGetUserMaterial", shapeGetUserMaterial},
+    {"shapeSetSurfaceMaterial", shapeSetSurfaceMaterial},
+    {"shapeGetSurfaceMaterial", shapeGetSurfaceMaterial},
+    {"shapeGetFilter", shapeGetFilter},
+    {"shapeSetFilter", shapeSetFilter},
+    {"shapeEnableSensorEvents", shapeEnableSensorEvents},
+    {"shapeAreSensorEventsEnabled", shapeAreSensorEventsEnabled},
+    {"shapeEnableContactEvents", shapeEnableContactEvents},
+    {"shapeAreContactEventsEnabled", shapeAreContactEventsEnabled},
+    {"shapeEnablePreSolveEvents", shapeEnablePreSolveEvents},
+    {"shapeArePreSolveEventsEnabled", shapeArePreSolveEventsEnabled},
+    {"shapeEnableHitEvents", shapeEnableHitEvents},
+    {"shapeAreHitEventsEnabled", shapeAreHitEventsEnabled},
+    {"shapeTestPoint", shapeTestPoint},
+    {"shapeGetCircle", shapeGetCircle},
+    {"shapeGetSegment", shapeGetSegment},
+    {"shapeGetCapsule", shapeGetCapsule},
+    {"shapeGetPolygon", shapeGetPolygon},
+    {"shapeSetCircle", shapeSetCircle},
+    {"shapeSetCapsule", shapeSetCapsule},
+    {"shapeSetSegment", shapeSetSegment},
+    {"shapeSetPolygon", shapeSetPolygon},
+    {"shapeGetContactCapacity", shapeGetContactCapacity},
+    {"shapeGetSensorCapacity", shapeGetSensorCapacity},
+    {"shapeGetAABB", shapeGetAABB},
+    {"shapeComputeMassData", shapeComputeMassData},
+    {"shapeGetClosestPoint", shapeGetClosestPoint},
+    {"shapeApplyWind", shapeApplyWind},
+
     {nullptr, nullptr},
 };
 
 void registerBox2dFunctions(lua_State* L, ResourceState* state) {
     luaL_register(L, "box2d", box2d_lib);
     lua_setreadonly(L, -1, 1);
-    lua_setfield(L, -2, "box2d");
 }
