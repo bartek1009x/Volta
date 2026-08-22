@@ -150,6 +150,16 @@ int shapeComputeMassData(lua_State* L);
 int shapeGetClosestPoint(lua_State* L);
 int shapeApplyWind(lua_State* L);
 
+// Make
+int makeOffsetRoundedBox(lua_State* L);
+int makeOffsetBox(lua_State* L);
+int makeRoundedBox(lua_State* L);
+int makeBox(lua_State* L);
+int makeSquare(lua_State* L);
+int makeOffsetRoundedPolygon(lua_State* L);
+int makeOffsetPolygon(lua_State* L);
+int makePolygon(lua_State* L);
+
 void registerBox2dFunctions(lua_State* L, ResourceState* state);
 
 #endif

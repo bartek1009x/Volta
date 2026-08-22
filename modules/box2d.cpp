@@ -2,6 +2,7 @@
 
 #include "../dependencies/luau/VM/include/lualib.h"
 #include "box2d/box2d.h"
+#include "box2d/collision.h"
 #include "box2d/id.h"
 #include "box2d/math_functions.h"
 #include "box2d/types.h"
@@ -2346,6 +2347,180 @@ int shapeApplyWind(lua_State* L) {
     return 0;
 }
 
+// Make
+
+b2Hull constructHull(lua_State* L, int index) {
+    b2Hull hull = {};
+
+    lua_getfield(L, index, "count");
+    if (!lua_isnil(L, -1)) {
+        hull.count = lua_tointeger(L, -1);
+    }
+    lua_pop(L, 1);
+
+    if (hull.count < 0) {
+        hull.count = 0;
+    }
+    else if (hull.count > B2_MAX_POLYGON_VERTICES) {
+        hull.count = B2_MAX_POLYGON_VERTICES;
+    }
+
+    lua_getfield(L, index, "points");
+    if (lua_istable(L, -1)) {
+        int pointsIndex = lua_gettop(L);
+
+        for (int i = 0; i < hull.count; ++i) {
+            lua_rawgeti(L, pointsIndex, i + 1);
+
+            if (lua_istable(L, -1)) {
+                applyVec2(L, lua_gettop(L), hull.points[i]);
+            }
+
+            lua_pop(L, 1);
+        }
+    }
+    lua_pop(L, 1);
+
+    return hull;
+}
+
+int makeOffsetRoundedBox(lua_State* L) {
+    float halfWidth = lua_tonumber(L, 1);
+    float halfHeight = lua_tonumber(L, 2);
+
+    b2Vec2 center = {
+        static_cast<float>(lua_tonumber(L, 3)),
+        static_cast<float>(lua_tonumber(L, 4))
+    };
+
+    b2Rot rotation = {
+        static_cast<float>(lua_tonumber(L, 5)),
+        static_cast<float>(lua_tonumber(L, 6))
+    };
+
+    float radius = lua_tonumber(L, 7);
+
+    b2Polygon polygon = b2MakeOffsetRoundedBox(halfWidth, halfHeight, center, rotation, radius);
+    pushPolygon(L, polygon);
+
+    return 1;
+}
+
+int makeOffsetBox(lua_State* L) {
+    float halfWidth = lua_tonumber(L, 1);
+    float halfHeight = lua_tonumber(L, 2);
+
+    b2Vec2 center = {
+        static_cast<float>(lua_tonumber(L, 3)),
+        static_cast<float>(lua_tonumber(L, 4))
+    };
+
+    b2Rot rotation = {
+        static_cast<float>(lua_tonumber(L, 5)),
+        static_cast<float>(lua_tonumber(L, 6))
+    };
+
+    b2Polygon polygon = b2MakeOffsetBox(halfWidth, halfHeight, center, rotation);
+    pushPolygon(L, polygon);
+
+    return 1;
+}
+
+int makeRoundedBox(lua_State* L) {
+    float halfWidth = lua_tonumber(L, 1);
+    float halfHeight = lua_tonumber(L, 2);
+    float radius = lua_tonumber(L, 3);
+
+    b2Polygon polygon = b2MakeRoundedBox(halfWidth, halfHeight, radius);
+    pushPolygon(L, polygon);
+
+    return 1;
+}
+
+int makeBox(lua_State* L) {
+    float halfWidth = lua_tonumber(L, 1);
+    float halfHeight = lua_tonumber(L, 2);
+
+    b2Polygon polygon = b2MakeBox(halfWidth, halfHeight);
+    pushPolygon(L, polygon);
+
+    return 1;
+}
+
+int makeSquare(lua_State* L) {
+    float halfWidth = lua_tonumber(L, 1);
+
+    b2Polygon polygon = b2MakeSquare(halfWidth);
+    pushPolygon(L, polygon);
+
+    return 1;
+}
+
+int makeOffsetRoundedPolygon(lua_State* L) {
+    if (!lua_istable(L, 1)) {
+        luaL_argerror(L, 1, "The hull must be a table");
+        return 0;
+    }
+
+    b2Hull hull = constructHull(L, 1);
+
+    b2Vec2 position = {
+        static_cast<float>(lua_tonumber(L, 2)),
+        static_cast<float>(lua_tonumber(L, 3))
+    };
+
+    b2Rot rotation = {
+        static_cast<float>(lua_tonumber(L, 4)),
+        static_cast<float>(lua_tonumber(L, 5))
+    };
+
+    float radius = lua_tonumber(L, 6);
+
+    b2Polygon polygon = b2MakeOffsetRoundedPolygon(&hull, position, rotation, radius);
+    pushPolygon(L, polygon);
+
+    return 1;
+}
+
+int makeOffsetPolygon(lua_State* L) {
+    if (!lua_istable(L, 1)) {
+        luaL_argerror(L, 1, "The hull must be a table");
+        return 0;
+    }
+
+    b2Hull hull = constructHull(L, 1);
+
+    b2Vec2 position = {
+        static_cast<float>(lua_tonumber(L, 2)),
+        static_cast<float>(lua_tonumber(L, 3))
+    };
+
+    b2Rot rotation = {
+        static_cast<float>(lua_tonumber(L, 4)),
+        static_cast<float>(lua_tonumber(L, 5))
+    };
+
+    b2Polygon polygon = b2MakeOffsetPolygon(&hull, position, rotation);
+    pushPolygon(L, polygon);
+
+    return 1;
+}
+
+int makePolygon(lua_State* L) {
+    if (!lua_istable(L, 1)) {
+        luaL_argerror(L, 1, "The hull must be a table");
+        return 0;
+    }
+
+    b2Hull hull = constructHull(L, 1);
+    float radius = lua_tonumber(L, 2);
+
+    b2Polygon polygon = b2MakePolygon(&hull, radius);
+    pushPolygon(L, polygon);
+
+    return 1;
+}
+
 static const luaL_Reg box2d_lib[] = {
     // World
     {"createWorld", createWorld},
@@ -2477,6 +2652,16 @@ static const luaL_Reg box2d_lib[] = {
     {"shapeComputeMassData", shapeComputeMassData},
     {"shapeGetClosestPoint", shapeGetClosestPoint},
     {"shapeApplyWind", shapeApplyWind},
+
+    // Make
+    {"makeOffsetRoundedBox", makeOffsetRoundedBox},
+    {"makeOffsetBox", makeOffsetBox},
+    {"makeRoundedBox", makeRoundedBox},
+    {"makeBox", makeBox},
+    {"makeSquare", makeSquare},
+    {"makeOffsetRoundedPolygon", makeOffsetRoundedPolygon},
+    {"makeOffsetPolygon", makeOffsetPolygon},
+    {"makePolygon", makePolygon},
 
     {nullptr, nullptr},
 };

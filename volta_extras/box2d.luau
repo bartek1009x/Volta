@@ -146,6 +146,11 @@ export type polygon = {
     count: number,
 }
 
+export type hull = {
+    points: {vec2},
+    count: number,
+}
+
 -- World
 
 function box2d.createWorld(worldDef: worldDef) : worldId
@@ -458,5 +463,32 @@ function box2d.shapeGetClosestPoint(shapeId: shapeId, targetX: number, targetY: 
     return 0, 0
 end
 function box2d.shapeApplyWind(shapeId: shapeId, windX: number, windY: number, drag: number, lift: number, wake: boolean) end
+
+-- Make
+
+function box2d.makeOffsetRoundedBox(halfWidth: number, halfHeight: number, centerX: number, centerY: number, rotationC: number, rotationS: number, radius: number): polygon
+    return {} :: polygon
+end
+function box2d.makeOffsetBox(halfWidth: number, halfHeight: number, centerX: number, centerY: number, rotationC: number, rotationS: number): polygon
+    return {} :: polygon
+end
+function box2d.makeRoundedBox(halfWidth: number, halfHeight: number, radius: number): polygon
+    return {} :: polygon
+end
+function box2d.makeBox(halfWidth: number, halfHeight: number): polygon
+    return {} :: polygon
+end
+function box2d.makeSquare(halfWidth: number): polygon
+    return {} :: polygon
+end
+function box2d.makeOffsetRoundedPolygon(hull: hull, positionX: number, positionY: number, rotationC: number, rotationS: number, radius: number): polygon
+    return {} :: polygon
+end
+function box2d.makeOffsetPolygon(hull: hull, positionX: number, positionY: number, rotationC: number, rotationS: number): polygon
+    return {} :: polygon
+end
+function box2d.makePolygon(hull: hull, radius: number): polygon
+    return {} :: polygon
+end
 
 return table.freeze(box2d)
