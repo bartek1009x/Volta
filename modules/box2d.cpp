@@ -341,6 +341,58 @@ int worldGetMaxCapacity(lua_State* L) {
     return 1;
 }
 
+int worldGetCounters(lua_State* L) {
+    b2WorldId id = getIdFromLuau(L);
+    b2Counters counters = b2World_GetCounters(id);
+
+    lua_createtable(L, 0, 13);
+
+    lua_pushinteger64(L, counters.byteCount);
+    lua_setfield(L, -2, "byteCount");
+
+    lua_pushinteger(L, counters.bodyCount);
+    lua_setfield(L, -2, "bodyCount");
+
+    lua_pushinteger(L, counters.shapeCount);
+    lua_setfield(L, -2, "shapeCount");
+
+    lua_pushinteger(L, counters.contactCount);
+    lua_setfield(L, -2, "contactCount");
+
+    lua_pushinteger(L, counters.jointCount);
+    lua_setfield(L, -2, "jointCount");
+
+    lua_pushinteger(L, counters.islandCount);
+    lua_setfield(L, -2, "islandCount");
+
+    lua_pushinteger(L, counters.stackUsed);
+    lua_setfield(L, -2, "stackUsed");
+
+    lua_pushinteger(L, counters.staticTreeHeight);
+    lua_setfield(L, -2, "staticTreeHeight");
+
+    lua_pushinteger(L, counters.treeHeight);
+    lua_setfield(L, -2, "treeHeight");
+
+    lua_pushinteger(L, counters.taskCount);
+    lua_setfield(L, -2, "taskCount");
+
+    lua_createtable(L, 24, 0);
+    for (int i = 0; i < 24; ++i) {
+        lua_pushinteger(L, counters.colorCounts[i]);
+        lua_rawseti(L, -2, i + 1);
+    }
+    lua_setfield(L, -2, "colorCounts");
+
+    lua_pushinteger(L, counters.awakeContactCount);
+    lua_setfield(L, -2, "awakeContactCount");
+
+    lua_pushinteger(L, counters.recycledContactCount);
+    lua_setfield(L, -2, "recycledContactCount");
+
+    return 1;
+}
+
 int worldSetWorkerCount(lua_State* L) {
     b2WorldId id = getIdFromLuau(L);
     int count = lua_tointeger(L, 2);
@@ -391,6 +443,7 @@ static const luaL_Reg box2d_lib[] = {
     {"worldEnableWarmStarting", worldEnableWarmStarting},
     {"worldIsWarmStartingEnabled", worldIsWarmStartingEnabled},
     {"worldGetAwakeBodyCount", worldGetAwakeBodyCount},
+    {"worldGetCounters", worldGetCounters},
     {"worldGetMaxCapacity", worldGetMaxCapacity},
     {"worldSetWorkerCount", worldSetWorkerCount},
     {"worldGetWorkerCount", worldGetWorkerCount},

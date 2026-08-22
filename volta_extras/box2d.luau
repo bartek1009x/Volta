@@ -22,6 +22,24 @@ export type worldDef = {
     workerCount: number?,
     capacity: capacity?
 }
+export type counters = {
+    byteCount: number,
+
+   	bodyCount: number,
+	shapeCount: number,
+	contactCount: number,
+	jointCount: number,
+	islandCount: number,
+	stackUsed: number,
+	staticTreeHeight: number,
+	treeHeight: number,
+	taskCount: number,
+	colorCounts: {number},
+
+	awakeContactCount: number,
+
+	recycledContactCount: number
+}
 
 function box2d.createWorld(worldDef: worldDef) : worldId
     return {0, 0}
@@ -69,6 +87,9 @@ function box2d.worldIsWarmStartingEnabled(worldId: worldId) : boolean
 end
 function box2d.worldGetAwakeBodyCount(worldId: worldId) : number
     return 0
+end
+function box2d.worldGetCounters(worldId: worldId) : counters
+    return {} :: counters
 end
 function box2d.worldGetMaxCapacity(worldId: worldId) : capacity
     return {} :: capacity

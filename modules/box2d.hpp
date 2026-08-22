@@ -27,6 +27,7 @@ int worldGetMaximumLinearSpeed(lua_State* L);
 int worldEnableWarmStarting(lua_State* L);
 int worldIsWarmStartingEnabled(lua_State* L);
 int worldGetAwakeBodyCount(lua_State* L);
+int worldGetCounters(lua_State* L);
 int worldGetMaxCapacity(lua_State* L);
 int worldSetWorkerCount(lua_State* L);
 int worldGetWorkerCount(lua_State* L);
