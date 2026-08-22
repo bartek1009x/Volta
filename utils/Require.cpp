@@ -24,6 +24,7 @@
 #include "../modules/color.hpp"
 #include "../modules/sprite.hpp"
 #include "../modules/animatedSprite.hpp"
+#include "../modules/box2d.hpp"
 
 #include "RequireContext.hpp"
 
@@ -176,6 +177,9 @@ static void LibRequire_InitConfiguration(luarequire_Configuration *config) {
 	    std::string pathStr{path};
 	    if (pathStr.substr(pathStr.size() - 5) == "volta") {
 			pushVoltaModule(L);
+            return 1;
+		} else if (pathStr.substr(pathStr.size() - 5) == "box2d") {
+            registerBox2dFunctions(L, resourceState);
             return 1;
 		}
 

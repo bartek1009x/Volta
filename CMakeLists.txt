@@ -4,6 +4,7 @@ project(volta)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_subdirectory(dependencies/box2d)
 add_subdirectory(dependencies/luau)
 set(VOLTA_EXTRAS_DIR ${CMAKE_SOURCE_DIR}/volta_extras)
 
@@ -25,6 +26,7 @@ set(SOURCE_FILES
     modules/color.cpp
     modules/sprite.cpp
     modules/animatedSprite.cpp
+    modules/box2d.cpp
 )
 
 # SDL3
@@ -125,7 +127,7 @@ add_custom_command(TARGET volta POST_BUILD
         $<TARGET_FILE_DIR:volta>/volta.luau
 )
 
-target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image::SDL3_image SDL3_mixer::SDL3_mixer SDL3_ttf::SDL3_ttf OpenSSL::SSL OpenSSL::Crypto Luau.Compiler Luau.Require Luau.VM Luau.CodeGen)
+target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image::SDL3_image SDL3_mixer::SDL3_mixer SDL3_ttf::SDL3_ttf OpenSSL::SSL OpenSSL::Crypto Luau.Compiler Luau.Require Luau.VM Luau.CodeGen box2d)
 
 if (WIN32)
     add_custom_command(TARGET volta POST_BUILD
