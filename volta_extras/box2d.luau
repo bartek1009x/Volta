@@ -203,6 +203,40 @@ export type sensorEvents = {
     endCount: number,
 }
 
+export type queryFilter = {
+    categoryBits: number,
+    maskBits: number,
+}
+export type treeStats = {
+    nodeVisits: number,
+    leafVisits: number,
+}
+export type rayResult = {
+    hit: boolean,
+    nodeVisits: number,
+    leafVisits: number,
+    shapeId: shapeId?,
+    point: vec2?,
+    normal: vec2?,
+    fraction: number?,
+}
+export type castResultCallback = (shapeId, number, number, number, number, number) -> number
+export type shapeProxy = {
+    points: {vec2},
+    count: number,
+    radius: number,
+}
+export type plane = {
+    normal: vec2,
+    offset: number,
+}
+export type planeResult = {
+    plane: plane,
+    point: vec2,
+    hit: boolean,
+}
+export type planeResultCallback = (shapeId: shapeId, result: planeResult) -> boolean
+
 -- World
 
 function box2d.createWorld(worldDef: worldDef) : worldId
@@ -277,6 +311,22 @@ end
 function box2d.contactIsValid(contactId: contactId): boolean
     return false
 end
+
+-- Raycast
+
+function box2d.worldCastRay(worldId: worldId, originX: number, originY: number, translationX: number, translationY: number, filter: queryFilter, callback: castResultCallback): treeStats
+    return {} :: treeStats
+end
+function box2d.worldCastRayClosest(worldId: worldId, originX: number, originY: number, translationX: number, translationY: number, filter: queryFilter): rayResult
+    return {} :: rayResult
+end
+function box2d.worldCastShape(worldId: worldId, originX: number, originY: number, proxy: shapeProxy, translationX: number, translationY: number, filter: queryFilter, callback: castResultCallback): treeStats
+    return {} :: treeStats
+end
+function box2d.worldCastMover(worldId: worldId, originX: number, originY: number, mover: capsule, translationX: number, translationY: number, filter: queryFilter): number
+    return 0
+end
+function box2d.worldCollideMover(worldId: worldId, originX: number, originY: number, mover: capsule, filter: queryFilter, callback: planeResultCallback) end
 
 -- Body
 

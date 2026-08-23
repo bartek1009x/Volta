@@ -6,6 +6,23 @@
 #include "../utils/ResourceState.hpp"
 
 // Helpers
+b2WorldDef constructWorldDef(lua_State* L, int defTableIndex);
+b2QueryFilter constructQueryFilter(lua_State* L, int index);
+b2BodyDef constructBodyDef(lua_State* L, int defTableIndex);
+b2Segment constructSegment(lua_State* L, int index);
+b2Filter constructFilter(lua_State* L, int index);
+b2Circle constructCircle(lua_State* L, int index);
+b2Capsule constructCapsule(lua_State* L, int index);
+b2Polygon constructPolygon(lua_State* L, int index);
+b2ShapeDef constructShapeDef(lua_State* L, int defTableIndex);
+b2Hull constructHull(lua_State* L, int index);
+b2QueryFilter constructQueryFilter(lua_State* L, int index);
+b2ShapeProxy constructShapeProxy(lua_State* L, int index);
+
+void applyVec2(lua_State* L, int index, b2Vec2& value);
+void applySurfaceMaterial(lua_State* L, int index, b2SurfaceMaterial& material);
+void applyFilter(lua_State* L, int index, b2Filter& filter);
+
 void pushWorldId(lua_State* L, b2WorldId id);
 void pushBodyId(lua_State* L, b2BodyId id);
 void pushMassData(lua_State* L, b2MassData data);
@@ -18,6 +35,11 @@ void pushFilter(lua_State* L, b2Filter filter);
 void pushCircle(lua_State* L, b2Circle circle);
 void pushCapsule(lua_State* L, b2Capsule capsule);
 void pushContactId(lua_State* L, b2ContactId id);
+void pushTreeStats(lua_State* L, b2TreeStats stats);
+void pushRayResult(lua_State* L, b2RayResult result);
+void pushPlane(lua_State* L, b2Plane plane);
+void pushPlaneResult(lua_State* L, const b2PlaneResult& result);
+bool planeResultCallback(b2ShapeId shapeId, const b2PlaneResult* plane, void* context);
 
 // World
 int createWorld(lua_State* L);
@@ -52,6 +74,13 @@ int worldSetWorkerCount(lua_State* L);
 int worldGetWorkerCount(lua_State* L);
 int worldGetStateHash(lua_State* L);
 int contactIsValid(lua_State* L);
+
+// Raycast
+int worldCastRay(lua_State* L);
+int worldCastRayClosest(lua_State* L);
+int worldCastShape(lua_State* L);
+int worldCastMover(lua_State* L);
+int worldCollideMover(lua_State* L);
 
 // Body
 int createBody(lua_State* L);

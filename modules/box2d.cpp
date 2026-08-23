@@ -670,6 +670,327 @@ int contactIsValid(lua_State* L) {
     return 1;
 }
 
+// Rayast
+
+b2QueryFilter constructQueryFilter(lua_State* L, int index) {
+    b2QueryFilter filter = {};
+
+    if (!lua_istable(L, index)) {
+        luaL_argerror(L, index, "The query filter must be a table");
+        return filter;
+    }
+
+    lua_getfield(L, index, "categoryBits");
+    if (!lua_isnil(L, -1)) {
+        filter.categoryBits = static_cast<uint64_t>(lua_tointeger64(L, -1, nullptr));
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maskBits");
+    if (!lua_isnil(L, -1)) {
+        filter.maskBits = static_cast<uint64_t>(lua_tointeger64(L, -1, nullptr));
+    }
+    lua_pop(L, 1);
+
+    return filter;
+}
+
+void pushTreeStats(lua_State* L, b2TreeStats stats) {
+    lua_createtable(L, 0, 2);
+
+    lua_pushinteger(L, stats.nodeVisits);
+    lua_setfield(L, -2, "nodeVisits");
+
+    lua_pushinteger(L, stats.leafVisits);
+    lua_setfield(L, -2, "leafVisits");
+}
+
+void pushRayResult(lua_State* L, b2RayResult result) {
+    lua_createtable(L, 0, result.hit ? 7 : 3);
+
+    lua_pushboolean(L, result.hit);
+    lua_setfield(L, -2, "hit");
+
+    lua_pushinteger(L, result.nodeVisits);
+    lua_setfield(L, -2, "nodeVisits");
+
+    lua_pushinteger(L, result.leafVisits);
+    lua_setfield(L, -2, "leafVisits");
+
+    if (result.hit) {
+        pushShapeId(L, result.shapeId);
+        lua_setfield(L, -2, "shapeId");
+
+        pushVec2(L, result.point);
+        lua_setfield(L, -2, "point");
+
+        pushVec2(L, result.normal);
+        lua_setfield(L, -2, "normal");
+
+        lua_pushnumber(L, result.fraction);
+        lua_setfield(L, -2, "fraction");
+    }
+}
+
+struct CastResultContext {
+    lua_State* L;
+    int callbackIndex;
+};
+
+float castResultCallback(b2ShapeId shapeId, b2Pos point, b2Vec2 normal, float fraction, void* context) {
+    CastResultContext* castContext = static_cast<CastResultContext*>(context);
+    lua_State* L = castContext->L;
+
+    lua_pushvalue(L, castContext->callbackIndex);
+
+    pushShapeId(L, shapeId);
+
+    lua_pushnumber(L, point.x);
+    lua_pushnumber(L, point.y);
+
+    lua_pushnumber(L, normal.x);
+    lua_pushnumber(L, normal.y);
+
+    lua_pushnumber(L, fraction);
+
+    lua_call(L, 6, 1);
+
+    float result = lua_tonumber(L, -1);
+    lua_pop(L, 1);
+
+    return result;
+}
+
+int worldCastRay(lua_State* L) {
+    b2WorldId id = getWorldIdFromLuau(L);
+
+    b2Pos origin = {
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
+    };
+
+    b2Vec2 translation = {
+        (float) (lua_tonumber(L, 4)),
+        (float) (lua_tonumber(L, 5))
+    };
+
+    b2QueryFilter filter = constructQueryFilter(L, 6);
+
+    if (lua_type(L, 7) != LUA_TFUNCTION) {
+        luaL_argerror(L, 7, "The cast callback must be a function");
+        return 0;
+    }
+
+    CastResultContext context = {L, 7};
+
+    b2TreeStats stats = b2World_CastRay(id, origin, translation, filter, castResultCallback, &context);
+
+    pushTreeStats(L, stats);
+
+    return 1;
+}
+
+int worldCastRayClosest(lua_State* L) {
+    b2WorldId id = getWorldIdFromLuau(L);
+
+    b2Pos origin = {
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
+    };
+
+    b2Vec2 translation = {
+        (float) (lua_tonumber(L, 4)),
+        (float) (lua_tonumber(L, 5))
+    };
+
+    b2QueryFilter filter = constructQueryFilter(L, 6);
+
+    b2RayResult result = b2World_CastRayClosest(id, origin, translation, filter);
+
+    pushRayResult(L, result);
+
+    return 1;
+}
+
+b2ShapeProxy constructShapeProxy(lua_State* L, int index) {
+    b2ShapeProxy proxy = {};
+
+    lua_getfield(L, index, "count");
+    if (!lua_isnil(L, -1)) {
+        proxy.count = lua_tointeger(L, -1);
+    }
+    lua_pop(L, 1);
+
+    if (proxy.count < 0) {
+        proxy.count = 0;
+    }
+    else if (proxy.count > B2_MAX_POLYGON_VERTICES) {
+        proxy.count = B2_MAX_POLYGON_VERTICES;
+    }
+
+    lua_getfield(L, index, "points");
+    if (lua_istable(L, -1)) {
+        int pointsIndex = lua_gettop(L);
+
+        for (int i = 0; i < proxy.count; ++i) {
+            lua_rawgeti(L, pointsIndex, i + 1);
+
+            if (lua_istable(L, -1)) {
+                applyVec2(L, lua_gettop(L), proxy.points[i]);
+            }
+
+            lua_pop(L, 1);
+        }
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "radius");
+    if (!lua_isnil(L, -1)) {
+        proxy.radius = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    return proxy;
+}
+
+int worldCastShape(lua_State* L) {
+    b2WorldId id = getWorldIdFromLuau(L);
+
+    b2Pos origin = {
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
+    };
+
+    if (!lua_istable(L, 4)) {
+        luaL_argerror(L, 4, "The shape proxy must be a table");
+        return 0;
+    }
+
+    b2ShapeProxy proxy = constructShapeProxy(L, 4);
+
+    b2Vec2 translation = {
+        (float) (lua_tonumber(L, 5)),
+        (float) (lua_tonumber(L, 6))
+    };
+
+    b2QueryFilter filter = constructQueryFilter(L, 7);
+
+    if (lua_type(L, 8) != LUA_TFUNCTION) {
+        luaL_argerror(L, 8, "The cast callback must be a function");
+        return 0;
+    }
+
+    CastResultContext context = {L, 8};
+
+    b2TreeStats stats = b2World_CastShape(id, origin, &proxy, translation, filter, castResultCallback, &context);
+
+    pushTreeStats(L, stats);
+
+    return 1;
+}
+
+int worldCastMover(lua_State* L) {
+    b2WorldId id = getWorldIdFromLuau(L);
+
+    b2Pos origin = {
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
+    };
+
+    if (!lua_istable(L, 4)) {
+        luaL_argerror(L, 4, "The mover capsule must be a table");
+        return 0;
+    }
+
+    b2Capsule mover = constructCapsule(L, 4);
+
+    b2Vec2 translation = {
+        (float) (lua_tonumber(L, 5)),
+        (float) (lua_tonumber(L, 6))
+    };
+
+    b2QueryFilter filter = constructQueryFilter(L, 7);
+
+    float fraction = b2World_CastMover(id, origin, &mover, translation, filter);
+
+    lua_pushnumber(L, fraction);
+
+    return 1;
+}
+
+struct PlaneResultContext {
+    lua_State* L;
+    int callbackIndex;
+};
+
+void pushPlane(lua_State* L, b2Plane plane) {
+    lua_createtable(L, 0, 2);
+
+    pushVec2(L, plane.normal);
+    lua_setfield(L, -2, "normal");
+
+    lua_pushnumber(L, plane.offset);
+    lua_setfield(L, -2, "offset");
+}
+
+void pushPlaneResult(lua_State* L, const b2PlaneResult& result) {
+    lua_createtable(L, 0, 3);
+
+    pushPlane(L, result.plane);
+    lua_setfield(L, -2, "plane");
+
+    pushVec2(L, result.point);
+    lua_setfield(L, -2, "point");
+
+    lua_pushboolean(L, result.hit);
+    lua_setfield(L, -2, "hit");
+}
+
+bool planeResultCallback(b2ShapeId shapeId, const b2PlaneResult* plane, void* context) {
+    PlaneResultContext* planeContext = static_cast<PlaneResultContext*>(context);
+    lua_State* L = planeContext->L;
+
+    lua_pushvalue(L, planeContext->callbackIndex);
+
+    pushShapeId(L, shapeId);
+    pushPlaneResult(L, *plane);
+
+    lua_call(L, 2, 1);
+
+    bool result = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+
+    return result;
+}
+
+int worldCollideMover(lua_State* L) {
+    b2WorldId id = getWorldIdFromLuau(L);
+
+    b2Pos origin = {
+        static_cast<float>(lua_tonumber(L, 2)),
+        static_cast<float>(lua_tonumber(L, 3))
+    };
+
+    if (!lua_istable(L, 4)) {
+        luaL_argerror(L, 4, "The mover capsule must be a table");
+        return 0;
+    }
+
+    b2Capsule mover = constructCapsule(L, 4);
+    b2QueryFilter filter = constructQueryFilter(L, 5);
+
+    if (lua_type(L, 6) != LUA_TFUNCTION) {
+        luaL_argerror(L, 6, "The plane callback must be a function");
+        return 0;
+    }
+
+    PlaneResultContext context = {L, 6};
+
+    b2World_CollideMover(id, origin, &mover, filter, planeResultCallback, &context);
+
+    return 0;
+}
+
 // Body
 
 b2BodyId getBodyIdFromLuau(lua_State* L) {
@@ -2761,6 +3082,13 @@ static const luaL_Reg box2d_lib[] = {
     {"worldSetHitEventThreshold", worldSetHitEventThreshold},
     {"worldGetHitEventThreshold", worldGetHitEventThreshold},
     {"contactIsValid", contactIsValid},
+
+    // Raycast
+    {"worldCastRay", worldCastRay},
+    {"worldCastRayClosest", worldCastRayClosest},
+    {"worldCastShape", worldCastShape},
+    {"worldCastMover", worldCastMover},
+    {"worldCollideMover", worldCollideMover},
 
     // Body
     {"createBody", createBody},
