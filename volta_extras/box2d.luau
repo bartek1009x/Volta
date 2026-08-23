@@ -151,6 +151,58 @@ export type hull = {
     count: number,
 }
 
+export type transform = {
+    p: vec2,
+    q: rot,
+}
+export type bodyMoveEvent = {
+    transform: transform,
+    bodyId: bodyId,
+    fellAsleep: boolean,
+}
+export type bodyEvents = {bodyMoveEvent}
+export type contactId = {number}
+export type contactBeginTouchEvent = {
+    shapeIdA: shapeId,
+    shapeIdB: shapeId,
+    contactId: contactId,
+}
+export type contactEndTouchEvent = {
+    shapeIdA: shapeId,
+    shapeIdB: shapeId,
+    contactId: contactId,
+}
+export type contactHitEvent = {
+    shapeIdA: shapeId,
+    shapeIdB: shapeId,
+    contactId: contactId,
+    point: vec2,
+    normal: vec2,
+    approachSpeed: number,
+}
+export type contactEvents = {
+    beginEvents: {contactBeginTouchEvent},
+    endEvents: {contactEndTouchEvent},
+    hitEvents: {contactHitEvent},
+    beginCount: number,
+    endCount: number,
+    hitCount: number,
+}
+export type sensorBeginTouchEvent = {
+    sensorShapeId: shapeId,
+    visitorShapeId: shapeId,
+}
+export type sensorEndTouchEvent = {
+    sensorShapeId: shapeId,
+    visitorShapeId: shapeId,
+}
+export type sensorEvents = {
+    beginEvents: {sensorBeginTouchEvent},
+    endEvents: {sensorEndTouchEvent},
+    beginCount: number,
+    endCount: number,
+}
+
 -- World
 
 function box2d.createWorld(worldDef: worldDef) : worldId
@@ -163,6 +215,15 @@ end
 function box2d.worldStep(worldId: worldId, timeStep: number, subStepCount: number) end
 function box2d.worldGetBounds(worldId: worldId) : number
     return 0, 0, 0, 0
+end
+function box2d.worldGetBodyEvents(worldId: worldId): bodyEvents
+    return {} :: bodyEvents
+end
+function box2d.worldGetContactEvents(worldId: worldId): contactEvents
+    return {} :: contactEvents
+end
+function box2d.worldGetSensorEvents(worldId: worldId): sensorEvents
+    return {} :: sensorEvents
 end
 function box2d.worldEnableSleeping(worldId: worldId, flag: boolean) end
 function box2d.worldIsSleepingEnabled(worldId: worldId) : boolean
@@ -212,6 +273,9 @@ function box2d.worldGetWorkerCount(worldId: worldId) : number
 end
 function box2d.worldGetStateHash(worldId: worldId) : number
     return 0
+end
+function box2d.contactIsValid(contactId: contactId): boolean
+    return false
 end
 
 -- Body
@@ -418,10 +482,6 @@ function box2d.shapeAreSensorEventsEnabled(shapeId: shapeId): boolean
 end
 function box2d.shapeEnableContactEvents(shapeId: shapeId, flag: boolean) end
 function box2d.shapeAreContactEventsEnabled(shapeId: shapeId): boolean
-    return false
-end
-function box2d.shapeEnablePreSolveEvents(shapeId: shapeId, flag: boolean) end
-function box2d.shapeArePreSolveEventsEnabled(shapeId: shapeId): boolean
     return false
 end
 function box2d.shapeEnableHitEvents(shapeId: shapeId, flag: boolean) end

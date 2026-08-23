@@ -121,6 +121,19 @@ void pushWorldId(lua_State* L, b2WorldId id) {
     lua_rawseti(L, -2, 2);
 }
 
+void pushContactId(lua_State* L, b2ContactId id) {
+    lua_createtable(L, 3, 0);
+
+    lua_pushinteger(L, id.index1);
+    lua_rawseti(L, -2, 1);
+
+    lua_pushinteger(L, id.world0);
+    lua_rawseti(L, -2, 2);
+
+    lua_pushinteger(L, id.generation);
+    lua_rawseti(L, -2, 3);
+}
+
 int createWorld(lua_State* L) {
     if (lua_type(L, 1) != LUA_TTABLE) {
         luaL_argerror(L, 1, "The world definition must be a table");
@@ -174,6 +187,197 @@ int worldGetBounds(lua_State* L) {
     lua_pushnumber(L, aabb.upperBound.y);
 
     return 4;
+}
+
+int worldGetBodyEvents(lua_State* L) {
+    b2WorldId id = getWorldIdFromLuau(L);
+    b2BodyEvents events = b2World_GetBodyEvents(id);
+
+    lua_createtable(L, events.moveCount, 0);
+
+    for (int i = 0; i < events.moveCount; ++i) {
+        const b2BodyMoveEvent& event = events.moveEvents[i];
+
+        lua_createtable(L, 0, 3);
+
+        lua_createtable(L, 0, 2);
+
+        lua_createtable(L, 0, 2);
+
+        lua_pushnumber(L, event.transform.p.x);
+        lua_setfield(L, -2, "x");
+
+        lua_pushnumber(L, event.transform.p.y);
+        lua_setfield(L, -2, "y");
+
+        lua_setfield(L, -2, "p");
+
+        lua_createtable(L, 0, 2);
+
+        lua_pushnumber(L, event.transform.q.c);
+        lua_setfield(L, -2, "c");
+
+        lua_pushnumber(L, event.transform.q.s);
+        lua_setfield(L, -2, "s");
+
+        lua_setfield(L, -2, "q");
+
+        lua_setfield(L, -2, "transform");
+
+        pushBodyId(L, event.bodyId);
+        lua_setfield(L, -2, "bodyId");
+
+        lua_pushboolean(L, event.fellAsleep);
+        lua_setfield(L, -2, "fellAsleep");
+
+        lua_rawseti(L, -2, i + 1);
+    }
+
+    return 1;
+}
+
+int worldGetContactEvents(lua_State* L) {
+    b2WorldId id = getWorldIdFromLuau(L);
+    b2ContactEvents events = b2World_GetContactEvents(id);
+
+    lua_createtable(L, 0, 6);
+
+    // Begin events
+    lua_createtable(L, events.beginCount, 0);
+
+    for (int i = 0; i < events.beginCount; ++i) {
+        const b2ContactBeginTouchEvent& event = events.beginEvents[i];
+
+        lua_createtable(L, 0, 3);
+
+        pushShapeId(L, event.shapeIdA);
+        lua_setfield(L, -2, "shapeIdA");
+
+        pushShapeId(L, event.shapeIdB);
+        lua_setfield(L, -2, "shapeIdB");
+
+        pushContactId(L, event.contactId);
+        lua_setfield(L, -2, "contactId");
+
+        lua_rawseti(L, -2, i + 1);
+    }
+
+    lua_setfield(L, -2, "beginEvents");
+
+    // End events
+    lua_createtable(L, events.endCount, 0);
+
+    for (int i = 0; i < events.endCount; ++i) {
+        const b2ContactEndTouchEvent& event = events.endEvents[i];
+
+        lua_createtable(L, 0, 3);
+
+        pushShapeId(L, event.shapeIdA);
+        lua_setfield(L, -2, "shapeIdA");
+
+        pushShapeId(L, event.shapeIdB);
+        lua_setfield(L, -2, "shapeIdB");
+
+        pushContactId(L, event.contactId);
+        lua_setfield(L, -2, "contactId");
+
+        lua_rawseti(L, -2, i + 1);
+    }
+
+    lua_setfield(L, -2, "endEvents");
+
+    // Hit events
+    lua_createtable(L, events.hitCount, 0);
+
+    for (int i = 0; i < events.hitCount; ++i) {
+        const b2ContactHitEvent& event = events.hitEvents[i];
+
+        lua_createtable(L, 0, 6);
+
+        pushShapeId(L, event.shapeIdA);
+        lua_setfield(L, -2, "shapeIdA");
+
+        pushShapeId(L, event.shapeIdB);
+        lua_setfield(L, -2, "shapeIdB");
+
+        pushContactId(L, event.contactId);
+        lua_setfield(L, -2, "contactId");
+
+        pushVec2(L, event.point);
+        lua_setfield(L, -2, "point");
+
+        pushVec2(L, event.normal);
+        lua_setfield(L, -2, "normal");
+
+        lua_pushnumber(L, event.approachSpeed);
+        lua_setfield(L, -2, "approachSpeed");
+
+        lua_rawseti(L, -2, i + 1);
+    }
+
+    lua_setfield(L, -2, "hitEvents");
+
+    lua_pushinteger(L, events.beginCount);
+    lua_setfield(L, -2, "beginCount");
+
+    lua_pushinteger(L, events.endCount);
+    lua_setfield(L, -2, "endCount");
+
+    lua_pushinteger(L, events.hitCount);
+    lua_setfield(L, -2, "hitCount");
+
+    return 1;
+}
+
+int worldGetSensorEvents(lua_State* L) {
+    b2WorldId id = getWorldIdFromLuau(L);
+    b2SensorEvents events = b2World_GetSensorEvents(id);
+
+    lua_createtable(L, 0, 4);
+
+    lua_createtable(L, events.beginCount, 0);
+
+    for (int i = 0; i < events.beginCount; ++i) {
+        const b2SensorBeginTouchEvent& event = events.beginEvents[i];
+
+        lua_createtable(L, 0, 2);
+
+        pushShapeId(L, event.sensorShapeId);
+        lua_setfield(L, -2, "sensorShapeId");
+
+        pushShapeId(L, event.visitorShapeId);
+        lua_setfield(L, -2, "visitorShapeId");
+
+        lua_rawseti(L, -2, i + 1);
+    }
+
+    lua_setfield(L, -2, "beginEvents");
+
+    lua_createtable(L, events.endCount, 0);
+
+    for (int i = 0; i < events.endCount; ++i) {
+        const b2SensorEndTouchEvent& event = events.endEvents[i];
+
+        lua_createtable(L, 0, 2);
+
+        pushShapeId(L, event.sensorShapeId);
+        lua_setfield(L, -2, "sensorShapeId");
+
+        pushShapeId(L, event.visitorShapeId);
+        lua_setfield(L, -2, "visitorShapeId");
+
+        lua_rawseti(L, -2, i + 1);
+    }
+
+    lua_setfield(L, -2, "endEvents");
+
+    lua_pushinteger(L, events.beginCount);
+    lua_setfield(L, -2, "beginCount");
+
+    lua_pushinteger(L, events.endCount);
+    lua_setfield(L, -2, "endCount");
+
+    return 1;
 }
 
 int worldEnableSleeping(lua_State* L) {
@@ -428,6 +632,40 @@ int worldGetStateHash(lua_State* L) {
     uint64_t hash = b2World_GetStateHash(id);
 
     lua_pushinteger64(L, hash);
+
+    return 1;
+}
+
+b2ContactId getContactIdFromLuau(lua_State* L) {
+    if (lua_type(L, 1) != LUA_TTABLE) {
+        luaL_argerror(L, 1, "The contact ID must be a table");
+        return {};
+    }
+
+    lua_rawgeti(L, 1, 1);
+    int32_t index1 = static_cast<int32_t>(lua_tointeger(L, -1));
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, 1, 2);
+    uint16_t world0 = static_cast<uint16_t>(lua_tointeger(L, -1));
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, 1, 3);
+    uint32_t generation = static_cast<uint32_t>(lua_tointeger64(L, -1, nullptr));
+    lua_pop(L, 1);
+
+    b2ContactId id = {};
+    id.index1 = index1;
+    id.world0 = world0;
+    id.generation = generation;
+
+    return id;
+}
+
+int contactIsValid(lua_State* L) {
+    b2ContactId id = getContactIdFromLuau(L);
+
+    lua_pushboolean(L, b2Contact_IsValid(id));
 
     return 1;
 }
@@ -2136,23 +2374,6 @@ int shapeAreContactEventsEnabled(lua_State* L) {
     return 1;
 }
 
-int shapeEnablePreSolveEvents(lua_State* L) {
-    b2ShapeId id = getShapeIdFromLuau(L);
-    bool flag = lua_toboolean(L, 2);
-
-    b2Shape_EnablePreSolveEvents(id, flag);
-
-    return 0;
-}
-
-int shapeArePreSolveEventsEnabled(lua_State* L) {
-    b2ShapeId id = getShapeIdFromLuau(L);
-
-    lua_pushboolean(L, b2Shape_ArePreSolveEventsEnabled(id));
-
-    return 1;
-}
-
 int shapeEnableHitEvents(lua_State* L) {
     b2ShapeId id = getShapeIdFromLuau(L);
     bool flag = lua_toboolean(L, 2);
@@ -2527,6 +2748,9 @@ static const luaL_Reg box2d_lib[] = {
     {"destroyWorld", destroyWorld},
     {"worldIsValid", worldIsValid},
     {"worldStep", worldStep},
+    {"worldGetBodyEvents", worldGetBodyEvents},
+    {"worldGetContactEvents", worldGetContactEvents},
+    {"worldGetSensorEvents", worldGetSensorEvents},
     {"worldGetBounds", worldGetBounds},
     {"worldEnableSleeping", worldEnableSleeping},
     {"worldIsSleepingEnabled", worldIsSleepingEnabled},
@@ -2536,6 +2760,7 @@ static const luaL_Reg box2d_lib[] = {
     {"worldGetRestitutionThreshold", worldGetRestitutionThreshold},
     {"worldSetHitEventThreshold", worldSetHitEventThreshold},
     {"worldGetHitEventThreshold", worldGetHitEventThreshold},
+    {"contactIsValid", contactIsValid},
 
     // Body
     {"createBody", createBody},
@@ -2633,8 +2858,6 @@ static const luaL_Reg box2d_lib[] = {
     {"shapeAreSensorEventsEnabled", shapeAreSensorEventsEnabled},
     {"shapeEnableContactEvents", shapeEnableContactEvents},
     {"shapeAreContactEventsEnabled", shapeAreContactEventsEnabled},
-    {"shapeEnablePreSolveEvents", shapeEnablePreSolveEvents},
-    {"shapeArePreSolveEventsEnabled", shapeArePreSolveEventsEnabled},
     {"shapeEnableHitEvents", shapeEnableHitEvents},
     {"shapeAreHitEventsEnabled", shapeAreHitEventsEnabled},
     {"shapeTestPoint", shapeTestPoint},

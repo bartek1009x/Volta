@@ -2,7 +2,22 @@
 #define BOX2D_BINDINGS_H
 
 #include "../dependencies/luau/VM/include/lua.h"
+#include "box2d/box2d.h"
 #include "../utils/ResourceState.hpp"
+
+// Helpers
+void pushWorldId(lua_State* L, b2WorldId id);
+void pushBodyId(lua_State* L, b2BodyId id);
+void pushMassData(lua_State* L, b2MassData data);
+void pushMotionLocks(lua_State* L, b2MotionLocks locks);
+void pushShapeId(lua_State* L, b2ShapeId id);
+void pushVec2(lua_State* L, b2Vec2 value);
+void pushSurfaceMaterial(lua_State* L, b2SurfaceMaterial material);
+void pushSegment(lua_State* L, b2Segment segment);
+void pushFilter(lua_State* L, b2Filter filter);
+void pushCircle(lua_State* L, b2Circle circle);
+void pushCapsule(lua_State* L, b2Capsule capsule);
+void pushContactId(lua_State* L, b2ContactId id);
 
 // World
 int createWorld(lua_State* L);
@@ -10,6 +25,9 @@ int destroyWorld(lua_State* L);
 int worldIsValid(lua_State* L);
 int worldStep(lua_State* L);
 int worldGetBounds(lua_State* L);
+int worldGetBodyEvents(lua_State* L);
+int worldGetContactEvents(lua_State* L);
+int worldGetSensorEvents(lua_State* L);
 int worldEnableSleeping(lua_State* L);
 int worldIsSleepingEnabled(lua_State* L);
 int worldEnableContinuous(lua_State* L);
@@ -33,6 +51,7 @@ int worldGetMaxCapacity(lua_State* L);
 int worldSetWorkerCount(lua_State* L);
 int worldGetWorkerCount(lua_State* L);
 int worldGetStateHash(lua_State* L);
+int contactIsValid(lua_State* L);
 
 // Body
 int createBody(lua_State* L);
@@ -130,8 +149,6 @@ int shapeEnableSensorEvents(lua_State* L);
 int shapeAreSensorEventsEnabled(lua_State* L);
 int shapeEnableContactEvents(lua_State* L);
 int shapeAreContactEventsEnabled(lua_State* L);
-int shapeEnablePreSolveEvents(lua_State* L);
-int shapeArePreSolveEventsEnabled(lua_State* L);
 int shapeEnableHitEvents(lua_State* L);
 int shapeAreHitEventsEnabled(lua_State* L);
 int shapeTestPoint(lua_State* L);
