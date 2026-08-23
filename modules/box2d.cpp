@@ -380,6 +380,95 @@ int worldGetSensorEvents(lua_State* L) {
     return 1;
 }
 
+struct OverlapResultContext {
+    lua_State* L;
+    int callbackIndex;
+};
+
+bool overlapResultCallback(b2ShapeId shapeId, void* context) {
+    OverlapResultContext* overlapContext = static_cast<OverlapResultContext*>(context);
+    lua_State* L = overlapContext->L;
+
+    lua_pushvalue(L, overlapContext->callbackIndex);
+
+    pushShapeId(L, shapeId);
+
+    lua_call(L, 1, 1);
+
+    bool result = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+
+    return result;
+}
+
+int worldOverlapAABB(lua_State* L) {
+    b2WorldId id = getWorldIdFromLuau(L);
+
+    b2Pos origin = {
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
+    };
+
+    b2AABB aabb = {
+        {
+            (float) (lua_tonumber(L, 4)),
+            (float) (lua_tonumber(L, 5))
+        },
+        {
+            (float) (lua_tonumber(L, 6)),
+            (float) (lua_tonumber(L, 7))
+        }
+    };
+
+    b2QueryFilter filter = constructQueryFilter(L, 8);
+
+    if (lua_type(L, 9) != LUA_TFUNCTION) {
+        luaL_argerror(L, 9, "The overlap callback must be a function");
+        return 0;
+    }
+
+    OverlapResultContext context = {L, 9};
+
+    b2TreeStats stats = b2World_OverlapAABB(id, origin, aabb, filter, overlapResultCallback, &context);
+
+    pushTreeStats(L, stats);
+
+    return 1;
+}
+
+int worldOverlapShape(lua_State* L) {
+    b2WorldId id = getWorldIdFromLuau(L);
+
+    b2Pos origin = {
+        static_cast<float>(lua_tonumber(L, 2)),
+        static_cast<float>(lua_tonumber(L, 3))
+    };
+
+    if (!lua_istable(L, 4)) {
+        luaL_argerror(L, 4, "The shape proxy must be a table");
+        return 0;
+    }
+
+    b2ShapeProxy proxy = constructShapeProxy(L, 4);
+    b2QueryFilter filter = constructQueryFilter(L, 5);
+
+    if (lua_type(L, 6) != LUA_TFUNCTION) {
+        luaL_argerror(L, 6, "The overlap callback must be a function");
+        return 0;
+    }
+
+    OverlapResultContext context = {
+        L,
+        6
+    };
+
+    b2TreeStats stats = b2World_OverlapShape(id, origin, &proxy, filter, overlapResultCallback, &context);
+
+    pushTreeStats(L, stats);
+
+    return 1;
+}
+
 int worldEnableSleeping(lua_State* L) {
     b2WorldId id = getWorldIdFromLuau(L);
     bool flag = lua_toboolean(L, 2);
@@ -3072,6 +3161,8 @@ static const luaL_Reg box2d_lib[] = {
     {"worldGetBodyEvents", worldGetBodyEvents},
     {"worldGetContactEvents", worldGetContactEvents},
     {"worldGetSensorEvents", worldGetSensorEvents},
+    {"worldOverlapAABB", worldOverlapAABB},
+    {"worldOverlapShape", worldOverlapShape},
     {"worldGetBounds", worldGetBounds},
     {"worldEnableSleeping", worldEnableSleeping},
     {"worldIsSleepingEnabled", worldIsSleepingEnabled},

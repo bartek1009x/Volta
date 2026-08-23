@@ -50,6 +50,8 @@ int worldGetBounds(lua_State* L);
 int worldGetBodyEvents(lua_State* L);
 int worldGetContactEvents(lua_State* L);
 int worldGetSensorEvents(lua_State* L);
+int worldOverlapAABB(lua_State* L);
+int worldOverlapShape(lua_State* L);
 int worldEnableSleeping(lua_State* L);
 int worldIsSleepingEnabled(lua_State* L);
 int worldEnableContinuous(lua_State* L);

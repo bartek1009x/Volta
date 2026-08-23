@@ -46,6 +46,7 @@ export type counters = {
 
 	recycledContactCount: number
 }
+export type overlapResultCallback = (shapeId: shapeId) -> boolean
 
 export type bodyId = {number}
 export type bodyType = number
@@ -258,6 +259,12 @@ function box2d.worldGetContactEvents(worldId: worldId): contactEvents
 end
 function box2d.worldGetSensorEvents(worldId: worldId): sensorEvents
     return {} :: sensorEvents
+end
+function box2d.worldOverlapAABB(worldId: worldId, originX: number, originY: number, lowerX: number, lowerY: number, upperX: number, upperY: number, filter: queryFilter, callback: overlapResultCallback): treeStats
+    return {} :: treeStats
+end
+function box2d.worldOverlapShape(worldId: worldId, originX: number, originY: number, proxy: shapeProxy, filter: queryFilter, callback: overlapResultCallback): treeStats
+    return {} :: treeStats
 end
 function box2d.worldEnableSleeping(worldId: worldId, flag: boolean) end
 function box2d.worldIsSleepingEnabled(worldId: worldId) : boolean
