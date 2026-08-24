@@ -2590,6 +2590,72 @@ b2ShapeDef constructShapeDef(lua_State* L, int defTableIndex) {
     return def;
 }
 
+void pushChainSegment(lua_State* L, b2ChainSegment chainSegment) {
+    lua_createtable(L, 0, 3);
+
+    pushVec2(L, chainSegment.ghost1);
+    lua_setfield(L, -2, "ghost1");
+
+    pushSegment(L, chainSegment.segment);
+    lua_setfield(L, -2, "segment");
+
+    pushVec2(L, chainSegment.ghost2);
+    lua_setfield(L, -2, "ghost2");
+}
+
+void applySegment(lua_State* L, int index, b2Segment& segment) {
+    lua_getfield(L, index, "point1");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), segment.point1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "point2");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), segment.point2);
+    }
+    lua_pop(L, 1);
+}
+
+void applyChainSegment(lua_State* L, int index, b2ChainSegment& chainSegment) {
+    lua_getfield(L, index, "ghost1");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), chainSegment.ghost1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "segment");
+    if (lua_istable(L, -1)) {
+        applySegment(L, lua_gettop(L), chainSegment.segment);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "ghost2");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), chainSegment.ghost2);
+    }
+    lua_pop(L, 1);
+}
+
+b2ChainSegment constructChainSegment(lua_State* L, int index) {
+    b2ChainSegment chainSegment = {};
+    applyChainSegment(L, index, chainSegment);
+    return chainSegment;
+}
+
+void pushChainId(lua_State* L, b2ChainId id) {
+    lua_createtable(L, 3, 0);
+
+    lua_pushinteger(L, id.index1);
+    lua_rawseti(L, -2, 1);
+
+    lua_pushinteger(L, id.world0);
+    lua_rawseti(L, -2, 2);
+
+    lua_pushinteger(L, id.generation);
+    lua_rawseti(L, -2, 3);
+}
+
 int createCircleShape(lua_State* L) {
     b2BodyId bodyId = getBodyIdFromLuau(L);
 
@@ -3079,6 +3145,296 @@ int shapeApplyWind(lua_State* L) {
     b2Shape_ApplyWind(id, wind, drag, lift, wake);
 
     return 0;
+}
+
+int createChainSegmentShape(lua_State* L) {
+    b2BodyId bodyId = getBodyIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The shape definition must be a table");
+        return 0;
+    }
+
+    if (!lua_istable(L, 3)) {
+        luaL_argerror(L, 3, "The chain segment must be a table");
+        return 0;
+    }
+
+    b2ShapeDef def = constructShapeDef(L, 2);
+    b2ChainSegment chainSegment = constructChainSegment(L, 3);
+
+    b2ShapeId shapeId = b2CreateChainSegmentShape(bodyId, &def, &chainSegment);
+
+    pushShapeId(L, shapeId);
+
+    return 1;
+}
+
+int shapeGetChainSegment(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    pushChainSegment(L, b2Shape_GetChainSegment(id));
+
+    return 1;
+}
+
+int shapeSetChainSegment(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The chain segment must be a table");
+        return 0;
+    }
+
+    b2ChainSegment chainSegment = b2Shape_GetChainSegment(id);
+    applyChainSegment(L, 2, chainSegment);
+
+    b2Shape_SetChainSegment(id, &chainSegment);
+
+    return 0;
+}
+
+int shapeGetParentChain(lua_State* L) {
+    b2ShapeId id = getShapeIdFromLuau(L);
+
+    pushChainId(L, b2Shape_GetParentChain(id));
+
+    return 1;
+}
+
+// Chain
+
+b2ChainId getChainIdFromLuau(lua_State* L) {
+    if (lua_type(L, 1) != LUA_TTABLE) {
+        luaL_argerror(L, 1, "The chain ID must be a table");
+        return {};
+    }
+
+    lua_rawgeti(L, 1, 1);
+    int32_t index1 = static_cast<int32_t>(lua_tointeger(L, -1));
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, 1, 2);
+    uint16_t world0 = static_cast<uint16_t>(lua_tointeger(L, -1));
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, 1, 3);
+    uint16_t generation = static_cast<uint16_t>(lua_tointeger(L, -1));
+    lua_pop(L, 1);
+
+    b2ChainId id = {};
+    id.index1 = index1;
+    id.world0 = world0;
+    id.generation = generation;
+
+    return id;
+}
+
+int createChain(lua_State* L) {
+    b2BodyId bodyId = getBodyIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The chain definition must be a table");
+        return 0;
+    }
+
+    b2ChainDef def = b2DefaultChainDef();
+
+    lua_getfield(L, 2, "points");
+
+    if (!lua_istable(L, -1)) {
+        lua_pop(L, 1);
+        luaL_argerror(L, 2, "The chain definition must contain a points table");
+        return 0;
+    }
+
+    int pointCount = static_cast<int>(lua_objlen(L, -1));
+
+    if (pointCount < 4) {
+        lua_pop(L, 1);
+        luaL_argerror(L, 2, "A chain must contain at least 4 points");
+        return 0;
+    }
+
+    b2Vec2* points = new b2Vec2[pointCount];
+
+    for (int i = 0; i < pointCount; ++i) {
+        lua_rawgeti(L, -1, i + 1);
+
+        if (!lua_istable(L, -1)) {
+            lua_pop(L, 2);
+            delete[] points;
+            luaL_argerror(L, 2, "Each chain point must be a table");
+            return 0;
+        }
+
+        points[i] = {};
+        applyVec2(L, lua_gettop(L), points[i]);
+
+        lua_pop(L, 1);
+    }
+
+    lua_pop(L, 1);
+
+    def.points = points;
+    def.count = pointCount;
+
+    b2SurfaceMaterial* materials = nullptr;
+
+    lua_getfield(L, 2, "materials");
+
+    if (lua_istable(L, -1)) {
+        int materialCount = static_cast<int>(lua_objlen(L, -1));
+
+        if (materialCount != 1 && materialCount != pointCount) {
+            lua_pop(L, 1);
+            delete[] points;
+            luaL_argerror(L, 2, "Chain materials must contain either 1 entry or one entry per point");
+            return 0;
+        }
+
+        materials = new b2SurfaceMaterial[materialCount];
+
+        for (int i = 0; i < materialCount; ++i) {
+            lua_rawgeti(L, -1, i + 1);
+
+            if (!lua_istable(L, -1)) {
+                lua_pop(L, 2);
+                delete[] materials;
+                delete[] points;
+                luaL_argerror(L, 2, "Each chain material must be a table");
+                return 0;
+            }
+
+            materials[i] = {};
+            applySurfaceMaterial(L, lua_gettop(L), materials[i]);
+
+            lua_pop(L, 1);
+        }
+
+        def.materials = materials;
+        def.materialCount = materialCount;
+    }
+
+    lua_pop(L, 1);
+
+    lua_getfield(L, 2, "filter");
+    if (lua_istable(L, -1)) {
+        applyFilter(L, lua_gettop(L), def.filter);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, 2, "isLoop");
+    if (!lua_isnil(L, -1)) {
+        def.isLoop = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, 2, "enableSensorEvents");
+    if (!lua_isnil(L, -1)) {
+        def.enableSensorEvents = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    b2ChainId chainId = b2CreateChain(bodyId, &def);
+
+    delete[] materials;
+    delete[] points;
+
+    pushChainId(L, chainId);
+
+    return 1;
+}
+
+int destroyChain(lua_State* L) {
+    b2ChainId id = getChainIdFromLuau(L);
+
+    b2DestroyChain(id);
+
+    return 0;
+}
+
+int chainIsValid(lua_State* L) {
+    b2ChainId id = getChainIdFromLuau(L);
+
+    lua_pushboolean(L, b2Chain_IsValid(id));
+
+    return 1;
+}
+
+int chainGetWorld(lua_State* L) {
+    b2ChainId id = getChainIdFromLuau(L);
+
+    pushWorldId(L, b2Chain_GetWorld(id));
+
+    return 1;
+}
+
+int chainGetSegmentCount(lua_State* L) {
+    b2ChainId id = getChainIdFromLuau(L);
+
+    lua_pushinteger(L, b2Chain_GetSegmentCount(id));
+
+    return 1;
+}
+
+int chainGetSegments(lua_State* L) {
+    b2ChainId id = getChainIdFromLuau(L);
+    int capacity = b2Chain_GetSegmentCount(id);
+
+    if (capacity <= 0) {
+        lua_createtable(L, 0, 0);
+        return 1;
+    }
+
+    b2ShapeId* segments = new b2ShapeId[capacity];
+    int count = b2Chain_GetSegments(id, segments, capacity);
+
+    lua_createtable(L, count, 0);
+
+    for (int i = 0; i < count; ++i) {
+        pushShapeId(L, segments[i]);
+        lua_rawseti(L, -2, i + 1);
+    }
+
+    delete[] segments;
+
+    return 1;
+}
+
+int chainGetSurfaceMaterialCount(lua_State* L) {
+    b2ChainId id = getChainIdFromLuau(L);
+
+    lua_pushinteger(L, b2Chain_GetSurfaceMaterialCount(id));
+
+    return 1;
+}
+
+int chainSetSurfaceMaterial(lua_State* L) {
+    b2ChainId id = getChainIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The surface material must be a table");
+        return 0;
+    }
+
+    int materialIndex = lua_tointeger(L, 3) - 1;
+
+    b2SurfaceMaterial material = b2Chain_GetSurfaceMaterial(id, materialIndex);
+    applySurfaceMaterial(L, 2, material);
+
+    b2Chain_SetSurfaceMaterial(id, &material, materialIndex);
+
+    return 0;
+}
+
+int chainGetSurfaceMaterial(lua_State* L) {
+    b2ChainId id = getChainIdFromLuau(L);
+    int materialIndex = lua_tointeger(L, 2) - 1;
+
+    pushSurfaceMaterial(L, b2Chain_GetSurfaceMaterial(id, materialIndex));
+
+    return 1;
 }
 
 // Make
@@ -5660,6 +6016,21 @@ static const luaL_Reg box2d_lib[] = {
     {"shapeComputeMassData", shapeComputeMassData},
     {"shapeGetClosestPoint", shapeGetClosestPoint},
     {"shapeApplyWind", shapeApplyWind},
+    {"createChainSegmentShape", createChainSegmentShape},
+    {"shapeGetChainSegment", shapeGetChainSegment},
+    {"shapeSetChainSegment", shapeSetChainSegment},
+    {"shapeGetParentChain", shapeGetParentChain},
+
+    // Chain
+    {"createChain", createChain},
+    {"destroyChain", destroyChain},
+    {"chainIsValid", chainIsValid},
+    {"chainGetWorld", chainGetWorld},
+    {"chainGetSegmentCount", chainGetSegmentCount},
+    {"chainGetSegments", chainGetSegments},
+    {"chainGetSurfaceMaterialCount", chainGetSurfaceMaterialCount},
+    {"chainSetSurfaceMaterial", chainSetSurfaceMaterial},
+    {"chainGetSurfaceMaterial", chainGetSurfaceMaterial},
 
     // Make
     {"makeOffsetRoundedBox", makeOffsetRoundedBox},

@@ -146,6 +146,20 @@ export type polygon = {
     radius: number,
     count: number,
 }
+export type chainId = {number}
+export type chainSegment = {
+    ghost1: vec2,
+    segment: segment,
+    ghost2: vec2,
+}
+
+export type chainDef = {
+    points: {vec2},
+    materials: {surfaceMaterialDef}?,
+    filter: filterDef?,
+    isLoop: boolean?,
+    enableSensorEvents: boolean?,
+}
 
 export type hull = {
     points: {vec2},
@@ -708,6 +722,42 @@ function box2d.shapeGetClosestPoint(shapeId: shapeId, targetX: number, targetY: 
     return 0, 0
 end
 function box2d.shapeApplyWind(shapeId: shapeId, windX: number, windY: number, drag: number, lift: number, wake: boolean) end
+function box2d.createChainSegmentShape(bodyId: bodyId, def: shapeDef, chainSegment: chainSegment): shapeId
+    return {0, 0, 0}
+end
+function box2d.shapeGetChainSegment(shapeId: shapeId): chainSegment
+    return {} :: chainSegment
+end
+function box2d.shapeSetChainSegment(shapeId: shapeId, chainSegment: chainSegment) end
+function box2d.shapeGetParentChain(shapeId: shapeId): chainId
+    return {0, 0, 0}
+end
+
+-- Chain
+
+function box2d.createChain(bodyId: bodyId, def: chainDef): chainId
+    return {0, 0, 0}
+end
+function box2d.destroyChain(chainId: chainId) end
+function box2d.chainIsValid(chainId: chainId): boolean
+    return false
+end
+function box2d.chainGetWorld(chainId: chainId): worldId
+    return {0, 0}
+end
+function box2d.chainGetSegmentCount(chainId: chainId): number
+    return 0
+end
+function box2d.chainGetSegments(chainId: chainId): {shapeId}
+    return {}
+end
+function box2d.chainGetSurfaceMaterialCount(chainId: chainId): number
+    return 0
+end
+function box2d.chainSetSurfaceMaterial(chainId: chainId, material: surfaceMaterialDef, materialIndex: number) end
+function box2d.chainGetSurfaceMaterial(chainId: chainId, materialIndex: number): surfaceMaterial
+    return {} :: surfaceMaterial
+end
 
 -- Make
 

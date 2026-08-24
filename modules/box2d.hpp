@@ -30,12 +30,15 @@ b2RevoluteJointDef constructRevoluteJointDef(lua_State* L, int index);
 b2WeldJointDef constructWeldJointDef(lua_State* L, int index);
 b2WheelJointDef constructWheelJointDef(lua_State* L, int index);
 b2ExplosionDef constructExplosionDef(lua_State* L, int index);
+b2ChainSegment constructChainSegment(lua_State* L, int index);
 
 void applyVec2(lua_State* L, int index, b2Vec2& value);
 void applySurfaceMaterial(lua_State* L, int index, b2SurfaceMaterial& material);
 void applyFilter(lua_State* L, int index, b2Filter& filter);
 void applyTransform(lua_State* L, int index, b2Transform& transform);
 void applyJointDef(lua_State* L, int index, b2JointDef& def);
+void applySegment(lua_State* L, int index, b2Segment& segment);
+void applyChainSegment(lua_State* L, int index, b2ChainSegment& chainSegment);
 
 void pushWorldId(lua_State* L, b2WorldId id);
 void pushBodyId(lua_State* L, b2BodyId id);
@@ -57,6 +60,8 @@ bool planeResultCallback(b2ShapeId shapeId, const b2PlaneResult* plane, void* co
 void pushJointId(lua_State* L, b2JointId id);
 void pushTransform(lua_State* L, b2Transform transform);
 void pushHull(lua_State* L, b2Hull hull);
+void pushChainSegment(lua_State* L, b2ChainSegment chainSegment);
+void pushChainId(lua_State* L, b2ChainId id);
 
 // World
 int createWorld(lua_State* L);
@@ -218,6 +223,21 @@ int shapeGetAABB(lua_State* L);
 int shapeComputeMassData(lua_State* L);
 int shapeGetClosestPoint(lua_State* L);
 int shapeApplyWind(lua_State* L);
+int createChainSegmentShape(lua_State* L);
+int shapeGetChainSegment(lua_State* L);
+int shapeSetChainSegment(lua_State* L);
+int shapeGetParentChain(lua_State* L);
+
+// Chain
+int createChain(lua_State* L);
+int destroyChain(lua_State* L);
+int chainIsValid(lua_State* L);
+int chainGetWorld(lua_State* L);
+int chainGetSegmentCount(lua_State* L);
+int chainGetSegments(lua_State* L);
+int chainGetSurfaceMaterialCount(lua_State* L);
+int chainSetSurfaceMaterial(lua_State* L);
+int chainGetSurfaceMaterial(lua_State* L);
 
 // Make
 int makeOffsetRoundedBox(lua_State* L);
