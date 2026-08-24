@@ -18,10 +18,15 @@ b2ShapeDef constructShapeDef(lua_State* L, int defTableIndex);
 b2Hull constructHull(lua_State* L, int index);
 b2QueryFilter constructQueryFilter(lua_State* L, int index);
 b2ShapeProxy constructShapeProxy(lua_State* L, int index);
+b2Transform constructTransform(lua_State* L, int index);
+b2BodyId constructBodyId(lua_State* L, int index);
+b2DistanceJointDef constructDistanceJointDef(lua_State* L, int index);
 
 void applyVec2(lua_State* L, int index, b2Vec2& value);
 void applySurfaceMaterial(lua_State* L, int index, b2SurfaceMaterial& material);
 void applyFilter(lua_State* L, int index, b2Filter& filter);
+void applyTransform(lua_State* L, int index, b2Transform& transform);
+void applyJointDef(lua_State* L, int index, b2JointDef& def);
 
 void pushWorldId(lua_State* L, b2WorldId id);
 void pushBodyId(lua_State* L, b2BodyId id);
@@ -40,6 +45,8 @@ void pushRayResult(lua_State* L, b2RayResult result);
 void pushPlane(lua_State* L, b2Plane plane);
 void pushPlaneResult(lua_State* L, const b2PlaneResult& result);
 bool planeResultCallback(b2ShapeId shapeId, const b2PlaneResult* plane, void* context);
+void pushJointId(lua_State* L, b2JointId id);
+void pushTransform(lua_State* L, b2Transform transform);
 
 // World
 int createWorld(lua_State* L);
@@ -50,6 +57,7 @@ int worldGetBounds(lua_State* L);
 int worldGetBodyEvents(lua_State* L);
 int worldGetContactEvents(lua_State* L);
 int worldGetSensorEvents(lua_State* L);
+int worldGetJointEvents(lua_State* L);
 int worldOverlapAABB(lua_State* L);
 int worldOverlapShape(lua_State* L);
 int worldEnableSleeping(lua_State* L);
@@ -149,7 +157,9 @@ int bodyEnableContactEvents(lua_State* L);
 int bodyEnableHitEvents(lua_State* L);
 int bodyGetWorld(lua_State* L);
 int bodyGetShapeCount(lua_State* L);
+int bodyGetShapes(lua_State* L);
 int bodyGetJointCount(lua_State* L);
+int bodyGetJoints(lua_State* L);
 int bodyGetContactCapacity(lua_State* L);
 int bodyComputeAABB(lua_State* L);
 
@@ -207,6 +217,57 @@ int makeSquare(lua_State* L);
 int makeOffsetRoundedPolygon(lua_State* L);
 int makeOffsetPolygon(lua_State* L);
 int makePolygon(lua_State* L);
+
+// Joints
+int destroyJoint(lua_State* L);
+int jointIsValid(lua_State* L);
+int jointGetType(lua_State* L);
+int jointGetBodyA(lua_State* L);
+int jointGetBodyB(lua_State* L);
+int jointGetWorld(lua_State* L);
+int jointSetLocalFrameA(lua_State* L);
+int jointGetLocalFrameA(lua_State* L);
+int jointSetLocalFrameB(lua_State* L);
+int jointGetLocalFrameB(lua_State* L);
+int jointSetCollideConnected(lua_State* L);
+int jointGetCollideConnected(lua_State* L);
+int jointWakeBodies(lua_State* L);
+int jointGetConstraintForce(lua_State* L);
+int jointGetConstraintTorque(lua_State* L);
+int jointGetLinearSeparation(lua_State* L);
+int jointGetAngularSeparation(lua_State* L);
+int jointSetConstraintTuning(lua_State* L);
+int jointGetConstraintTuning(lua_State* L);
+int jointSetForceThreshold(lua_State* L);
+int jointGetForceThreshold(lua_State* L);
+int jointSetTorqueThreshold(lua_State* L);
+int jointGetTorqueThreshold(lua_State* L);
+
+// Distance joint
+int createDistanceJoint(lua_State* L);
+int distanceJointSetLength(lua_State* L);
+int distanceJointGetLength(lua_State* L);
+int distanceJointEnableSpring(lua_State* L);
+int distanceJointIsSpringEnabled(lua_State* L);
+int distanceJointSetSpringForceRange(lua_State* L);
+int distanceJointGetSpringForceRange(lua_State* L);
+int distanceJointSetSpringHertz(lua_State* L);
+int distanceJointSetSpringDampingRatio(lua_State* L);
+int distanceJointGetSpringHertz(lua_State* L);
+int distanceJointGetSpringDampingRatio(lua_State* L);
+int distanceJointEnableLimit(lua_State* L);
+int distanceJointIsLimitEnabled(lua_State* L);
+int distanceJointSetLengthRange(lua_State* L);
+int distanceJointGetMinLength(lua_State* L);
+int distanceJointGetMaxLength(lua_State* L);
+int distanceJointGetCurrentLength(lua_State* L);
+int distanceJointEnableMotor(lua_State* L);
+int distanceJointIsMotorEnabled(lua_State* L);
+int distanceJointSetMotorSpeed(lua_State* L);
+int distanceJointGetMotorSpeed(lua_State* L);
+int distanceJointSetMaxMotorForce(lua_State* L);
+int distanceJointGetMaxMotorForce(lua_State* L);
+int distanceJointGetMotorForce(lua_State* L);
 
 void registerBox2dFunctions(lua_State* L, ResourceState* state);
 

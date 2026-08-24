@@ -718,7 +718,7 @@ int worldGetWorkerCount(lua_State* L) {
 
 int worldGetStateHash(lua_State* L) {
     b2WorldId id = getWorldIdFromLuau(L);
-    uint64_t hash = b2World_GetStateHash(id);
+    Uint64 hash = b2World_GetStateHash(id);
 
     lua_pushinteger64(L, hash);
 
@@ -732,15 +732,15 @@ b2ContactId getContactIdFromLuau(lua_State* L) {
     }
 
     lua_rawgeti(L, 1, 1);
-    int32_t index1 = static_cast<int32_t>(lua_tointeger(L, -1));
+    int index1 = lua_tointeger(L, -1);
     lua_pop(L, 1);
 
     lua_rawgeti(L, 1, 2);
-    uint16_t world0 = static_cast<uint16_t>(lua_tointeger(L, -1));
+    Uint16 world0 = lua_tointeger(L, -1);
     lua_pop(L, 1);
 
     lua_rawgeti(L, 1, 3);
-    uint32_t generation = static_cast<uint32_t>(lua_tointeger64(L, -1, nullptr));
+    int generation = lua_tointeger64(L, -1, nullptr);
     lua_pop(L, 1);
 
     b2ContactId id = {};
@@ -771,13 +771,13 @@ b2QueryFilter constructQueryFilter(lua_State* L, int index) {
 
     lua_getfield(L, index, "categoryBits");
     if (!lua_isnil(L, -1)) {
-        filter.categoryBits = static_cast<uint64_t>(lua_tointeger64(L, -1, nullptr));
+        filter.categoryBits = (Uint64) (lua_tointeger64(L, -1, nullptr));
     }
     lua_pop(L, 1);
 
     lua_getfield(L, index, "maskBits");
     if (!lua_isnil(L, -1)) {
-        filter.maskBits = static_cast<uint64_t>(lua_tointeger64(L, -1, nullptr));
+        filter.maskBits = (Uint64) (lua_tointeger64(L, -1, nullptr));
     }
     lua_pop(L, 1);
 
@@ -2009,10 +2009,62 @@ int bodyGetShapeCount(lua_State* L) {
     return 1;
 }
 
+int bodyGetShapes(lua_State* L) {
+    b2BodyId id = getBodyIdFromLuau(L);
+
+    int capacity = b2Body_GetShapeCount(id);
+
+    if (capacity <= 0) {
+        lua_createtable(L, 0, 0);
+        return 1;
+    }
+
+    b2ShapeId* shapes = new b2ShapeId[capacity];
+
+    int count = b2Body_GetShapes(id, shapes, capacity);
+
+    lua_createtable(L, count, 0);
+
+    for (int i = 0; i < count; ++i) {
+        pushShapeId(L, shapes[i]);
+        lua_rawseti(L, -2, i + 1);
+    }
+
+    delete[] shapes;
+
+    return 1;
+}
+
 int bodyGetJointCount(lua_State* L) {
     b2BodyId id = getBodyIdFromLuau(L);
 
     lua_pushinteger(L, b2Body_GetJointCount(id));
+
+    return 1;
+}
+
+int bodyGetJoints(lua_State* L) {
+    b2BodyId id = getBodyIdFromLuau(L);
+
+    int capacity = b2Body_GetJointCount(id);
+
+    if (capacity <= 0) {
+        lua_createtable(L, 0, 0);
+        return 1;
+    }
+
+    b2JointId* joints = new b2JointId[capacity];
+
+    int count = b2Body_GetJoints(id, joints, capacity);
+
+    lua_createtable(L, count, 0);
+
+    for (int i = 0; i < count; ++i) {
+        pushJointId(L, joints[i]);
+        lua_rawseti(L, -2, i + 1);
+    }
+
+    delete[] joints;
 
     return 1;
 }
@@ -2683,7 +2735,7 @@ int shapeGetRestitution(lua_State* L) {
 int shapeSetUserMaterial(lua_State* L) {
     b2ShapeId id = getShapeIdFromLuau(L);
 
-    uint64_t material = lua_tointeger64(L, 2, nullptr);
+    Uint64 material = lua_tointeger64(L, 2, nullptr);
 
     b2Shape_SetUserMaterial(id, material);
 
@@ -2693,7 +2745,7 @@ int shapeSetUserMaterial(lua_State* L) {
 int shapeGetUserMaterial(lua_State* L) {
     b2ShapeId id = getShapeIdFromLuau(L);
 
-    uint64_t material = b2Shape_GetUserMaterial(id);
+    Uint64 material = b2Shape_GetUserMaterial(id);
 
     lua_pushinteger64(L, material);
 
@@ -3152,6 +3204,748 @@ int makePolygon(lua_State* L) {
     return 1;
 }
 
+// Joints
+
+b2JointId getJointIdFromLuau(lua_State* L) {
+    if (lua_type(L, 1) != LUA_TTABLE) {
+        luaL_argerror(L, 1, "The joint ID must be a table");
+        return {};
+    }
+
+    lua_rawgeti(L, 1, 1);
+    Uint32 index1 = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, 1, 2);
+    Uint16 world0 = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, 1, 3);
+    Uint16 generation = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    b2JointId id = {};
+    id.index1 = index1;
+    id.world0 = world0;
+    id.generation = generation;
+
+    return id;
+}
+
+void pushJointId(lua_State* L, b2JointId id) {
+    lua_createtable(L, 3, 0);
+
+    lua_pushinteger(L, id.index1);
+    lua_rawseti(L, -2, 1);
+
+    lua_pushinteger(L, id.world0);
+    lua_rawseti(L, -2, 2);
+
+    lua_pushinteger(L, id.generation);
+    lua_rawseti(L, -2, 3);
+}
+
+b2Transform constructTransform(lua_State* L, int index) {
+    b2Transform transform = {};
+
+    lua_getfield(L, index, "p");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), transform.p);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "q");
+    if (lua_istable(L, -1)) {
+        int rotationIndex = lua_gettop(L);
+
+        lua_getfield(L, rotationIndex, "c");
+        if (!lua_isnil(L, -1)) {
+            transform.q.c = lua_tonumber(L, -1);
+        }
+        lua_pop(L, 1);
+
+        lua_getfield(L, rotationIndex, "s");
+        if (!lua_isnil(L, -1)) {
+            transform.q.s = lua_tonumber(L, -1);
+        }
+        lua_pop(L, 1);
+    }
+    lua_pop(L, 1);
+
+    return transform;
+}
+
+void pushTransform(lua_State* L, b2Transform transform) {
+    lua_createtable(L, 0, 2);
+
+    pushVec2(L, transform.p);
+    lua_setfield(L, -2, "p");
+
+    lua_createtable(L, 0, 2);
+
+    lua_pushnumber(L, transform.q.c);
+    lua_setfield(L, -2, "c");
+
+    lua_pushnumber(L, transform.q.s);
+    lua_setfield(L, -2, "s");
+
+    lua_setfield(L, -2, "q");
+}
+
+int worldGetJointEvents(lua_State* L) {
+    b2WorldId id = getWorldIdFromLuau(L);
+    b2JointEvents events = b2World_GetJointEvents(id);
+
+    lua_createtable(L, 0, 2);
+
+    lua_createtable(L, events.count, 0);
+
+    for (int i = 0; i < events.count; ++i) {
+        const b2JointEvent& event = events.jointEvents[i];
+
+        lua_createtable(L, 0, 1);
+
+        pushJointId(L, event.jointId);
+        lua_setfield(L, -2, "jointId");
+
+        lua_rawseti(L, -2, i + 1);
+    }
+
+    lua_setfield(L, -2, "jointEvents");
+
+    lua_pushinteger(L, events.count);
+    lua_setfield(L, -2, "count");
+
+    return 1;
+}
+
+int destroyJoint(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    b2DestroyJoint(id);
+
+    return 0;
+}
+
+int jointIsValid(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushboolean(L, b2Joint_IsValid(id));
+
+    return 1;
+}
+
+int jointGetType(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushinteger(L, b2Joint_GetType(id));
+
+    return 1;
+}
+
+int jointGetBodyA(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    pushBodyId(L, b2Joint_GetBodyA(id));
+
+    return 1;
+}
+
+int jointGetBodyB(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    pushBodyId(L, b2Joint_GetBodyB(id));
+
+    return 1;
+}
+
+int jointGetWorld(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    pushWorldId(L, b2Joint_GetWorld(id));
+
+    return 1;
+}
+
+int jointSetLocalFrameA(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The local frame must be a table");
+        return 0;
+    }
+
+    b2Transform frame = constructTransform(L, 2);
+    b2Joint_SetLocalFrameA(id, frame);
+
+    return 0;
+}
+
+int jointGetLocalFrameA(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    pushTransform(L, b2Joint_GetLocalFrameA(id));
+
+    return 1;
+}
+
+int jointSetLocalFrameB(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The local frame must be a table");
+        return 0;
+    }
+
+    b2Transform frame = constructTransform(L, 2);
+    b2Joint_SetLocalFrameB(id, frame);
+
+    return 0;
+}
+
+int jointGetLocalFrameB(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    pushTransform(L, b2Joint_GetLocalFrameB(id));
+
+    return 1;
+}
+
+int jointSetCollideConnected(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    bool shouldCollide = lua_toboolean(L, 2);
+
+    b2Joint_SetCollideConnected(id, shouldCollide);
+
+    return 0;
+}
+
+int jointGetCollideConnected(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushboolean(L, b2Joint_GetCollideConnected(id));
+
+    return 1;
+}
+
+int jointWakeBodies(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    b2Joint_WakeBodies(id);
+
+    return 0;
+}
+
+int jointGetConstraintForce(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    b2Vec2 force = b2Joint_GetConstraintForce(id);
+
+    lua_pushnumber(L, force.x);
+    lua_pushnumber(L, force.y);
+
+    return 2;
+}
+
+int jointGetConstraintTorque(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2Joint_GetConstraintTorque(id));
+
+    return 1;
+}
+
+int jointGetLinearSeparation(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2Joint_GetLinearSeparation(id));
+
+    return 1;
+}
+
+int jointGetAngularSeparation(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2Joint_GetAngularSeparation(id));
+
+    return 1;
+}
+
+int jointSetConstraintTuning(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float hertz = lua_tonumber(L, 2);
+    float dampingRatio = lua_tonumber(L, 3);
+
+    b2Joint_SetConstraintTuning(id, hertz, dampingRatio);
+
+    return 0;
+}
+
+int jointGetConstraintTuning(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    float hertz = 0.0f;
+    float dampingRatio = 0.0f;
+
+    b2Joint_GetConstraintTuning(id, &hertz, &dampingRatio);
+
+    lua_pushnumber(L, hertz);
+    lua_pushnumber(L, dampingRatio);
+
+    return 2;
+}
+
+int jointSetForceThreshold(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float threshold = lua_tonumber(L, 2);
+
+    b2Joint_SetForceThreshold(id, threshold);
+
+    return 0;
+}
+
+int jointGetForceThreshold(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2Joint_GetForceThreshold(id));
+
+    return 1;
+}
+
+int jointSetTorqueThreshold(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float threshold = lua_tonumber(L, 2);
+
+    b2Joint_SetTorqueThreshold(id, threshold);
+
+    return 0;
+}
+
+int jointGetTorqueThreshold(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2Joint_GetTorqueThreshold(id));
+
+    return 1;
+}
+
+// Distance Joint
+
+b2BodyId constructBodyId(lua_State* L, int index) {
+    if (!lua_istable(L, index)) {
+        luaL_argerror(L, index, "The body ID must be a table");
+        return {};
+    }
+
+    b2BodyId id = {};
+
+    lua_rawgeti(L, index, 1);
+    id.index1 = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, index, 2);
+    id.world0 = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, index, 3);
+    id.generation = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    return id;
+}
+
+void applyTransform(lua_State* L, int index, b2Transform& transform) {
+    if (!lua_istable(L, index)) {
+        return;
+    }
+
+    lua_getfield(L, index, "p");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), transform.p);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "q");
+    if (lua_istable(L, -1)) {
+        int rotationIndex = lua_gettop(L);
+
+        lua_getfield(L, rotationIndex, "c");
+        if (!lua_isnil(L, -1)) {
+            transform.q.c = lua_tonumber(L, -1);
+        }
+        lua_pop(L, 1);
+
+        lua_getfield(L, rotationIndex, "s");
+        if (!lua_isnil(L, -1)) {
+            transform.q.s = lua_tonumber(L, -1);
+        }
+        lua_pop(L, 1);
+    }
+    lua_pop(L, 1);
+}
+
+void applyJointDef(lua_State* L, int index, b2JointDef& def) {
+    lua_getfield(L, index, "bodyIdA");
+    if (lua_istable(L, -1)) {
+        def.bodyIdA = constructBodyId(L, lua_gettop(L));
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "bodyIdB");
+    if (lua_istable(L, -1)) {
+        def.bodyIdB = constructBodyId(L, lua_gettop(L));
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "localFrameA");
+    if (lua_istable(L, -1)) {
+        applyTransform(L, lua_gettop(L), def.localFrameA);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "localFrameB");
+    if (lua_istable(L, -1)) {
+        applyTransform(L, lua_gettop(L), def.localFrameB);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "forceThreshold");
+    if (!lua_isnil(L, -1)) {
+        def.forceThreshold = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "torqueThreshold");
+    if (!lua_isnil(L, -1)) {
+        def.torqueThreshold = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "constraintHertz");
+    if (!lua_isnil(L, -1)) {
+        def.constraintHertz = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "constraintDampingRatio");
+    if (!lua_isnil(L, -1)) {
+        def.constraintDampingRatio = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "drawScale");
+    if (!lua_isnil(L, -1)) {
+        def.drawScale = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "collideConnected");
+    if (!lua_isnil(L, -1)) {
+        def.collideConnected = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+}
+
+b2DistanceJointDef constructDistanceJointDef(lua_State* L, int index) {
+    b2DistanceJointDef def = b2DefaultDistanceJointDef();
+
+    lua_getfield(L, index, "base");
+    if (lua_istable(L, -1)) {
+        applyJointDef(L, lua_gettop(L), def.base);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "length");
+    if (!lua_isnil(L, -1)) {
+        def.length = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "enableSpring");
+    if (!lua_isnil(L, -1)) {
+        def.enableSpring = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "lowerSpringForce");
+    if (!lua_isnil(L, -1)) {
+        def.lowerSpringForce = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "upperSpringForce");
+    if (!lua_isnil(L, -1)) {
+        def.upperSpringForce = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "hertz");
+    if (!lua_isnil(L, -1)) {
+        def.hertz = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "dampingRatio");
+    if (!lua_isnil(L, -1)) {
+        def.dampingRatio = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "enableLimit");
+    if (!lua_isnil(L, -1)) {
+        def.enableLimit = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "minLength");
+    if (!lua_isnil(L, -1)) {
+        def.minLength = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maxLength");
+    if (!lua_isnil(L, -1)) {
+        def.maxLength = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "enableMotor");
+    if (!lua_isnil(L, -1)) {
+        def.enableMotor = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maxMotorForce");
+    if (!lua_isnil(L, -1)) {
+        def.maxMotorForce = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "motorSpeed");
+    if (!lua_isnil(L, -1)) {
+        def.motorSpeed = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    return def;
+}
+
+int createDistanceJoint(lua_State* L) {
+    b2WorldId worldId = getWorldIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The distance joint definition must be a table");
+        return 0;
+    }
+
+    b2DistanceJointDef def = constructDistanceJointDef(L, 2);
+    b2JointId jointId = b2CreateDistanceJoint(worldId, &def);
+
+    pushJointId(L, jointId);
+
+    return 1;
+}
+
+int distanceJointSetLength(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float length = lua_tonumber(L, 2);
+
+    b2DistanceJoint_SetLength(id, length);
+
+    return 0;
+}
+
+int distanceJointGetLength(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2DistanceJoint_GetLength(id));
+
+    return 1;
+}
+
+int distanceJointGetCurrentLength(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2DistanceJoint_GetCurrentLength(id));
+
+    return 1;
+}
+
+int distanceJointEnableSpring(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    bool enableSpring = lua_toboolean(L, 2);
+
+    b2DistanceJoint_EnableSpring(id, enableSpring);
+
+    return 0;
+}
+
+int distanceJointIsSpringEnabled(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushboolean(L, b2DistanceJoint_IsSpringEnabled(id));
+
+    return 1;
+}
+
+int distanceJointSetSpringForceRange(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float lowerForce = lua_tonumber(L, 2);
+    float upperForce = lua_tonumber(L, 3);
+
+    b2DistanceJoint_SetSpringForceRange(id, lowerForce, upperForce);
+
+    return 0;
+}
+
+int distanceJointGetSpringForceRange(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    float lowerForce = 0.0f;
+    float upperForce = 0.0f;
+
+    b2DistanceJoint_GetSpringForceRange(id, &lowerForce, &upperForce);
+
+    lua_pushnumber(L, lowerForce);
+    lua_pushnumber(L, upperForce);
+
+    return 2;
+}
+
+int distanceJointSetSpringHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float hertz = lua_tonumber(L, 2);
+
+    b2DistanceJoint_SetSpringHertz(id, hertz);
+
+    return 0;
+}
+
+int distanceJointGetSpringHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2DistanceJoint_GetSpringHertz(id));
+
+    return 1;
+}
+
+int distanceJointSetSpringDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float dampingRatio = lua_tonumber(L, 2);
+
+    b2DistanceJoint_SetSpringDampingRatio(id, dampingRatio);
+
+    return 0;
+}
+
+int distanceJointGetSpringDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2DistanceJoint_GetSpringDampingRatio(id));
+
+    return 1;
+}
+
+int distanceJointEnableLimit(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    bool enableLimit = lua_toboolean(L, 2);
+
+    b2DistanceJoint_EnableLimit(id, enableLimit);
+
+    return 0;
+}
+
+int distanceJointIsLimitEnabled(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushboolean(L, b2DistanceJoint_IsLimitEnabled(id));
+
+    return 1;
+}
+
+int distanceJointSetLengthRange(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float minLength = lua_tonumber(L, 2);
+    float maxLength = lua_tonumber(L, 3);
+
+    b2DistanceJoint_SetLengthRange(id, minLength, maxLength);
+
+    return 0;
+}
+
+int distanceJointGetMinLength(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2DistanceJoint_GetMinLength(id));
+
+    return 1;
+}
+
+int distanceJointGetMaxLength(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2DistanceJoint_GetMaxLength(id));
+
+    return 1;
+}
+
+int distanceJointEnableMotor(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    bool enableMotor = lua_toboolean(L, 2);
+
+    b2DistanceJoint_EnableMotor(id, enableMotor);
+
+    return 0;
+}
+
+int distanceJointIsMotorEnabled(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushboolean(L, b2DistanceJoint_IsMotorEnabled(id));
+
+    return 1;
+}
+
+int distanceJointSetMotorSpeed(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float motorSpeed = lua_tonumber(L, 2);
+
+    b2DistanceJoint_SetMotorSpeed(id, motorSpeed);
+
+    return 0;
+}
+
+int distanceJointGetMotorSpeed(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2DistanceJoint_GetMotorSpeed(id));
+
+    return 1;
+}
+
+int distanceJointSetMaxMotorForce(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float force = lua_tonumber(L, 2);
+
+    b2DistanceJoint_SetMaxMotorForce(id, force);
+
+    return 0;
+}
+
+int distanceJointGetMaxMotorForce(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2DistanceJoint_GetMaxMotorForce(id));
+
+    return 1;
+}
+
+int distanceJointGetMotorForce(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2DistanceJoint_GetMotorForce(id));
+
+    return 1;
+}
+
 static const luaL_Reg box2d_lib[] = {
     // World
     {"createWorld", createWorld},
@@ -3161,6 +3955,7 @@ static const luaL_Reg box2d_lib[] = {
     {"worldGetBodyEvents", worldGetBodyEvents},
     {"worldGetContactEvents", worldGetContactEvents},
     {"worldGetSensorEvents", worldGetSensorEvents},
+    {"worldGetJointEvents", worldGetJointEvents},
     {"worldOverlapAABB", worldOverlapAABB},
     {"worldOverlapShape", worldOverlapShape},
     {"worldGetBounds", worldGetBounds},
@@ -3246,7 +4041,9 @@ static const luaL_Reg box2d_lib[] = {
     {"bodyEnableHitEvents", bodyEnableHitEvents},
     {"bodyGetWorld", bodyGetWorld},
     {"bodyGetShapeCount", bodyGetShapeCount},
+    {"bodyGetShapes", bodyGetShapes},
     {"bodyGetJointCount", bodyGetJointCount},
+    {"bodyGetJoints", bodyGetJoints},
     {"bodyGetContactCapacity", bodyGetContactCapacity},
     {"bodyComputeAABB", bodyComputeAABB},
 
@@ -3304,6 +4101,57 @@ static const luaL_Reg box2d_lib[] = {
     {"makeOffsetRoundedPolygon", makeOffsetRoundedPolygon},
     {"makeOffsetPolygon", makeOffsetPolygon},
     {"makePolygon", makePolygon},
+
+    // Joints
+    {"destroyJoint", destroyJoint},
+    {"jointIsValid", jointIsValid},
+    {"jointGetType", jointGetType},
+    {"jointGetBodyA", jointGetBodyA},
+    {"jointGetBodyB", jointGetBodyB},
+    {"jointGetWorld", jointGetWorld},
+    {"jointSetLocalFrameA", jointSetLocalFrameA},
+    {"jointGetLocalFrameA", jointGetLocalFrameA},
+    {"jointSetLocalFrameB", jointSetLocalFrameB},
+    {"jointGetLocalFrameB", jointGetLocalFrameB},
+    {"jointSetCollideConnected", jointSetCollideConnected},
+    {"jointGetCollideConnected", jointGetCollideConnected},
+    {"jointWakeBodies", jointWakeBodies},
+    {"jointGetConstraintForce", jointGetConstraintForce},
+    {"jointGetConstraintTorque", jointGetConstraintTorque},
+    {"jointGetLinearSeparation", jointGetLinearSeparation},
+    {"jointGetAngularSeparation", jointGetAngularSeparation},
+    {"jointSetConstraintTuning", jointSetConstraintTuning},
+    {"jointGetConstraintTuning", jointGetConstraintTuning},
+    {"jointSetForceThreshold", jointSetForceThreshold},
+    {"jointGetForceThreshold", jointGetForceThreshold},
+    {"jointSetTorqueThreshold", jointSetTorqueThreshold},
+    {"jointGetTorqueThreshold", jointGetTorqueThreshold},
+
+    // Distance joint
+    {"createDistanceJoint", createDistanceJoint},
+    {"distanceJointSetLength", distanceJointSetLength},
+    {"distanceJointGetLength", distanceJointGetLength},
+    {"distanceJointEnableSpring", distanceJointEnableSpring},
+    {"distanceJointIsSpringEnabled", distanceJointIsSpringEnabled},
+    {"distanceJointSetSpringForceRange", distanceJointSetSpringForceRange},
+    {"distanceJointGetSpringForceRange", distanceJointGetSpringForceRange},
+    {"distanceJointSetSpringHertz", distanceJointSetSpringHertz},
+    {"distanceJointSetSpringDampingRatio", distanceJointSetSpringDampingRatio},
+    {"distanceJointGetSpringHertz", distanceJointGetSpringHertz},
+    {"distanceJointGetSpringDampingRatio", distanceJointGetSpringDampingRatio},
+    {"distanceJointEnableLimit", distanceJointEnableLimit},
+    {"distanceJointIsLimitEnabled", distanceJointIsLimitEnabled},
+    {"distanceJointSetLengthRange", distanceJointSetLengthRange},
+    {"distanceJointGetMinLength", distanceJointGetMinLength},
+    {"distanceJointGetMaxLength", distanceJointGetMaxLength},
+    {"distanceJointGetCurrentLength", distanceJointGetCurrentLength},
+    {"distanceJointEnableMotor", distanceJointEnableMotor},
+    {"distanceJointIsMotorEnabled", distanceJointIsMotorEnabled},
+    {"distanceJointSetMotorSpeed", distanceJointSetMotorSpeed},
+    {"distanceJointGetMotorSpeed", distanceJointGetMotorSpeed},
+    {"distanceJointSetMaxMotorForce", distanceJointSetMaxMotorForce},
+    {"distanceJointGetMaxMotorForce", distanceJointGetMaxMotorForce},
+    {"distanceJointGetMotorForce", distanceJointGetMotorForce},
 
     {nullptr, nullptr},
 };

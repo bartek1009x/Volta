@@ -238,6 +238,43 @@ export type planeResult = {
 }
 export type planeResultCallback = (shapeId: shapeId, result: planeResult) -> boolean
 
+export type jointId = {number}
+export type jointType = number
+export type jointEvent = {
+    jointId: jointId,
+}
+export type jointEvents = {
+    jointEvents: {jointEvent},
+    count: number,
+}
+export type jointDef = {
+    bodyIdA: bodyId?,
+    bodyIdB: bodyId?,
+    localFrameA: transform?,
+    localFrameB: transform?,
+    forceThreshold: number?,
+    torqueThreshold: number?,
+    constraintHertz: number?,
+    constraintDampingRatio: number?,
+    drawScale: number?,
+    collideConnected: boolean?,
+}
+export type distanceJointDef = {
+    base: jointDef?,
+    length: number?,
+    enableSpring: boolean?,
+    lowerSpringForce: number?,
+    upperSpringForce: number?,
+    hertz: number?,
+    dampingRatio: number?,
+    enableLimit: boolean?,
+    minLength: number?,
+    maxLength: number?,
+    enableMotor: boolean?,
+    maxMotorForce: number?,
+    motorSpeed: number?,
+}
+
 -- World
 
 function box2d.createWorld(worldDef: worldDef) : worldId
@@ -468,8 +505,14 @@ end
 function box2d.bodyGetShapeCount(bodyId: bodyId): number
     return 0
 end
+function box2d.bodyGetShapes(bodyId: bodyId): {shapeId}
+    return {}
+end
 function box2d.bodyGetJointCount(bodyId: bodyId): number
     return 0
+end
+function box2d.bodyGetJoints(bodyId: bodyId): {jointId}
+    return {}
 end
 function box2d.bodyGetContactCapacity(bodyId: bodyId): number
     return 0
@@ -606,6 +649,120 @@ function box2d.makeOffsetPolygon(hull: hull, positionX: number, positionY: numbe
 end
 function box2d.makePolygon(hull: hull, radius: number): polygon
     return {} :: polygon
+end
+
+-- Joints
+
+function box2d.worldGetJointEvents(worldId: worldId): jointEvents
+    return {} :: jointEvents
+end
+function box2d.destroyJoint(jointId: jointId) end
+function box2d.jointIsValid(jointId: jointId): boolean
+    return false
+end
+function box2d.jointGetType(jointId: jointId): jointType
+    return 0
+end
+function box2d.jointGetBodyA(jointId: jointId): bodyId
+    return {0, 0, 0}
+end
+function box2d.jointGetBodyB(jointId: jointId): bodyId
+    return {0, 0, 0}
+end
+function box2d.jointGetWorld(jointId: jointId): worldId
+    return {0, 0}
+end
+function box2d.jointSetLocalFrameA(jointId: jointId, localFrame: transform) end
+function box2d.jointGetLocalFrameA(jointId: jointId): transform
+    return {} :: transform
+end
+function box2d.jointSetLocalFrameB(jointId: jointId, localFrame: transform) end
+function box2d.jointGetLocalFrameB(jointId: jointId): transform
+    return {} :: transform
+end
+function box2d.jointSetCollideConnected(jointId: jointId, shouldCollide: boolean) end
+function box2d.jointGetCollideConnected(jointId: jointId): boolean
+    return false
+end
+function box2d.jointWakeBodies(jointId: jointId) end
+function box2d.jointGetConstraintForce(jointId: jointId): (number, number)
+    return 0, 0
+end
+function box2d.jointGetConstraintTorque(jointId: jointId): number
+    return 0
+end
+function box2d.jointGetLinearSeparation(jointId: jointId): number
+    return 0
+end
+function box2d.jointGetAngularSeparation(jointId: jointId): number
+    return 0
+end
+function box2d.jointSetConstraintTuning(jointId: jointId, hertz: number, dampingRatio: number) end
+function box2d.jointGetConstraintTuning(jointId: jointId): (number, number)
+    return 0, 0
+end
+function box2d.jointSetForceThreshold(jointId: jointId, threshold: number) end
+function box2d.jointGetForceThreshold(jointId: jointId): number
+    return 0
+end
+function box2d.jointSetTorqueThreshold(jointId: jointId, threshold: number) end
+function box2d.jointGetTorqueThreshold(jointId: jointId): number
+    return 0
+end
+
+-- Distance joint
+
+function box2d.createDistanceJoint(worldId: worldId, def: distanceJointDef): jointId
+    return {0, 0, 0}
+end
+function box2d.distanceJointSetLength(jointId: jointId, length: number) end
+function box2d.distanceJointGetLength(jointId: jointId): number
+    return 0
+end
+function box2d.distanceJointEnableSpring(jointId: jointId, enableSpring: boolean) end
+function box2d.distanceJointIsSpringEnabled(jointId: jointId): boolean
+    return false
+end
+function box2d.distanceJointSetSpringForceRange(jointId: jointId, lowerForce: number, upperForce: number) end
+function box2d.distanceJointGetSpringForceRange(jointId: jointId): (number, number)
+    return 0, 0
+end
+function box2d.distanceJointSetSpringHertz(jointId: jointId, hertz: number) end
+function box2d.distanceJointSetSpringDampingRatio(jointId: jointId, dampingRatio: number) end
+function box2d.distanceJointGetSpringHertz(jointId: jointId): number
+    return 0
+end
+function box2d.distanceJointGetSpringDampingRatio(jointId: jointId): number
+    return 0
+end
+function box2d.distanceJointEnableLimit(jointId: jointId, enableLimit: boolean) end
+function box2d.distanceJointIsLimitEnabled(jointId: jointId): boolean
+    return false
+end
+function box2d.distanceJointSetLengthRange(jointId: jointId, minLength: number, maxLength: number) end
+function box2d.distanceJointGetMinLength(jointId: jointId): number
+    return 0
+end
+function box2d.distanceJointGetMaxLength(jointId: jointId): number
+    return 0
+end
+function box2d.distanceJointGetCurrentLength(jointId: jointId): number
+    return 0
+end
+function box2d.distanceJointEnableMotor(jointId: jointId, enableMotor: boolean) end
+function box2d.distanceJointIsMotorEnabled(jointId: jointId): boolean
+    return false
+end
+function box2d.distanceJointSetMotorSpeed(jointId: jointId, motorSpeed: number) end
+function box2d.distanceJointGetMotorSpeed(jointId: jointId): number
+    return 0
+end
+function box2d.distanceJointSetMaxMotorForce(jointId: jointId, force: number) end
+function box2d.distanceJointGetMaxMotorForce(jointId: jointId): number
+    return 0
+end
+function box2d.distanceJointGetMotorForce(jointId: jointId): number
+    return 0
 end
 
 return table.freeze(box2d)
