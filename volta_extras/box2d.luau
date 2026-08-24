@@ -351,6 +351,13 @@ export type wheelJointDef = {
     maxMotorTorque: number?,
     motorSpeed: number?,
 }
+export type explosionDef = {
+    maskBits: number?,
+    position: vec2?,
+    radius: number?,
+    falloff: number?,
+    impulsePerLength: number?,
+}
 
 -- World
 
@@ -400,6 +407,7 @@ function box2d.worldSetGravity(worldId: worldId, gravityX: number, gravityY: num
 function box2d.worldGetGravity(worldId: worldId) : number
     return 0, 0
 end
+function box2d.worldExplode(worldId: worldId, def: explosionDef) end
 function box2d.worldSetContactTuning(worldId: worldId, hertz: number, dampingRatio: number, pushSpeed: number) end
 function box2d.worldSetContactRecycleDistance(worldId: worldId, recycleDistance: number) end
 function box2d.worldGetContactRecycleDistance(worldId: worldId) : number
@@ -726,6 +734,9 @@ function box2d.makeOffsetPolygon(hull: hull, positionX: number, positionY: numbe
 end
 function box2d.makePolygon(hull: hull, radius: number): polygon
     return {} :: polygon
+end
+function box2d.computeHull(points: {vec2}): hull
+    return {} :: hull
 end
 
 -- Joints

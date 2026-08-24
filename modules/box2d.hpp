@@ -29,6 +29,7 @@ b2PrismaticJointDef constructPrismaticJointDef(lua_State* L, int index);
 b2RevoluteJointDef constructRevoluteJointDef(lua_State* L, int index);
 b2WeldJointDef constructWeldJointDef(lua_State* L, int index);
 b2WheelJointDef constructWheelJointDef(lua_State* L, int index);
+b2ExplosionDef constructExplosionDef(lua_State* L, int index);
 
 void applyVec2(lua_State* L, int index, b2Vec2& value);
 void applySurfaceMaterial(lua_State* L, int index, b2SurfaceMaterial& material);
@@ -55,6 +56,7 @@ void pushPlaneResult(lua_State* L, const b2PlaneResult& result);
 bool planeResultCallback(b2ShapeId shapeId, const b2PlaneResult* plane, void* context);
 void pushJointId(lua_State* L, b2JointId id);
 void pushTransform(lua_State* L, b2Transform transform);
+void pushHull(lua_State* L, b2Hull hull);
 
 // World
 int createWorld(lua_State* L);
@@ -78,6 +80,7 @@ int worldSetHitEventThreshold(lua_State* L);
 int worldGetHitEventThreshold(lua_State* L);
 int worldSetGravity(lua_State* L);
 int worldGetGravity(lua_State* L);
+int worldExplode(lua_State* L);
 int worldSetContactTuning(lua_State* L);
 int worldSetContactRecycleDistance(lua_State* L);
 int worldGetContactRecycleDistance(lua_State* L);
@@ -225,6 +228,7 @@ int makeSquare(lua_State* L);
 int makeOffsetRoundedPolygon(lua_State* L);
 int makeOffsetPolygon(lua_State* L);
 int makePolygon(lua_State* L);
+int computeHull(lua_State* L);
 
 // Joints
 int destroyJoint(lua_State* L);

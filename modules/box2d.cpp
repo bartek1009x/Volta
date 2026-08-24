@@ -98,6 +98,42 @@ b2WorldDef constructWorldDef(lua_State* L, int defTableIndex) {
     return def;
 }
 
+b2ExplosionDef constructExplosionDef(lua_State* L, int index) {
+    b2ExplosionDef def = {};
+
+    lua_getfield(L, index, "maskBits");
+    if (!lua_isnil(L, -1)) {
+        def.maskBits = static_cast<uint64_t>(lua_tointeger64(L, -1, nullptr));
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "position");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), def.position);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "radius");
+    if (!lua_isnil(L, -1)) {
+        def.radius = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "falloff");
+    if (!lua_isnil(L, -1)) {
+        def.falloff = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "impulsePerLength");
+    if (!lua_isnil(L, -1)) {
+        def.impulsePerLength = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    return def;
+}
+
 b2WorldId getWorldIdFromLuau(lua_State* L) {
     if (lua_type(L, 1) != LUA_TTABLE) {
         luaL_argerror(L, 1, "The world ID must be a table");
@@ -551,6 +587,21 @@ int worldGetGravity(lua_State* L) {
     lua_pushnumber(L, gravity.y);
 
     return 2;
+}
+
+int worldExplode(lua_State* L) {
+    b2WorldId id = getWorldIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The explosion definition must be a table");
+        return 0;
+    }
+
+    b2ExplosionDef def = constructExplosionDef(L, 2);
+
+    b2World_Explode(id, &def);
+
+    return 0;
 }
 
 int worldSetContactTuning(lua_State* L) {
@@ -3067,6 +3118,22 @@ b2Hull constructHull(lua_State* L, int index) {
     return hull;
 }
 
+void pushHull(lua_State* L, b2Hull hull) {
+    lua_createtable(L, 0, 2);
+
+    lua_createtable(L, hull.count, 0);
+
+    for (int i = 0; i < hull.count; ++i) {
+        pushVec2(L, hull.points[i]);
+        lua_rawseti(L, -2, i + 1);
+    }
+
+    lua_setfield(L, -2, "points");
+
+    lua_pushinteger(L, hull.count);
+    lua_setfield(L, -2, "count");
+}
+
 int makeOffsetRoundedBox(lua_State* L) {
     float halfWidth = lua_tonumber(L, 1);
     float halfHeight = lua_tonumber(L, 2);
@@ -3094,13 +3161,13 @@ int makeOffsetBox(lua_State* L) {
     float halfHeight = lua_tonumber(L, 2);
 
     b2Vec2 center = {
-        static_cast<float>(lua_tonumber(L, 3)),
-        static_cast<float>(lua_tonumber(L, 4))
+        (float) (lua_tonumber(L, 3)),
+        (float) (lua_tonumber(L, 4))
     };
 
     b2Rot rotation = {
-        static_cast<float>(lua_tonumber(L, 5)),
-        static_cast<float>(lua_tonumber(L, 6))
+        (float) (lua_tonumber(L, 5)),
+        (float) (lua_tonumber(L, 6))
     };
 
     b2Polygon polygon = b2MakeOffsetBox(halfWidth, halfHeight, center, rotation);
@@ -3200,6 +3267,46 @@ int makePolygon(lua_State* L) {
 
     b2Polygon polygon = b2MakePolygon(&hull, radius);
     pushPolygon(L, polygon);
+
+    return 1;
+}
+
+int computeHull(lua_State* L) {
+    if (!lua_istable(L, 1)) {
+        luaL_argerror(L, 1, "The points must be a table");
+        return 0;
+    }
+
+    int count = static_cast<int>(lua_objlen(L, 1));
+
+    if (count <= 0) {
+        luaL_argerror(L, 1, "The points table must not be empty");
+        return 0;
+    }
+
+    if (count > B2_MAX_POLYGON_VERTICES) {
+        luaL_argerror(L, 1, "Too many hull points");
+        return 0;
+    }
+
+    b2Vec2 points[B2_MAX_POLYGON_VERTICES] = {};
+
+    for (int i = 0; i < count; ++i) {
+        lua_rawgeti(L, 1, i + 1);
+
+        if (!lua_istable(L, -1)) {
+            lua_pop(L, 1);
+            luaL_argerror(L, 1, "Each hull point must be a table");
+            return 0;
+        }
+
+        applyVec2(L, lua_gettop(L), points[i]);
+        lua_pop(L, 1);
+    }
+
+    b2Hull hull = b2ComputeHull(points, count);
+
+    pushHull(L, hull);
 
     return 1;
 }
@@ -5413,6 +5520,22 @@ static const luaL_Reg box2d_lib[] = {
     {"worldGetRestitutionThreshold", worldGetRestitutionThreshold},
     {"worldSetHitEventThreshold", worldSetHitEventThreshold},
     {"worldGetHitEventThreshold", worldGetHitEventThreshold},
+    {"worldSetGravity", worldSetGravity},
+    {"worldGetGravity", worldGetGravity},
+    {"worldExplode", worldExplode},
+    {"worldSetContactTuning", worldSetContactTuning},
+    {"worldSetContactRecycleDistance", worldSetContactRecycleDistance},
+    {"worldGetContactRecycleDistance", worldGetContactRecycleDistance},
+    {"worldSetMaximumLinearSpeed", worldSetMaximumLinearSpeed},
+    {"worldGetMaximumLinearSpeed", worldGetMaximumLinearSpeed},
+    {"worldEnableWarmStarting", worldEnableWarmStarting},
+    {"worldIsWarmStartingEnabled", worldIsWarmStartingEnabled},
+    {"worldGetAwakeBodyCount", worldGetAwakeBodyCount},
+    {"worldGetMaxCapacity", worldGetMaxCapacity},
+    {"worldGetCounters", worldGetCounters},
+    {"worldSetWorkerCount", worldSetWorkerCount},
+    {"worldGetWorkerCount", worldGetWorkerCount},
+    {"worldGetStateHash", worldGetStateHash},
     {"contactIsValid", contactIsValid},
 
     // Raycast
@@ -5547,6 +5670,7 @@ static const luaL_Reg box2d_lib[] = {
     {"makeOffsetRoundedPolygon", makeOffsetRoundedPolygon},
     {"makeOffsetPolygon", makeOffsetPolygon},
     {"makePolygon", makePolygon},
+    {"computeHull", computeHull},
 
     // Joints
     {"destroyJoint", destroyJoint},
