@@ -274,6 +274,83 @@ export type distanceJointDef = {
     maxMotorForce: number?,
     motorSpeed: number?,
 }
+export type filterJointDef = {
+    base: jointDef?,
+}
+export type motorJointDef = {
+    base: jointDef?,
+    linearVelocity: vec2?,
+    maxVelocityForce: number?,
+    angularVelocity: number?,
+    maxVelocityTorque: number?,
+    linearHertz: number?,
+    linearDampingRatio: number?,
+    maxSpringForce: number?,
+    angularHertz: number?,
+    angularDampingRatio: number?,
+    maxSpringTorque: number?,
+}
+export type moverJointDef = {
+    base: jointDef?,
+    linearVelocity: vec2?,
+    maxVelocityForce: vec2?,
+}
+export type pogoJointDef = {
+    base: jointDef?,
+    normal: vec2?,
+    hertz: number?,
+    dampingRatio: number?,
+    restLength: number?,
+    maxTensionForce: number?,
+    maxCompressionForce: number?,
+    impulse: number?,
+    velocity: number?,
+}
+export type prismaticJointDef = {
+    base: jointDef?,
+    enableSpring: boolean?,
+    hertz: number?,
+    dampingRatio: number?,
+    targetTranslation: number?,
+    enableLimit: boolean?,
+    lowerTranslation: number?,
+    upperTranslation: number?,
+    enableMotor: boolean?,
+    maxMotorForce: number?,
+    motorSpeed: number?,
+}
+export type revoluteJointDef = {
+    base: jointDef?,
+    targetAngle: number?,
+    enableSpring: boolean?,
+    hertz: number?,
+    dampingRatio: number?,
+    enableLimit: boolean?,
+    lowerAngle: number?,
+    upperAngle: number?,
+    enableMotor: boolean?,
+    maxMotorTorque: number?,
+    motorSpeed: number?,
+}
+export type weldJointDef = {
+    base: jointDef?,
+    linearHertz: number?,
+    angularHertz: number?,
+    linearDampingRatio: number?,
+    angularDampingRatio: number?,
+}
+export type wheelJointDef = {
+    base: jointDef?,
+    enableSpring: boolean?,
+    hertz: number?,
+    dampingRatio: number?,
+    enableLimit: boolean?,
+    lowerTranslation: number?,
+    upperTranslation: number?,
+    enableMotor: boolean?,
+    maxMotorTorque: number?,
+    motorSpeed: number?,
+}
 
 -- World
 
@@ -762,6 +839,270 @@ function box2d.distanceJointGetMaxMotorForce(jointId: jointId): number
     return 0
 end
 function box2d.distanceJointGetMotorForce(jointId: jointId): number
+    return 0
+end
+
+-- Filter joint
+
+function box2d.createFilterJoint(worldId: worldId, def: filterJointDef): jointId
+    return {0, 0, 0}
+end
+
+-- Motor joint
+
+function box2d.createMotorJoint(worldId: worldId, def: motorJointDef): jointId
+    return {0, 0, 0}
+end
+function box2d.motorJointSetLinearVelocity(jointId: jointId, velocityX: number, velocityY: number) end
+function box2d.motorJointGetLinearVelocity(jointId: jointId): (number, number)
+    return 0, 0
+end
+function box2d.motorJointSetAngularVelocity(jointId: jointId, velocity: number) end
+function box2d.motorJointGetAngularVelocity(jointId: jointId): number
+    return 0
+end
+function box2d.motorJointSetMaxVelocityForce(jointId: jointId, maxForce: number) end
+function box2d.motorJointGetMaxVelocityForce(jointId: jointId): number
+    return 0
+end
+function box2d.motorJointSetMaxVelocityTorque(jointId: jointId, maxTorque: number) end
+function box2d.motorJointGetMaxVelocityTorque(jointId: jointId): number
+    return 0
+end
+function box2d.motorJointSetLinearHertz(jointId: jointId, hertz: number) end
+function box2d.motorJointGetLinearHertz(jointId: jointId): number
+    return 0
+end
+function box2d.motorJointSetLinearDampingRatio(jointId: jointId, damping: number) end
+function box2d.motorJointGetLinearDampingRatio(jointId: jointId): number
+    return 0
+end
+function box2d.motorJointSetAngularHertz(jointId: jointId, hertz: number) end
+function box2d.motorJointGetAngularHertz(jointId: jointId): number
+    return 0
+end
+function box2d.motorJointSetAngularDampingRatio(jointId: jointId, damping: number) end
+function box2d.motorJointGetAngularDampingRatio(jointId: jointId): number
+    return 0
+end
+function box2d.motorJointSetMaxSpringForce(jointId: jointId, maxForce: number) end
+function box2d.motorJointGetMaxSpringForce(jointId: jointId): number
+    return 0
+end
+function box2d.motorJointSetMaxSpringTorque(jointId: jointId, maxTorque: number) end
+function box2d.motorJointGetMaxSpringTorque(jointId: jointId): number
+    return 0
+end
+
+-- Mover joint
+
+function box2d.createMoverJoint(worldId: worldId, def: moverJointDef): jointId
+    return {0, 0, 0}
+end
+function box2d.moverJointSetLinearVelocity(jointId: jointId, velocityX: number, velocityY: number) end
+function box2d.moverJointGetLinearVelocity(jointId: jointId): (number, number)
+    return 0, 0
+end
+function box2d.moverJointSetMaxVelocityForce(jointId: jointId, maxForceX: number, maxForceY: number) end
+function box2d.moverJointGetMaxVelocityForce(jointId: jointId): (number, number)
+    return 0, 0
+end
+
+-- Pogo joint
+
+function box2d.createPogoJoint(worldId: worldId, def: pogoJointDef): jointId
+    return {0, 0, 0}
+end
+function box2d.pogoJointSetRestLength(jointId: jointId, length: number) end
+function box2d.pogoJointGetRestLength(jointId: jointId): number
+    return 0
+end
+function box2d.pogoJointSetSpringHertz(jointId: jointId, hertz: number) end
+function box2d.pogoJointGetSpringHertz(jointId: jointId): number
+    return 0
+end
+function box2d.pogoJointSetSpringDampingRatio(jointId: jointId, dampingRatio: number) end
+function box2d.pogoJointGetSpringDampingRatio(jointId: jointId): number
+    return 0
+end
+function box2d.pogoJointGetLength(jointId: jointId): number
+    return 0
+end
+function box2d.pogoJointGetVelocity(jointId: jointId): number
+    return 0
+end
+function box2d.pogoJointGetImpulse(jointId: jointId): number
+    return 0
+end
+
+-- Prismatic joint
+
+function box2d.createPrismaticJoint(worldId: worldId, def: prismaticJointDef): jointId
+    return {0, 0, 0}
+end
+function box2d.prismaticJointEnableSpring(jointId: jointId, enableSpring: boolean) end
+function box2d.prismaticJointIsSpringEnabled(jointId: jointId): boolean
+    return false
+end
+function box2d.prismaticJointSetSpringHertz(jointId: jointId, hertz: number) end
+function box2d.prismaticJointGetSpringHertz(jointId: jointId): number
+    return 0
+end
+function box2d.prismaticJointSetSpringDampingRatio(jointId: jointId, dampingRatio: number) end
+function box2d.prismaticJointGetSpringDampingRatio(jointId: jointId): number
+    return 0
+end
+function box2d.prismaticJointSetTargetTranslation(jointId: jointId, translation: number) end
+function box2d.prismaticJointGetTargetTranslation(jointId: jointId): number
+    return 0
+end
+function box2d.prismaticJointEnableLimit(jointId: jointId, enableLimit: boolean) end
+function box2d.prismaticJointIsLimitEnabled(jointId: jointId): boolean
+    return false
+end
+function box2d.prismaticJointGetLowerLimit(jointId: jointId): number
+    return 0
+end
+function box2d.prismaticJointGetUpperLimit(jointId: jointId): number
+    return 0
+end
+function box2d.prismaticJointSetLimits(jointId: jointId, lower: number, upper: number) end
+function box2d.prismaticJointEnableMotor(jointId: jointId, enableMotor: boolean) end
+function box2d.prismaticJointIsMotorEnabled(jointId: jointId): boolean
+    return false
+end
+function box2d.prismaticJointSetMotorSpeed(jointId: jointId, motorSpeed: number) end
+function box2d.prismaticJointGetMotorSpeed(jointId: jointId): number
+    return 0
+end
+function box2d.prismaticJointSetMaxMotorForce(jointId: jointId, force: number) end
+function box2d.prismaticJointGetMaxMotorForce(jointId: jointId): number
+    return 0
+end
+function box2d.prismaticJointGetMotorForce(jointId: jointId): number
+    return 0
+end
+function box2d.prismaticJointGetTranslation(jointId: jointId): number
+    return 0
+end
+function box2d.prismaticJointGetSpeed(jointId: jointId): number
+    return 0
+end
+
+-- Revolute joint
+
+function box2d.createRevoluteJoint(worldId: worldId, def: revoluteJointDef): jointId
+    return {0, 0, 0}
+end
+function box2d.revoluteJointEnableSpring(jointId: jointId, enableSpring: boolean) end
+function box2d.revoluteJointIsSpringEnabled(jointId: jointId): boolean
+    return false
+end
+function box2d.revoluteJointSetSpringHertz(jointId: jointId, hertz: number) end
+function box2d.revoluteJointGetSpringHertz(jointId: jointId): number
+    return 0
+end
+function box2d.revoluteJointSetSpringDampingRatio(jointId: jointId, dampingRatio: number) end
+function box2d.revoluteJointGetSpringDampingRatio(jointId: jointId): number
+    return 0
+end
+function box2d.revoluteJointSetTargetAngle(jointId: jointId, angle: number) end
+function box2d.revoluteJointGetTargetAngle(jointId: jointId): number
+    return 0
+end
+function box2d.revoluteJointGetAngle(jointId: jointId): number
+    return 0
+end
+function box2d.revoluteJointEnableLimit(jointId: jointId, enableLimit: boolean) end
+function box2d.revoluteJointIsLimitEnabled(jointId: jointId): boolean
+    return false
+end
+function box2d.revoluteJointGetLowerLimit(jointId: jointId): number
+    return 0
+end
+function box2d.revoluteJointGetUpperLimit(jointId: jointId): number
+    return 0
+end
+function box2d.revoluteJointSetLimits(jointId: jointId, lower: number, upper: number) end
+function box2d.revoluteJointEnableMotor(jointId: jointId, enableMotor: boolean) end
+function box2d.revoluteJointIsMotorEnabled(jointId: jointId): boolean
+    return false
+end
+function box2d.revoluteJointSetMotorSpeed(jointId: jointId, motorSpeed: number) end
+function box2d.revoluteJointGetMotorSpeed(jointId: jointId): number
+    return 0
+end
+function box2d.revoluteJointGetMotorTorque(jointId: jointId): number
+    return 0
+end
+function box2d.revoluteJointSetMaxMotorTorque(jointId: jointId, torque: number) end
+function box2d.revoluteJointGetMaxMotorTorque(jointId: jointId): number
+    return 0
+end
+
+-- Weld joint
+
+function box2d.createWeldJoint(worldId: worldId, def: weldJointDef): jointId
+    return {0, 0, 0}
+end
+function box2d.weldJointSetLinearHertz(jointId: jointId, hertz: number) end
+function box2d.weldJointGetLinearHertz(jointId: jointId): number
+    return 0
+end
+function box2d.weldJointSetLinearDampingRatio(jointId: jointId, dampingRatio: number) end
+function box2d.weldJointGetLinearDampingRatio(jointId: jointId): number
+    return 0
+end
+function box2d.weldJointSetAngularHertz(jointId: jointId, hertz: number) end
+function box2d.weldJointGetAngularHertz(jointId: jointId): number
+    return 0
+end
+function box2d.weldJointSetAngularDampingRatio(jointId: jointId, dampingRatio: number) end
+function box2d.weldJointGetAngularDampingRatio(jointId: jointId): number
+    return 0
+end
+
+-- Wheel joint
+
+function box2d.createWheelJoint(worldId: worldId, def: wheelJointDef): jointId
+    return {0, 0, 0}
+end
+function box2d.wheelJointEnableSpring(jointId: jointId, enableSpring: boolean) end
+function box2d.wheelJointIsSpringEnabled(jointId: jointId): boolean
+    return false
+end
+function box2d.wheelJointSetSpringHertz(jointId: jointId, hertz: number) end
+function box2d.wheelJointGetSpringHertz(jointId: jointId): number
+    return 0
+end
+function box2d.wheelJointSetSpringDampingRatio(jointId: jointId, dampingRatio: number) end
+function box2d.wheelJointGetSpringDampingRatio(jointId: jointId): number
+    return 0
+end
+function box2d.wheelJointEnableLimit(jointId: jointId, enableLimit: boolean) end
+function box2d.wheelJointIsLimitEnabled(jointId: jointId): boolean
+    return false
+end
+function box2d.wheelJointGetLowerLimit(jointId: jointId): number
+    return 0
+end
+function box2d.wheelJointGetUpperLimit(jointId: jointId): number
+    return 0
+end
+function box2d.wheelJointSetLimits(jointId: jointId, lower: number, upper: number) end
+function box2d.wheelJointEnableMotor(jointId: jointId, enableMotor: boolean) end
+function box2d.wheelJointIsMotorEnabled(jointId: jointId): boolean
+    return false
+end
+function box2d.wheelJointSetMotorSpeed(jointId: jointId, motorSpeed: number) end
+function box2d.wheelJointGetMotorSpeed(jointId: jointId): number
+    return 0
+end
+function box2d.wheelJointSetMaxMotorTorque(jointId: jointId, torque: number) end
+function box2d.wheelJointGetMaxMotorTorque(jointId: jointId): number
+    return 0
+end
+function box2d.wheelJointGetMotorTorque(jointId: jointId): number
     return 0
 end
 

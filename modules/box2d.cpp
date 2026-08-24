@@ -3946,6 +3946,1452 @@ int distanceJointGetMotorForce(lua_State* L) {
     return 1;
 }
 
+// Filter joint
+
+b2FilterJointDef constructFilterJointDef(lua_State* L, int index) {
+    b2FilterJointDef def = b2DefaultFilterJointDef();
+
+    lua_getfield(L, index, "base");
+    if (lua_istable(L, -1)) {
+        applyJointDef(L, lua_gettop(L), def.base);
+    }
+    lua_pop(L, 1);
+
+    return def;
+}
+
+int createFilterJoint(lua_State* L) {
+    b2WorldId worldId = getWorldIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The filter joint definition must be a table");
+        return 0;
+    }
+
+    b2FilterJointDef def = constructFilterJointDef(L, 2);
+    b2JointId jointId = b2CreateFilterJoint(worldId, &def);
+
+    pushJointId(L, jointId);
+
+    return 1;
+}
+
+// Motor joint
+
+b2MotorJointDef constructMotorJointDef(lua_State* L, int index) {
+    b2MotorJointDef def = b2DefaultMotorJointDef();
+
+    lua_getfield(L, index, "base");
+    if (lua_istable(L, -1)) {
+        applyJointDef(L, lua_gettop(L), def.base);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "linearVelocity");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), def.linearVelocity);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maxVelocityForce");
+    if (!lua_isnil(L, -1)) {
+        def.maxVelocityForce = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "angularVelocity");
+    if (!lua_isnil(L, -1)) {
+        def.angularVelocity = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maxVelocityTorque");
+    if (!lua_isnil(L, -1)) {
+        def.maxVelocityTorque = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "linearHertz");
+    if (!lua_isnil(L, -1)) {
+        def.linearHertz = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "linearDampingRatio");
+    if (!lua_isnil(L, -1)) {
+        def.linearDampingRatio = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maxSpringForce");
+    if (!lua_isnil(L, -1)) {
+        def.maxSpringForce = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "angularHertz");
+    if (!lua_isnil(L, -1)) {
+        def.angularHertz = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "angularDampingRatio");
+    if (!lua_isnil(L, -1)) {
+        def.angularDampingRatio = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maxSpringTorque");
+    if (!lua_isnil(L, -1)) {
+        def.maxSpringTorque = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    return def;
+}
+
+int createMotorJoint(lua_State* L) {
+    b2WorldId worldId = getWorldIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The motor joint definition must be a table");
+        return 0;
+    }
+
+    b2MotorJointDef def = constructMotorJointDef(L, 2);
+    b2JointId jointId = b2CreateMotorJoint(worldId, &def);
+
+    pushJointId(L, jointId);
+
+    return 1;
+}
+
+int motorJointSetLinearVelocity(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    b2Vec2 velocity = {
+        static_cast<float>(lua_tonumber(L, 2)),
+        static_cast<float>(lua_tonumber(L, 3))
+    };
+
+    b2MotorJoint_SetLinearVelocity(id, velocity);
+
+    return 0;
+}
+
+int motorJointGetLinearVelocity(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    b2Vec2 velocity = b2MotorJoint_GetLinearVelocity(id);
+
+    lua_pushnumber(L, velocity.x);
+    lua_pushnumber(L, velocity.y);
+
+    return 2;
+}
+
+int motorJointSetAngularVelocity(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float velocity = lua_tonumber(L, 2);
+
+    b2MotorJoint_SetAngularVelocity(id, velocity);
+
+    return 0;
+}
+
+int motorJointGetAngularVelocity(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2MotorJoint_GetAngularVelocity(id));
+
+    return 1;
+}
+
+int motorJointSetMaxVelocityForce(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float maxForce = lua_tonumber(L, 2);
+
+    b2MotorJoint_SetMaxVelocityForce(id, maxForce);
+
+    return 0;
+}
+
+int motorJointGetMaxVelocityForce(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2MotorJoint_GetMaxVelocityForce(id));
+
+    return 1;
+}
+
+int motorJointSetMaxVelocityTorque(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float maxTorque = lua_tonumber(L, 2);
+
+    b2MotorJoint_SetMaxVelocityTorque(id, maxTorque);
+
+    return 0;
+}
+
+int motorJointGetMaxVelocityTorque(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2MotorJoint_GetMaxVelocityTorque(id));
+
+    return 1;
+}
+
+int motorJointSetLinearHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float hertz = lua_tonumber(L, 2);
+
+    b2MotorJoint_SetLinearHertz(id, hertz);
+
+    return 0;
+}
+
+int motorJointGetLinearHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2MotorJoint_GetLinearHertz(id));
+
+    return 1;
+}
+
+int motorJointSetLinearDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float damping = lua_tonumber(L, 2);
+
+    b2MotorJoint_SetLinearDampingRatio(id, damping);
+
+    return 0;
+}
+
+int motorJointGetLinearDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2MotorJoint_GetLinearDampingRatio(id));
+
+    return 1;
+}
+
+int motorJointSetAngularHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float hertz = lua_tonumber(L, 2);
+
+    b2MotorJoint_SetAngularHertz(id, hertz);
+
+    return 0;
+}
+
+int motorJointGetAngularHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2MotorJoint_GetAngularHertz(id));
+
+    return 1;
+}
+
+int motorJointSetAngularDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float damping = lua_tonumber(L, 2);
+
+    b2MotorJoint_SetAngularDampingRatio(id, damping);
+
+    return 0;
+}
+
+int motorJointGetAngularDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2MotorJoint_GetAngularDampingRatio(id));
+
+    return 1;
+}
+
+int motorJointSetMaxSpringForce(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float maxForce = lua_tonumber(L, 2);
+
+    b2MotorJoint_SetMaxSpringForce(id, maxForce);
+
+    return 0;
+}
+
+int motorJointGetMaxSpringForce(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2MotorJoint_GetMaxSpringForce(id));
+
+    return 1;
+}
+
+int motorJointSetMaxSpringTorque(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float maxTorque = lua_tonumber(L, 2);
+
+    b2MotorJoint_SetMaxSpringTorque(id, maxTorque);
+
+    return 0;
+}
+
+int motorJointGetMaxSpringTorque(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2MotorJoint_GetMaxSpringTorque(id));
+
+    return 1;
+}
+
+// Mover joint
+
+b2MoverJointDef constructMoverJointDef(lua_State* L, int index) {
+    b2MoverJointDef def = b2DefaultMoverJointDef();
+
+    lua_getfield(L, index, "base");
+    if (lua_istable(L, -1)) {
+        applyJointDef(L, lua_gettop(L), def.base);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "linearVelocity");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), def.linearVelocity);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maxVelocityForce");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), def.maxVelocityForce);
+    }
+    lua_pop(L, 1);
+
+    return def;
+}
+
+int createMoverJoint(lua_State* L) {
+    b2WorldId worldId = getWorldIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The mover joint definition must be a table");
+        return 0;
+    }
+
+    b2MoverJointDef def = constructMoverJointDef(L, 2);
+    b2JointId jointId = b2CreateMoverJoint(worldId, &def);
+
+    pushJointId(L, jointId);
+
+    return 1;
+}
+
+int moverJointSetLinearVelocity(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    b2Vec2 velocity = {
+        static_cast<float>(lua_tonumber(L, 2)),
+        static_cast<float>(lua_tonumber(L, 3))
+    };
+
+    b2MoverJoint_SetLinearVelocity(id, velocity);
+
+    return 0;
+}
+
+int moverJointGetLinearVelocity(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    b2Vec2 velocity = b2MoverJoint_GetLinearVelocity(id);
+
+    lua_pushnumber(L, velocity.x);
+    lua_pushnumber(L, velocity.y);
+
+    return 2;
+}
+
+int moverJointSetMaxVelocityForce(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    b2Vec2 maxForce = {
+        static_cast<float>(lua_tonumber(L, 2)),
+        static_cast<float>(lua_tonumber(L, 3))
+    };
+
+    b2MoverJoint_SetMaxVelocityForce(id, maxForce);
+
+    return 0;
+}
+
+int moverJointGetMaxVelocityForce(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    b2Vec2 maxForce = b2MoverJoint_GetMaxVelocityForce(id);
+
+    lua_pushnumber(L, maxForce.x);
+    lua_pushnumber(L, maxForce.y);
+
+    return 2;
+}
+
+// Pogo joint
+
+b2PogoJointDef constructPogoJointDef(lua_State* L, int index) {
+    b2PogoJointDef def = b2DefaultPogoJointDef();
+
+    lua_getfield(L, index, "base");
+    if (lua_istable(L, -1)) {
+        applyJointDef(L, lua_gettop(L), def.base);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "normal");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), def.normal);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "hertz");
+    if (!lua_isnil(L, -1)) {
+        def.hertz = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "dampingRatio");
+    if (!lua_isnil(L, -1)) {
+        def.dampingRatio = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "restLength");
+    if (!lua_isnil(L, -1)) {
+        def.restLength = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maxTensionForce");
+    if (!lua_isnil(L, -1)) {
+        def.maxTensionForce = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maxCompressionForce");
+    if (!lua_isnil(L, -1)) {
+        def.maxCompressionForce = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "impulse");
+    if (!lua_isnil(L, -1)) {
+        def.impulse = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "velocity");
+    if (!lua_isnil(L, -1)) {
+        def.velocity = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    // internalValue intentionally untouched.
+
+    return def;
+}
+
+int createPogoJoint(lua_State* L) {
+    b2WorldId worldId = getWorldIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The pogo joint definition must be a table");
+        return 0;
+    }
+
+    b2PogoJointDef def = constructPogoJointDef(L, 2);
+    b2JointId jointId = b2CreatePogoJoint(worldId, &def);
+
+    pushJointId(L, jointId);
+
+    return 1;
+}
+
+int pogoJointSetRestLength(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float length = lua_tonumber(L, 2);
+
+    b2PogoJoint_SetRestLength(id, length);
+
+    return 0;
+}
+
+int pogoJointGetRestLength(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PogoJoint_GetRestLength(id));
+
+    return 1;
+}
+
+int pogoJointSetSpringHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float hertz = lua_tonumber(L, 2);
+
+    b2PogoJoint_SetSpringHertz(id, hertz);
+
+    return 0;
+}
+
+int pogoJointGetSpringHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PogoJoint_GetSpringHertz(id));
+
+    return 1;
+}
+
+int pogoJointSetSpringDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float dampingRatio = lua_tonumber(L, 2);
+
+    b2PogoJoint_SetSpringDampingRatio(id, dampingRatio);
+
+    return 0;
+}
+
+int pogoJointGetSpringDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PogoJoint_GetSpringDampingRatio(id));
+
+    return 1;
+}
+
+int pogoJointGetLength(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PogoJoint_GetLength(id));
+
+    return 1;
+}
+
+int pogoJointGetVelocity(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PogoJoint_GetVelocity(id));
+
+    return 1;
+}
+
+int pogoJointGetImpulse(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PogoJoint_GetImpulse(id));
+
+    return 1;
+}
+
+// Prismatic joint
+
+b2PrismaticJointDef constructPrismaticJointDef(lua_State* L, int index) {
+    b2PrismaticJointDef def = b2DefaultPrismaticJointDef();
+
+    lua_getfield(L, index, "base");
+    if (lua_istable(L, -1)) {
+        applyJointDef(L, lua_gettop(L), def.base);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "enableSpring");
+    if (!lua_isnil(L, -1)) {
+        def.enableSpring = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "hertz");
+    if (!lua_isnil(L, -1)) {
+        def.hertz = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "dampingRatio");
+    if (!lua_isnil(L, -1)) {
+        def.dampingRatio = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "targetTranslation");
+    if (!lua_isnil(L, -1)) {
+        def.targetTranslation = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "enableLimit");
+    if (!lua_isnil(L, -1)) {
+        def.enableLimit = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "lowerTranslation");
+    if (!lua_isnil(L, -1)) {
+        def.lowerTranslation = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "upperTranslation");
+    if (!lua_isnil(L, -1)) {
+        def.upperTranslation = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "enableMotor");
+    if (!lua_isnil(L, -1)) {
+        def.enableMotor = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maxMotorForce");
+    if (!lua_isnil(L, -1)) {
+        def.maxMotorForce = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "motorSpeed");
+    if (!lua_isnil(L, -1)) {
+        def.motorSpeed = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    // internalValue intentionally untouched.
+
+    return def;
+}
+
+int createPrismaticJoint(lua_State* L) {
+    b2WorldId worldId = getWorldIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The prismatic joint definition must be a table");
+        return 0;
+    }
+
+    b2PrismaticJointDef def = constructPrismaticJointDef(L, 2);
+    b2JointId jointId = b2CreatePrismaticJoint(worldId, &def);
+
+    pushJointId(L, jointId);
+
+    return 1;
+}
+
+int prismaticJointEnableSpring(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    bool enableSpring = lua_toboolean(L, 2);
+
+    b2PrismaticJoint_EnableSpring(id, enableSpring);
+
+    return 0;
+}
+
+int prismaticJointIsSpringEnabled(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushboolean(L, b2PrismaticJoint_IsSpringEnabled(id));
+
+    return 1;
+}
+
+int prismaticJointSetSpringHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float hertz = lua_tonumber(L, 2);
+
+    b2PrismaticJoint_SetSpringHertz(id, hertz);
+
+    return 0;
+}
+
+int prismaticJointGetSpringHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PrismaticJoint_GetSpringHertz(id));
+
+    return 1;
+}
+
+int prismaticJointSetSpringDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float dampingRatio = lua_tonumber(L, 2);
+
+    b2PrismaticJoint_SetSpringDampingRatio(id, dampingRatio);
+
+    return 0;
+}
+
+int prismaticJointGetSpringDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PrismaticJoint_GetSpringDampingRatio(id));
+
+    return 1;
+}
+
+int prismaticJointSetTargetTranslation(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float translation = lua_tonumber(L, 2);
+
+    b2PrismaticJoint_SetTargetTranslation(id, translation);
+
+    return 0;
+}
+
+int prismaticJointGetTargetTranslation(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PrismaticJoint_GetTargetTranslation(id));
+
+    return 1;
+}
+
+int prismaticJointEnableLimit(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    bool enableLimit = lua_toboolean(L, 2);
+
+    b2PrismaticJoint_EnableLimit(id, enableLimit);
+
+    return 0;
+}
+
+int prismaticJointIsLimitEnabled(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushboolean(L, b2PrismaticJoint_IsLimitEnabled(id));
+
+    return 1;
+}
+
+int prismaticJointGetLowerLimit(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PrismaticJoint_GetLowerLimit(id));
+
+    return 1;
+}
+
+int prismaticJointGetUpperLimit(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PrismaticJoint_GetUpperLimit(id));
+
+    return 1;
+}
+
+int prismaticJointSetLimits(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float lower = lua_tonumber(L, 2);
+    float upper = lua_tonumber(L, 3);
+
+    b2PrismaticJoint_SetLimits(id, lower, upper);
+
+    return 0;
+}
+
+int prismaticJointEnableMotor(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    bool enableMotor = lua_toboolean(L, 2);
+
+    b2PrismaticJoint_EnableMotor(id, enableMotor);
+
+    return 0;
+}
+
+int prismaticJointIsMotorEnabled(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushboolean(L, b2PrismaticJoint_IsMotorEnabled(id));
+
+    return 1;
+}
+
+int prismaticJointSetMotorSpeed(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float motorSpeed = lua_tonumber(L, 2);
+
+    b2PrismaticJoint_SetMotorSpeed(id, motorSpeed);
+
+    return 0;
+}
+
+int prismaticJointGetMotorSpeed(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PrismaticJoint_GetMotorSpeed(id));
+
+    return 1;
+}
+
+int prismaticJointSetMaxMotorForce(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float force = lua_tonumber(L, 2);
+
+    b2PrismaticJoint_SetMaxMotorForce(id, force);
+
+    return 0;
+}
+
+int prismaticJointGetMaxMotorForce(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PrismaticJoint_GetMaxMotorForce(id));
+
+    return 1;
+}
+
+int prismaticJointGetMotorForce(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PrismaticJoint_GetMotorForce(id));
+
+    return 1;
+}
+
+int prismaticJointGetTranslation(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PrismaticJoint_GetTranslation(id));
+
+    return 1;
+}
+
+int prismaticJointGetSpeed(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2PrismaticJoint_GetSpeed(id));
+
+    return 1;
+}
+
+// Revolute joint
+
+b2RevoluteJointDef constructRevoluteJointDef(lua_State* L, int index) {
+    b2RevoluteJointDef def = b2DefaultRevoluteJointDef();
+
+    lua_getfield(L, index, "base");
+    if (lua_istable(L, -1)) {
+        applyJointDef(L, lua_gettop(L), def.base);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "targetAngle");
+    if (!lua_isnil(L, -1)) {
+        def.targetAngle = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "enableSpring");
+    if (!lua_isnil(L, -1)) {
+        def.enableSpring = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "hertz");
+    if (!lua_isnil(L, -1)) {
+        def.hertz = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "dampingRatio");
+    if (!lua_isnil(L, -1)) {
+        def.dampingRatio = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "enableLimit");
+    if (!lua_isnil(L, -1)) {
+        def.enableLimit = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "lowerAngle");
+    if (!lua_isnil(L, -1)) {
+        def.lowerAngle = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "upperAngle");
+    if (!lua_isnil(L, -1)) {
+        def.upperAngle = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "enableMotor");
+    if (!lua_isnil(L, -1)) {
+        def.enableMotor = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maxMotorTorque");
+    if (!lua_isnil(L, -1)) {
+        def.maxMotorTorque = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "motorSpeed");
+    if (!lua_isnil(L, -1)) {
+        def.motorSpeed = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    // internalValue intentionally untouched.
+
+    return def;
+}
+
+int createRevoluteJoint(lua_State* L) {
+    b2WorldId worldId = getWorldIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The revolute joint definition must be a table");
+        return 0;
+    }
+
+    b2RevoluteJointDef def = constructRevoluteJointDef(L, 2);
+    b2JointId jointId = b2CreateRevoluteJoint(worldId, &def);
+
+    pushJointId(L, jointId);
+
+    return 1;
+}
+
+int revoluteJointEnableSpring(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    bool enableSpring = lua_toboolean(L, 2);
+
+    b2RevoluteJoint_EnableSpring(id, enableSpring);
+
+    return 0;
+}
+
+int revoluteJointIsSpringEnabled(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushboolean(L, b2RevoluteJoint_IsSpringEnabled(id));
+
+    return 1;
+}
+
+int revoluteJointSetSpringHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float hertz = lua_tonumber(L, 2);
+
+    b2RevoluteJoint_SetSpringHertz(id, hertz);
+
+    return 0;
+}
+
+int revoluteJointGetSpringHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2RevoluteJoint_GetSpringHertz(id));
+
+    return 1;
+}
+
+int revoluteJointSetSpringDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float dampingRatio = lua_tonumber(L, 2);
+
+    b2RevoluteJoint_SetSpringDampingRatio(id, dampingRatio);
+
+    return 0;
+}
+
+int revoluteJointGetSpringDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2RevoluteJoint_GetSpringDampingRatio(id));
+
+    return 1;
+}
+
+int revoluteJointSetTargetAngle(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float angle = lua_tonumber(L, 2);
+
+    b2RevoluteJoint_SetTargetAngle(id, angle);
+
+    return 0;
+}
+
+int revoluteJointGetTargetAngle(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2RevoluteJoint_GetTargetAngle(id));
+
+    return 1;
+}
+
+int revoluteJointGetAngle(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2RevoluteJoint_GetAngle(id));
+
+    return 1;
+}
+
+int revoluteJointEnableLimit(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    bool enableLimit = lua_toboolean(L, 2);
+
+    b2RevoluteJoint_EnableLimit(id, enableLimit);
+
+    return 0;
+}
+
+int revoluteJointIsLimitEnabled(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushboolean(L, b2RevoluteJoint_IsLimitEnabled(id));
+
+    return 1;
+}
+
+int revoluteJointGetLowerLimit(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2RevoluteJoint_GetLowerLimit(id));
+
+    return 1;
+}
+
+int revoluteJointGetUpperLimit(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2RevoluteJoint_GetUpperLimit(id));
+
+    return 1;
+}
+
+int revoluteJointSetLimits(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float lower = lua_tonumber(L, 2);
+    float upper = lua_tonumber(L, 3);
+
+    b2RevoluteJoint_SetLimits(id, lower, upper);
+
+    return 0;
+}
+
+int revoluteJointEnableMotor(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    bool enableMotor = lua_toboolean(L, 2);
+
+    b2RevoluteJoint_EnableMotor(id, enableMotor);
+
+    return 0;
+}
+
+int revoluteJointIsMotorEnabled(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushboolean(L, b2RevoluteJoint_IsMotorEnabled(id));
+
+    return 1;
+}
+
+int revoluteJointSetMotorSpeed(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float motorSpeed = lua_tonumber(L, 2);
+
+    b2RevoluteJoint_SetMotorSpeed(id, motorSpeed);
+
+    return 0;
+}
+
+int revoluteJointGetMotorSpeed(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2RevoluteJoint_GetMotorSpeed(id));
+
+    return 1;
+}
+
+int revoluteJointGetMotorTorque(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2RevoluteJoint_GetMotorTorque(id));
+
+    return 1;
+}
+
+int revoluteJointSetMaxMotorTorque(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float torque = lua_tonumber(L, 2);
+
+    b2RevoluteJoint_SetMaxMotorTorque(id, torque);
+
+    return 0;
+}
+
+int revoluteJointGetMaxMotorTorque(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2RevoluteJoint_GetMaxMotorTorque(id));
+
+    return 1;
+}
+
+// Weld joint
+
+b2WeldJointDef constructWeldJointDef(lua_State* L, int index) {
+    b2WeldJointDef def = b2DefaultWeldJointDef();
+
+    lua_getfield(L, index, "base");
+    if (lua_istable(L, -1)) {
+        applyJointDef(L, lua_gettop(L), def.base);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "linearHertz");
+    if (!lua_isnil(L, -1)) {
+        def.linearHertz = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "angularHertz");
+    if (!lua_isnil(L, -1)) {
+        def.angularHertz = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "linearDampingRatio");
+    if (!lua_isnil(L, -1)) {
+        def.linearDampingRatio = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "angularDampingRatio");
+    if (!lua_isnil(L, -1)) {
+        def.angularDampingRatio = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    return def;
+}
+
+int createWeldJoint(lua_State* L) {
+    b2WorldId worldId = getWorldIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The weld joint definition must be a table");
+        return 0;
+    }
+
+    b2WeldJointDef def = constructWeldJointDef(L, 2);
+    b2JointId jointId = b2CreateWeldJoint(worldId, &def);
+
+    pushJointId(L, jointId);
+
+    return 1;
+}
+
+int weldJointSetLinearHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float hertz = lua_tonumber(L, 2);
+
+    b2WeldJoint_SetLinearHertz(id, hertz);
+
+    return 0;
+}
+
+int weldJointGetLinearHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2WeldJoint_GetLinearHertz(id));
+
+    return 1;
+}
+
+int weldJointSetLinearDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float dampingRatio = lua_tonumber(L, 2);
+
+    b2WeldJoint_SetLinearDampingRatio(id, dampingRatio);
+
+    return 0;
+}
+
+int weldJointGetLinearDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2WeldJoint_GetLinearDampingRatio(id));
+
+    return 1;
+}
+
+int weldJointSetAngularHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float hertz = lua_tonumber(L, 2);
+
+    b2WeldJoint_SetAngularHertz(id, hertz);
+
+    return 0;
+}
+
+int weldJointGetAngularHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2WeldJoint_GetAngularHertz(id));
+
+    return 1;
+}
+
+int weldJointSetAngularDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float dampingRatio = lua_tonumber(L, 2);
+
+    b2WeldJoint_SetAngularDampingRatio(id, dampingRatio);
+
+    return 0;
+}
+
+int weldJointGetAngularDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2WeldJoint_GetAngularDampingRatio(id));
+
+    return 1;
+}
+
+// Wheel joint
+
+b2WheelJointDef constructWheelJointDef(lua_State* L, int index) {
+    b2WheelJointDef def = b2DefaultWheelJointDef();
+
+    lua_getfield(L, index, "base");
+    if (lua_istable(L, -1)) {
+        applyJointDef(L, lua_gettop(L), def.base);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "enableSpring");
+    if (!lua_isnil(L, -1)) {
+        def.enableSpring = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "hertz");
+    if (!lua_isnil(L, -1)) {
+        def.hertz = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "dampingRatio");
+    if (!lua_isnil(L, -1)) {
+        def.dampingRatio = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "enableLimit");
+    if (!lua_isnil(L, -1)) {
+        def.enableLimit = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "lowerTranslation");
+    if (!lua_isnil(L, -1)) {
+        def.lowerTranslation = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "upperTranslation");
+    if (!lua_isnil(L, -1)) {
+        def.upperTranslation = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "enableMotor");
+    if (!lua_isnil(L, -1)) {
+        def.enableMotor = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "maxMotorTorque");
+    if (!lua_isnil(L, -1)) {
+        def.maxMotorTorque = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, index, "motorSpeed");
+    if (!lua_isnil(L, -1)) {
+        def.motorSpeed = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    return def;
+}
+
+int createWheelJoint(lua_State* L) {
+    b2WorldId worldId = getWorldIdFromLuau(L);
+
+    if (!lua_istable(L, 2)) {
+        luaL_argerror(L, 2, "The wheel joint definition must be a table");
+        return 0;
+    }
+
+    b2WheelJointDef def = constructWheelJointDef(L, 2);
+    b2JointId jointId = b2CreateWheelJoint(worldId, &def);
+
+    pushJointId(L, jointId);
+
+    return 1;
+}
+
+int wheelJointEnableSpring(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    bool enableSpring = lua_toboolean(L, 2);
+
+    b2WheelJoint_EnableSpring(id, enableSpring);
+
+    return 0;
+}
+
+int wheelJointIsSpringEnabled(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushboolean(L, b2WheelJoint_IsSpringEnabled(id));
+
+    return 1;
+}
+
+int wheelJointSetSpringHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float hertz = lua_tonumber(L, 2);
+
+    b2WheelJoint_SetSpringHertz(id, hertz);
+
+    return 0;
+}
+
+int wheelJointGetSpringHertz(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2WheelJoint_GetSpringHertz(id));
+
+    return 1;
+}
+
+int wheelJointSetSpringDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float dampingRatio = lua_tonumber(L, 2);
+
+    b2WheelJoint_SetSpringDampingRatio(id, dampingRatio);
+
+    return 0;
+}
+
+int wheelJointGetSpringDampingRatio(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2WheelJoint_GetSpringDampingRatio(id));
+
+    return 1;
+}
+
+int wheelJointEnableLimit(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    bool enableLimit = lua_toboolean(L, 2);
+
+    b2WheelJoint_EnableLimit(id, enableLimit);
+
+    return 0;
+}
+
+int wheelJointIsLimitEnabled(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushboolean(L, b2WheelJoint_IsLimitEnabled(id));
+
+    return 1;
+}
+
+int wheelJointGetLowerLimit(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2WheelJoint_GetLowerLimit(id));
+
+    return 1;
+}
+
+int wheelJointGetUpperLimit(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2WheelJoint_GetUpperLimit(id));
+
+    return 1;
+}
+
+int wheelJointSetLimits(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float lower = lua_tonumber(L, 2);
+    float upper = lua_tonumber(L, 3);
+
+    b2WheelJoint_SetLimits(id, lower, upper);
+
+    return 0;
+}
+
+int wheelJointEnableMotor(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    bool enableMotor = lua_toboolean(L, 2);
+
+    b2WheelJoint_EnableMotor(id, enableMotor);
+
+    return 0;
+}
+
+int wheelJointIsMotorEnabled(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushboolean(L, b2WheelJoint_IsMotorEnabled(id));
+
+    return 1;
+}
+
+int wheelJointSetMotorSpeed(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float motorSpeed = lua_tonumber(L, 2);
+
+    b2WheelJoint_SetMotorSpeed(id, motorSpeed);
+
+    return 0;
+}
+
+int wheelJointGetMotorSpeed(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2WheelJoint_GetMotorSpeed(id));
+
+    return 1;
+}
+
+int wheelJointSetMaxMotorTorque(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+    float torque = lua_tonumber(L, 2);
+
+    b2WheelJoint_SetMaxMotorTorque(id, torque);
+
+    return 0;
+}
+
+int wheelJointGetMaxMotorTorque(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2WheelJoint_GetMaxMotorTorque(id));
+
+    return 1;
+}
+
+int wheelJointGetMotorTorque(lua_State* L) {
+    b2JointId id = getJointIdFromLuau(L);
+
+    lua_pushnumber(L, b2WheelJoint_GetMotorTorque(id));
+
+    return 1;
+}
+
 static const luaL_Reg box2d_lib[] = {
     // World
     {"createWorld", createWorld},
@@ -4152,6 +5598,132 @@ static const luaL_Reg box2d_lib[] = {
     {"distanceJointSetMaxMotorForce", distanceJointSetMaxMotorForce},
     {"distanceJointGetMaxMotorForce", distanceJointGetMaxMotorForce},
     {"distanceJointGetMotorForce", distanceJointGetMotorForce},
+
+    // Filter joint
+    {"createFilterJoint", createFilterJoint},
+
+    // Motor joint
+    {"createMotorJoint", createMotorJoint},
+    {"motorJointSetLinearVelocity", motorJointSetLinearVelocity},
+    {"motorJointGetLinearVelocity", motorJointGetLinearVelocity},
+    {"motorJointSetAngularVelocity", motorJointSetAngularVelocity},
+    {"motorJointGetAngularVelocity", motorJointGetAngularVelocity},
+    {"motorJointSetMaxVelocityForce", motorJointSetMaxVelocityForce},
+    {"motorJointGetMaxVelocityForce", motorJointGetMaxVelocityForce},
+    {"motorJointSetMaxVelocityTorque", motorJointSetMaxVelocityTorque},
+    {"motorJointGetMaxVelocityTorque", motorJointGetMaxVelocityTorque},
+    {"motorJointSetLinearHertz", motorJointSetLinearHertz},
+    {"motorJointGetLinearHertz", motorJointGetLinearHertz},
+    {"motorJointSetLinearDampingRatio", motorJointSetLinearDampingRatio},
+    {"motorJointGetLinearDampingRatio", motorJointGetLinearDampingRatio},
+    {"motorJointSetAngularHertz", motorJointSetAngularHertz},
+    {"motorJointGetAngularHertz", motorJointGetAngularHertz},
+    {"motorJointSetAngularDampingRatio", motorJointSetAngularDampingRatio},
+    {"motorJointGetAngularDampingRatio", motorJointGetAngularDampingRatio},
+    {"motorJointSetMaxSpringForce", motorJointSetMaxSpringForce},
+    {"motorJointGetMaxSpringForce", motorJointGetMaxSpringForce},
+    {"motorJointSetMaxSpringTorque", motorJointSetMaxSpringTorque},
+    {"motorJointGetMaxSpringTorque", motorJointGetMaxSpringTorque},
+
+    // Mover joint
+    {"createMoverJoint", createMoverJoint},
+    {"moverJointSetLinearVelocity", moverJointSetLinearVelocity},
+    {"moverJointGetLinearVelocity", moverJointGetLinearVelocity},
+    {"moverJointSetMaxVelocityForce", moverJointSetMaxVelocityForce},
+    {"moverJointGetMaxVelocityForce", moverJointGetMaxVelocityForce},
+
+    // Pogo joint
+    {"createPogoJoint", createPogoJoint},
+    {"pogoJointSetRestLength", pogoJointSetRestLength},
+    {"pogoJointGetRestLength", pogoJointGetRestLength},
+    {"pogoJointSetSpringHertz", pogoJointSetSpringHertz},
+    {"pogoJointGetSpringHertz", pogoJointGetSpringHertz},
+    {"pogoJointSetSpringDampingRatio", pogoJointSetSpringDampingRatio},
+    {"pogoJointGetSpringDampingRatio", pogoJointGetSpringDampingRatio},
+    {"pogoJointGetLength", pogoJointGetLength},
+    {"pogoJointGetVelocity", pogoJointGetVelocity},
+    {"pogoJointGetImpulse", pogoJointGetImpulse},
+
+    // Prismatic joint
+    {"createPrismaticJoint", createPrismaticJoint},
+    {"prismaticJointEnableSpring", prismaticJointEnableSpring},
+    {"prismaticJointIsSpringEnabled", prismaticJointIsSpringEnabled},
+    {"prismaticJointSetSpringHertz", prismaticJointSetSpringHertz},
+    {"prismaticJointGetSpringHertz", prismaticJointGetSpringHertz},
+    {"prismaticJointSetSpringDampingRatio", prismaticJointSetSpringDampingRatio},
+    {"prismaticJointGetSpringDampingRatio", prismaticJointGetSpringDampingRatio},
+    {"prismaticJointSetTargetTranslation", prismaticJointSetTargetTranslation},
+    {"prismaticJointGetTargetTranslation", prismaticJointGetTargetTranslation},
+    {"prismaticJointEnableLimit", prismaticJointEnableLimit},
+    {"prismaticJointIsLimitEnabled", prismaticJointIsLimitEnabled},
+    {"prismaticJointGetLowerLimit", prismaticJointGetLowerLimit},
+    {"prismaticJointGetUpperLimit", prismaticJointGetUpperLimit},
+    {"prismaticJointSetLimits", prismaticJointSetLimits},
+    {"prismaticJointEnableMotor", prismaticJointEnableMotor},
+    {"prismaticJointIsMotorEnabled", prismaticJointIsMotorEnabled},
+    {"prismaticJointSetMotorSpeed", prismaticJointSetMotorSpeed},
+    {"prismaticJointGetMotorSpeed", prismaticJointGetMotorSpeed},
+    {"prismaticJointSetMaxMotorForce", prismaticJointSetMaxMotorForce},
+    {"prismaticJointGetMaxMotorForce", prismaticJointGetMaxMotorForce},
+    {"prismaticJointGetMotorForce", prismaticJointGetMotorForce},
+    {"prismaticJointGetTranslation", prismaticJointGetTranslation},
+    {"prismaticJointGetSpeed", prismaticJointGetSpeed},
+
+    // Revolute joint
+    {"createRevoluteJoint", createRevoluteJoint},
+    {"revoluteJointEnableSpring", revoluteJointEnableSpring},
+    {"revoluteJointIsSpringEnabled", revoluteJointIsSpringEnabled},
+    {"revoluteJointSetSpringHertz", revoluteJointSetSpringHertz},
+    {"revoluteJointGetSpringHertz", revoluteJointGetSpringHertz},
+    {"revoluteJointSetSpringDampingRatio", revoluteJointSetSpringDampingRatio},
+    {"revoluteJointGetSpringDampingRatio", revoluteJointGetSpringDampingRatio},
+    {"revoluteJointSetTargetAngle", revoluteJointSetTargetAngle},
+    {"revoluteJointGetTargetAngle", revoluteJointGetTargetAngle},
+    {"revoluteJointGetAngle", revoluteJointGetAngle},
+    {"revoluteJointEnableLimit", revoluteJointEnableLimit},
+    {"revoluteJointIsLimitEnabled", revoluteJointIsLimitEnabled},
+    {"revoluteJointGetLowerLimit", revoluteJointGetLowerLimit},
+    {"revoluteJointGetUpperLimit", revoluteJointGetUpperLimit},
+    {"revoluteJointSetLimits", revoluteJointSetLimits},
+    {"revoluteJointEnableMotor", revoluteJointEnableMotor},
+    {"revoluteJointIsMotorEnabled", revoluteJointIsMotorEnabled},
+    {"revoluteJointSetMotorSpeed", revoluteJointSetMotorSpeed},
+    {"revoluteJointGetMotorSpeed", revoluteJointGetMotorSpeed},
+    {"revoluteJointGetMotorTorque", revoluteJointGetMotorTorque},
+    {"revoluteJointSetMaxMotorTorque", revoluteJointSetMaxMotorTorque},
+    {"revoluteJointGetMaxMotorTorque", revoluteJointGetMaxMotorTorque},
+
+    // Weld joint
+    {"createWeldJoint", createWeldJoint},
+    {"weldJointSetLinearHertz", weldJointSetLinearHertz},
+    {"weldJointGetLinearHertz", weldJointGetLinearHertz},
+    {"weldJointSetLinearDampingRatio", weldJointSetLinearDampingRatio},
+    {"weldJointGetLinearDampingRatio", weldJointGetLinearDampingRatio},
+    {"weldJointSetAngularHertz", weldJointSetAngularHertz},
+    {"weldJointGetAngularHertz", weldJointGetAngularHertz},
+    {"weldJointSetAngularDampingRatio", weldJointSetAngularDampingRatio},
+    {"weldJointGetAngularDampingRatio", weldJointGetAngularDampingRatio},
+
+    // Wheel joint
+    {"createWheelJoint", createWheelJoint},
+    {"wheelJointEnableSpring", wheelJointEnableSpring},
+    {"wheelJointIsSpringEnabled", wheelJointIsSpringEnabled},
+    {"wheelJointSetSpringHertz", wheelJointSetSpringHertz},
+    {"wheelJointGetSpringHertz", wheelJointGetSpringHertz},
+    {"wheelJointSetSpringDampingRatio", wheelJointSetSpringDampingRatio},
+    {"wheelJointGetSpringDampingRatio", wheelJointGetSpringDampingRatio},
+    {"wheelJointEnableLimit", wheelJointEnableLimit},
+    {"wheelJointIsLimitEnabled", wheelJointIsLimitEnabled},
+    {"wheelJointGetLowerLimit", wheelJointGetLowerLimit},
+    {"wheelJointGetUpperLimit", wheelJointGetUpperLimit},
+    {"wheelJointSetLimits", wheelJointSetLimits},
+    {"wheelJointEnableMotor", wheelJointEnableMotor},
+    {"wheelJointIsMotorEnabled", wheelJointIsMotorEnabled},
+    {"wheelJointSetMotorSpeed", wheelJointSetMotorSpeed},
+    {"wheelJointGetMotorSpeed", wheelJointGetMotorSpeed},
+    {"wheelJointSetMaxMotorTorque", wheelJointSetMaxMotorTorque},
+    {"wheelJointGetMaxMotorTorque", wheelJointGetMaxMotorTorque},
+    {"wheelJointGetMotorTorque", wheelJointGetMotorTorque},
 
     {nullptr, nullptr},
 };

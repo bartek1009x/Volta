@@ -21,6 +21,14 @@ b2ShapeProxy constructShapeProxy(lua_State* L, int index);
 b2Transform constructTransform(lua_State* L, int index);
 b2BodyId constructBodyId(lua_State* L, int index);
 b2DistanceJointDef constructDistanceJointDef(lua_State* L, int index);
+b2FilterJointDef constructFilterJointDef(lua_State* L, int index);
+b2MotorJointDef constructMotorJointDef(lua_State* L, int index);
+b2MoverJointDef constructMoverJointDef(lua_State* L, int index);
+b2PogoJointDef constructPogoJointDef(lua_State* L, int index);
+b2PrismaticJointDef constructPrismaticJointDef(lua_State* L, int index);
+b2RevoluteJointDef constructRevoluteJointDef(lua_State* L, int index);
+b2WeldJointDef constructWeldJointDef(lua_State* L, int index);
+b2WheelJointDef constructWheelJointDef(lua_State* L, int index);
 
 void applyVec2(lua_State* L, int index, b2Vec2& value);
 void applySurfaceMaterial(lua_State* L, int index, b2SurfaceMaterial& material);
@@ -268,6 +276,132 @@ int distanceJointGetMotorSpeed(lua_State* L);
 int distanceJointSetMaxMotorForce(lua_State* L);
 int distanceJointGetMaxMotorForce(lua_State* L);
 int distanceJointGetMotorForce(lua_State* L);
+
+// Filter joint
+int createFilterJoint(lua_State* L);
+
+// Motor joint
+int createMotorJoint(lua_State* L);
+int motorJointSetLinearVelocity(lua_State* L);
+int motorJointGetLinearVelocity(lua_State* L);
+int motorJointSetAngularVelocity(lua_State* L);
+int motorJointGetAngularVelocity(lua_State* L);
+int motorJointSetMaxVelocityForce(lua_State* L);
+int motorJointGetMaxVelocityForce(lua_State* L);
+int motorJointSetMaxVelocityTorque(lua_State* L);
+int motorJointGetMaxVelocityTorque(lua_State* L);
+int motorJointSetLinearHertz(lua_State* L);
+int motorJointGetLinearHertz(lua_State* L);
+int motorJointSetLinearDampingRatio(lua_State* L);
+int motorJointGetLinearDampingRatio(lua_State* L);
+int motorJointSetAngularHertz(lua_State* L);
+int motorJointGetAngularHertz(lua_State* L);
+int motorJointSetAngularDampingRatio(lua_State* L);
+int motorJointGetAngularDampingRatio(lua_State* L);
+int motorJointSetMaxSpringForce(lua_State* L);
+int motorJointGetMaxSpringForce(lua_State* L);
+int motorJointSetMaxSpringTorque(lua_State* L);
+int motorJointGetMaxSpringTorque(lua_State* L);
+
+// Mover joint
+int createMoverJoint(lua_State* L);
+int moverJointSetLinearVelocity(lua_State* L);
+int moverJointGetLinearVelocity(lua_State* L);
+int moverJointSetMaxVelocityForce(lua_State* L);
+int moverJointGetMaxVelocityForce(lua_State* L);
+
+// Pogo joint
+int createPogoJoint(lua_State* L);
+int pogoJointSetRestLength(lua_State* L);
+int pogoJointGetRestLength(lua_State* L);
+int pogoJointSetSpringHertz(lua_State* L);
+int pogoJointGetSpringHertz(lua_State* L);
+int pogoJointSetSpringDampingRatio(lua_State* L);
+int pogoJointGetSpringDampingRatio(lua_State* L);
+int pogoJointGetLength(lua_State* L);
+int pogoJointGetVelocity(lua_State* L);
+int pogoJointGetImpulse(lua_State* L);
+
+// Prismatic joint
+int createPrismaticJoint(lua_State* L);
+int prismaticJointEnableSpring(lua_State* L);
+int prismaticJointIsSpringEnabled(lua_State* L);
+int prismaticJointSetSpringHertz(lua_State* L);
+int prismaticJointGetSpringHertz(lua_State* L);
+int prismaticJointSetSpringDampingRatio(lua_State* L);
+int prismaticJointGetSpringDampingRatio(lua_State* L);
+int prismaticJointSetTargetTranslation(lua_State* L);
+int prismaticJointGetTargetTranslation(lua_State* L);
+int prismaticJointEnableLimit(lua_State* L);
+int prismaticJointIsLimitEnabled(lua_State* L);
+int prismaticJointGetLowerLimit(lua_State* L);
+int prismaticJointGetUpperLimit(lua_State* L);
+int prismaticJointSetLimits(lua_State* L);
+int prismaticJointEnableMotor(lua_State* L);
+int prismaticJointIsMotorEnabled(lua_State* L);
+int prismaticJointSetMotorSpeed(lua_State* L);
+int prismaticJointGetMotorSpeed(lua_State* L);
+int prismaticJointSetMaxMotorForce(lua_State* L);
+int prismaticJointGetMaxMotorForce(lua_State* L);
+int prismaticJointGetMotorForce(lua_State* L);
+int prismaticJointGetTranslation(lua_State* L);
+int prismaticJointGetSpeed(lua_State* L);
+
+// Revolute joint
+int createRevoluteJoint(lua_State* L);
+int revoluteJointEnableSpring(lua_State* L);
+int revoluteJointIsSpringEnabled(lua_State* L);
+int revoluteJointSetSpringHertz(lua_State* L);
+int revoluteJointGetSpringHertz(lua_State* L);
+int revoluteJointSetSpringDampingRatio(lua_State* L);
+int revoluteJointGetSpringDampingRatio(lua_State* L);
+int revoluteJointSetTargetAngle(lua_State* L);
+int revoluteJointGetTargetAngle(lua_State* L);
+int revoluteJointGetAngle(lua_State* L);
+int revoluteJointEnableLimit(lua_State* L);
+int revoluteJointIsLimitEnabled(lua_State* L);
+int revoluteJointGetLowerLimit(lua_State* L);
+int revoluteJointGetUpperLimit(lua_State* L);
+int revoluteJointSetLimits(lua_State* L);
+int revoluteJointEnableMotor(lua_State* L);
+int revoluteJointIsMotorEnabled(lua_State* L);
+int revoluteJointSetMotorSpeed(lua_State* L);
+int revoluteJointGetMotorSpeed(lua_State* L);
+int revoluteJointGetMotorTorque(lua_State* L);
+int revoluteJointSetMaxMotorTorque(lua_State* L);
+int revoluteJointGetMaxMotorTorque(lua_State* L);
+
+// Weld joint
+int createWeldJoint(lua_State* L);
+int weldJointSetLinearHertz(lua_State* L);
+int weldJointGetLinearHertz(lua_State* L);
+int weldJointSetLinearDampingRatio(lua_State* L);
+int weldJointGetLinearDampingRatio(lua_State* L);
+int weldJointSetAngularHertz(lua_State* L);
+int weldJointGetAngularHertz(lua_State* L);
+int weldJointSetAngularDampingRatio(lua_State* L);
+int weldJointGetAngularDampingRatio(lua_State* L);
+
+// Wheel joint
+int createWheelJoint(lua_State* L);
+int wheelJointEnableSpring(lua_State* L);
+int wheelJointIsSpringEnabled(lua_State* L);
+int wheelJointSetSpringHertz(lua_State* L);
+int wheelJointGetSpringHertz(lua_State* L);
+int wheelJointSetSpringDampingRatio(lua_State* L);
+int wheelJointGetSpringDampingRatio(lua_State* L);
+int wheelJointEnableLimit(lua_State* L);
+int wheelJointIsLimitEnabled(lua_State* L);
+int wheelJointGetLowerLimit(lua_State* L);
+int wheelJointGetUpperLimit(lua_State* L);
+int wheelJointSetLimits(lua_State* L);
+int wheelJointEnableMotor(lua_State* L);
+int wheelJointIsMotorEnabled(lua_State* L);
+int wheelJointSetMotorSpeed(lua_State* L);
+int wheelJointGetMotorSpeed(lua_State* L);
+int wheelJointSetMaxMotorTorque(lua_State* L);
+int wheelJointGetMaxMotorTorque(lua_State* L);
+int wheelJointGetMotorTorque(lua_State* L);
 
 void registerBox2dFunctions(lua_State* L, ResourceState* state);
 
