@@ -6,7 +6,7 @@ export type vec2 = {
     x: number,
     y: number
 }
-export type worldId = {number}
+export type worldId = number
 export type capacity = {
     staticShapeCount: number,
     dynamicShapeCount: number,
@@ -48,7 +48,7 @@ export type counters = {
 }
 export type overlapResultCallback = (shapeId: shapeId) -> boolean
 
-export type bodyId = {number}
+export type bodyId = number
 export type bodyType = number
 export type rot = {
     c: number,
@@ -85,7 +85,7 @@ export type bodyDef = {
     enableContactRecycling: boolean?
 }
 
-export type shapeId = {number}
+export type shapeId = number
 export type shapeType = number
 export type surfaceMaterial = {
     friction: number,
@@ -146,7 +146,7 @@ export type polygon = {
     radius: number,
     count: number,
 }
-export type chainId = {number}
+export type chainId = number
 export type chainSegment = {
     ghost1: vec2,
     segment: segment,
@@ -180,7 +180,9 @@ export type contactId = {number}
 export type contactBeginTouchEvent = {
     shapeIdA: shapeId,
     shapeIdB: shapeId,
-    contactId: contactId,
+    contactIdIndex1: number,
+    contactIdWorld0: number,
+    contactIdGeneration: number,
 }
 export type contactEndTouchEvent = {
     shapeIdA: shapeId,
@@ -235,7 +237,7 @@ export type rayResult = {
     normal: vec2?,
     fraction: number?,
 }
-export type castResultCallback = (shapeId, number, number, number, number, number) -> number
+export type castResultCallback = (shapeId: shapeId, pointX: number, pointY: number, normalX: number, normalY: number, fraction: number) -> number
 export type shapeProxy = {
     points: {vec2},
     count: number,
@@ -252,7 +254,7 @@ export type planeResult = {
 }
 export type planeResultCallback = (shapeId: shapeId, result: planeResult) -> boolean
 
-export type jointId = {number}
+export type jointId = number
 export type jointType = number
 export type jointEvent = {
     jointId: jointId,
@@ -451,7 +453,7 @@ end
 function box2d.worldGetStateHash(worldId: worldId) : number
     return 0
 end
-function box2d.contactIsValid(contactId: contactId): boolean
+function box2d.contactIsValid(contactIdIndex1: number, contactIdWorld0: number, contactIdGeneration: number): boolean
     return false
 end
 

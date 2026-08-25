@@ -124,7 +124,7 @@ b2ExplosionDef constructExplosionDef(lua_State* L, int index) {
 
     lua_getfield(L, index, "maskBits");
     if (!lua_isnil(L, -1)) {
-        def.maskBits = static_cast<Uint64>(lua_tointeger64(L, -1, nullptr));
+        def.maskBits = lua_tointeger64(L, -1, nullptr);
     }
     lua_pop(L, 1);
 
@@ -156,43 +156,26 @@ b2ExplosionDef constructExplosionDef(lua_State* L, int index) {
 }
 
 b2WorldId getWorldIdFromLuau(lua_State* L) {
-    if (lua_type(L, 1) != LUA_TTABLE) {
-        luaL_argerror(L, 1, "The world ID must be a table");
-        return {0,0};
+    if (lua_type(L, 1) != LUA_TNUMBER) {
+        luaL_argerror(L, 1, "The world ID must be an integer");
+        return {};
     }
-    lua_rawgeti(L, 1, 1);
-    Uint16 index1 = lua_tointeger(L, -1);
-    lua_pop(L, 1);
 
-    lua_rawgeti(L, 1, 2);
-    Uint16 generation = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    b2WorldId id = {index1, generation};
-    return id;
+    Uint32 storedId = lua_tointeger64(L, 1, nullptr);
+    return b2LoadWorldId(storedId);
 }
 
 void pushWorldId(lua_State* L, b2WorldId id) {
-    lua_createtable(L, 2, 0);
-
-    lua_pushinteger(L, id.index1);
-    lua_rawseti(L, -2, 1);
-
-    lua_pushinteger(L, id.generation);
-    lua_rawseti(L, -2, 2);
+    lua_pushinteger64(L, b2StoreWorldId(id));
 }
 
 void pushContactId(lua_State* L, b2ContactId id) {
-    lua_createtable(L, 3, 0);
+    Uint32 values[3];
+    b2StoreContactId(id, values);
 
-    lua_pushinteger(L, id.index1);
-    lua_rawseti(L, -2, 1);
-
-    lua_pushinteger(L, id.world0);
-    lua_rawseti(L, -2, 2);
-
-    lua_pushinteger(L, id.generation);
-    lua_rawseti(L, -2, 3);
+    lua_pushinteger64(L, values[0]);
+    lua_pushinteger64(L, values[1]);
+    lua_pushinteger64(L, values[2]);
 }
 
 int createWorld(lua_State* L) {
@@ -203,13 +186,7 @@ int createWorld(lua_State* L) {
     b2WorldDef def = constructWorldDef(L, 1);
     b2WorldId worldId = b2CreateWorld(&def);
 
-    lua_createtable(L, 2, 0);
-
-    lua_pushinteger(L, worldId.index1);
-    lua_rawseti(L, -2, 1);
-
-    lua_pushinteger(L, worldId.generation);
-    lua_rawseti(L, -2, 2);
+    pushWorldId(L, worldId);
 
     return 1;
 }
@@ -309,7 +286,7 @@ int worldGetContactEvents(lua_State* L) {
     for (int i = 0; i < events.beginCount; ++i) {
         const b2ContactBeginTouchEvent& event = events.beginEvents[i];
 
-        lua_createtable(L, 0, 3);
+        lua_createtable(L, 0, 5);
 
         pushShapeId(L, event.shapeIdA);
         lua_setfield(L, -2, "shapeIdA");
@@ -318,7 +295,9 @@ int worldGetContactEvents(lua_State* L) {
         lua_setfield(L, -2, "shapeIdB");
 
         pushContactId(L, event.contactId);
-        lua_setfield(L, -2, "contactId");
+        lua_setfield(L, -4, "contactIdGeneration");
+        lua_setfield(L, -3, "contactIdWorld0");
+        lua_setfield(L, -2, "contactIdIndex1");
 
         lua_rawseti(L, -2, i + 1);
     }
@@ -331,7 +310,7 @@ int worldGetContactEvents(lua_State* L) {
     for (int i = 0; i < events.endCount; ++i) {
         const b2ContactEndTouchEvent& event = events.endEvents[i];
 
-        lua_createtable(L, 0, 3);
+        lua_createtable(L, 0, 5);
 
         pushShapeId(L, event.shapeIdA);
         lua_setfield(L, -2, "shapeIdA");
@@ -340,7 +319,9 @@ int worldGetContactEvents(lua_State* L) {
         lua_setfield(L, -2, "shapeIdB");
 
         pushContactId(L, event.contactId);
-        lua_setfield(L, -2, "contactId");
+        lua_setfield(L, -4, "contactIdGeneration");
+        lua_setfield(L, -3, "contactIdWorld0");
+        lua_setfield(L, -2, "contactIdIndex1");
 
         lua_rawseti(L, -2, i + 1);
     }
@@ -353,7 +334,7 @@ int worldGetContactEvents(lua_State* L) {
     for (int i = 0; i < events.hitCount; ++i) {
         const b2ContactHitEvent& event = events.hitEvents[i];
 
-        lua_createtable(L, 0, 6);
+        lua_createtable(L, 0, 8);
 
         pushShapeId(L, event.shapeIdA);
         lua_setfield(L, -2, "shapeIdA");
@@ -362,7 +343,9 @@ int worldGetContactEvents(lua_State* L) {
         lua_setfield(L, -2, "shapeIdB");
 
         pushContactId(L, event.contactId);
-        lua_setfield(L, -2, "contactId");
+        lua_setfield(L, -4, "contactIdGeneration");
+        lua_setfield(L, -3, "contactIdWorld0");
+        lua_setfield(L, -2, "contactIdIndex1");
 
         pushVec2(L, event.point);
         lua_setfield(L, -2, "point");
@@ -501,8 +484,8 @@ int worldOverlapShape(lua_State* L) {
     b2WorldId id = getWorldIdFromLuau(L);
 
     b2Pos origin = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     if (!lua_istable(L, 4)) {
@@ -802,29 +785,19 @@ int worldGetStateHash(lua_State* L) {
 }
 
 b2ContactId getContactIdFromLuau(lua_State* L) {
-    if (lua_type(L, 1) != LUA_TTABLE) {
-        luaL_argerror(L, 1, "The contact ID must be a table");
-        return {};
+    for (int i = 1; i <= 3; ++i) {
+        if (lua_type(L, i) != LUA_TNUMBER) {
+            luaL_argerror(L, i, "The contact ID must be three integers: index1, world0, generation");
+            return {};
+        }
     }
 
-    lua_rawgeti(L, 1, 1);
-    int index1 = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, 1, 2);
-    Uint16 world0 = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, 1, 3);
-    int generation = lua_tointeger64(L, -1, nullptr);
-    lua_pop(L, 1);
-
-    b2ContactId id = {};
-    id.index1 = index1;
-    id.world0 = world0;
-    id.generation = generation;
-
-    return id;
+    Uint32 values[3] = {
+        (Uint32) (lua_tointeger64(L, 1, nullptr)),
+        (Uint32) (lua_tointeger64(L, 2, nullptr)),
+        (Uint32) (lua_tointeger64(L, 3, nullptr))
+    };
+    return b2LoadContactId(values);
 }
 
 int contactIsValid(lua_State* L) {
@@ -1132,8 +1105,8 @@ int worldCollideMover(lua_State* L) {
     b2WorldId id = getWorldIdFromLuau(L);
 
     b2Pos origin = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     if (!lua_istable(L, 4)) {
@@ -1159,39 +1132,17 @@ int worldCollideMover(lua_State* L) {
 // Body
 
 b2BodyId getBodyIdFromLuau(lua_State* L) {
-    if (lua_type(L, 1) != LUA_TTABLE) {
-        luaL_argerror(L, 1, "The body ID must be a table");
+    if (lua_type(L, 1) != LUA_TNUMBER) {
+        luaL_argerror(L, 1, "The body ID must be an integer");
         return {};
     }
 
-    lua_rawgeti(L, 1, 1);
-    int index1 = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, 1, 2);
-    Uint16 world0 = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, 1, 3);
-    Uint16 generation = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    b2BodyId id = {index1, world0, generation};
-
-    return id;
+    Uint64 storedId = lua_tointeger64(L, 1, nullptr);
+    return b2LoadBodyId(storedId);
 }
 
 void pushBodyId(lua_State* L, b2BodyId id) {
-    lua_createtable(L, 3, 0);
-
-    lua_pushinteger(L, id.index1);
-    lua_rawseti(L, -2, 1);
-
-    lua_pushinteger(L, id.world0);
-    lua_rawseti(L, -2, 2);
-
-    lua_pushinteger(L, id.generation);
-    lua_rawseti(L, -2, 3);
+    lua_pushinteger64(L, b2StoreBodyId(id));
 }
 
 b2MassData getMassDataFromLuau(lua_State* L, int index) {
@@ -2186,42 +2137,17 @@ int bodyComputeAABB(lua_State* L) {
 // Shape
 
 b2ShapeId getShapeIdFromLuau(lua_State* L) {
-    if (lua_type(L, 1) != LUA_TTABLE) {
-        luaL_argerror(L, 1, "The shape ID must be a table");
+    if (lua_type(L, 1) != LUA_TNUMBER) {
+        luaL_argerror(L, 1, "The shape ID must be an integer");
         return {};
     }
 
-    lua_rawgeti(L, 1, 1);
-    int index1 = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, 1, 2);
-    Uint16 world0 = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, 1, 3);
-    Uint16 generation = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    b2ShapeId id = {};
-    id.index1 = index1;
-    id.world0 = world0;
-    id.generation = generation;
-
-    return id;
+    Uint64 storedId = lua_tointeger64(L, 1, nullptr);
+    return b2LoadShapeId(storedId);
 }
 
 void pushShapeId(lua_State* L, b2ShapeId id) {
-    lua_createtable(L, 3, 0);
-
-    lua_pushinteger(L, id.index1);
-    lua_rawseti(L, -2, 1);
-
-    lua_pushinteger(L, id.world0);
-    lua_rawseti(L, -2, 2);
-
-    lua_pushinteger(L, id.generation);
-    lua_rawseti(L, -2, 3);
+    lua_pushinteger64(L, b2StoreShapeId(id));
 }
 
 void applyVec2(lua_State* L, int index, b2Vec2& value) {
@@ -2686,16 +2612,7 @@ b2ChainSegment constructChainSegment(lua_State* L, int index) {
 }
 
 void pushChainId(lua_State* L, b2ChainId id) {
-    lua_createtable(L, 3, 0);
-
-    lua_pushinteger(L, id.index1);
-    lua_rawseti(L, -2, 1);
-
-    lua_pushinteger(L, id.world0);
-    lua_rawseti(L, -2, 2);
-
-    lua_pushinteger(L, id.generation);
-    lua_rawseti(L, -2, 3);
+    lua_pushinteger64(L, b2StoreChainId(id));
 }
 
 int createCircleShape(lua_State* L) {
@@ -3247,29 +3164,13 @@ int shapeGetParentChain(lua_State* L) {
 // Chain
 
 b2ChainId getChainIdFromLuau(lua_State* L) {
-    if (lua_type(L, 1) != LUA_TTABLE) {
-        luaL_argerror(L, 1, "The chain ID must be a table");
+    if (lua_type(L, 1) != LUA_TNUMBER) {
+        luaL_argerror(L, 1, "The chain ID must be an integer");
         return {};
     }
 
-    lua_rawgeti(L, 1, 1);
-    int index1 = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, 1, 2);
-    Uint16 world0 = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, 1, 3);
-    Uint16 generation = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    b2ChainId id = {};
-    id.index1 = index1;
-    id.world0 = world0;
-    id.generation = generation;
-
-    return id;
+    Uint64 storedId = lua_tointeger64(L, 1, nullptr);
+    return b2LoadChainId(storedId);
 }
 
 int createChain(lua_State* L) {
@@ -3326,7 +3227,7 @@ int createChain(lua_State* L) {
     lua_getfield(L, 2, "materials");
 
     if (lua_istable(L, -1)) {
-        int materialCount = static_cast<int>(lua_objlen(L, -1));
+        int materialCount = (int) (lua_objlen(L, -1));
 
         if (materialCount != 1 && materialCount != pointCount) {
             lua_pop(L, 1);
@@ -3538,13 +3439,13 @@ int makeOffsetRoundedBox(lua_State* L) {
     float halfHeight = lua_tonumber(L, 2);
 
     b2Vec2 center = {
-        static_cast<float>(lua_tonumber(L, 3)),
-        static_cast<float>(lua_tonumber(L, 4))
+        (float) (lua_tonumber(L, 3)),
+        (float) (lua_tonumber(L, 4))
     };
 
     b2Rot rotation = {
-        static_cast<float>(lua_tonumber(L, 5)),
-        static_cast<float>(lua_tonumber(L, 6))
+        (float) (lua_tonumber(L, 5)),
+        (float) (lua_tonumber(L, 6))
     };
 
     float radius = lua_tonumber(L, 7);
@@ -3614,13 +3515,13 @@ int makeOffsetRoundedPolygon(lua_State* L) {
     b2Hull hull = constructHull(L, 1);
 
     b2Vec2 position = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2Rot rotation = {
-        static_cast<float>(lua_tonumber(L, 4)),
-        static_cast<float>(lua_tonumber(L, 5))
+        (float) (lua_tonumber(L, 4)),
+        (float) (lua_tonumber(L, 5))
     };
 
     float radius = lua_tonumber(L, 6);
@@ -3640,13 +3541,13 @@ int makeOffsetPolygon(lua_State* L) {
     b2Hull hull = constructHull(L, 1);
 
     b2Vec2 position = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2Rot rotation = {
-        static_cast<float>(lua_tonumber(L, 4)),
-        static_cast<float>(lua_tonumber(L, 5))
+        (float) (lua_tonumber(L, 4)),
+        (float) (lua_tonumber(L, 5))
     };
 
     b2Polygon polygon = b2MakeOffsetPolygon(&hull, position, rotation);
@@ -3676,7 +3577,7 @@ int computeHull(lua_State* L) {
         return 0;
     }
 
-    int count = static_cast<int>(lua_objlen(L, 1));
+    int count = (int) (lua_objlen(L, 1));
 
     if (count <= 0) {
         luaL_argerror(L, 1, "The points table must not be empty");
@@ -3713,42 +3614,17 @@ int computeHull(lua_State* L) {
 // Joints
 
 b2JointId getJointIdFromLuau(lua_State* L) {
-    if (lua_type(L, 1) != LUA_TTABLE) {
-        luaL_argerror(L, 1, "The joint ID must be a table");
+    if (lua_type(L, 1) != LUA_TNUMBER) {
+        luaL_argerror(L, 1, "The joint ID must be an integer");
         return {};
     }
 
-    lua_rawgeti(L, 1, 1);
-    Uint32 index1 = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, 1, 2);
-    Uint16 world0 = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, 1, 3);
-    Uint16 generation = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    b2JointId id = {};
-    id.index1 = index1;
-    id.world0 = world0;
-    id.generation = generation;
-
-    return id;
+    Uint64 storedId = lua_tointeger64(L, 1, nullptr);
+    return b2LoadJointId(storedId);
 }
 
 void pushJointId(lua_State* L, b2JointId id) {
-    lua_createtable(L, 3, 0);
-
-    lua_pushinteger(L, id.index1);
-    lua_rawseti(L, -2, 1);
-
-    lua_pushinteger(L, id.world0);
-    lua_rawseti(L, -2, 2);
-
-    lua_pushinteger(L, id.generation);
-    lua_rawseti(L, -2, 3);
+    lua_pushinteger64(L, b2StoreJointId(id));
 }
 
 b2Transform constructTransform(lua_State* L, int index) {
@@ -4036,26 +3912,13 @@ int jointGetTorqueThreshold(lua_State* L) {
 // Distance Joint
 
 b2BodyId constructBodyId(lua_State* L, int index) {
-    if (!lua_istable(L, index)) {
-        luaL_argerror(L, index, "The body ID must be a table");
+    if (lua_type(L, index) != LUA_TNUMBER) {
+        luaL_argerror(L, index, "The body ID must be an integer");
         return {};
     }
 
-    b2BodyId id = {};
-
-    lua_rawgeti(L, index, 1);
-    id.index1 = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, index, 2);
-    id.world0 = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, index, 3);
-    id.generation = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-
-    return id;
+    Uint64 storedId = lua_tointeger64(L, index, nullptr);
+    return b2LoadBodyId(storedId);
 }
 
 void applyTransform(lua_State* L, int index, b2Transform& transform) {
@@ -4090,13 +3953,13 @@ void applyTransform(lua_State* L, int index, b2Transform& transform) {
 
 void applyJointDef(lua_State* L, int index, b2JointDef& def) {
     lua_getfield(L, index, "bodyIdA");
-    if (lua_istable(L, -1)) {
+    if (!lua_isnil(L, -1)) {
         def.bodyIdA = constructBodyId(L, lua_gettop(L));
     }
     lua_pop(L, 1);
 
     lua_getfield(L, index, "bodyIdB");
-    if (lua_istable(L, -1)) {
+    if (!lua_isnil(L, -1)) {
         def.bodyIdB = constructBodyId(L, lua_gettop(L));
     }
     lua_pop(L, 1);
@@ -4576,8 +4439,8 @@ int motorJointSetLinearVelocity(lua_State* L) {
     b2JointId id = getJointIdFromLuau(L);
 
     b2Vec2 velocity = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2MotorJoint_SetLinearVelocity(id, velocity);
@@ -4794,8 +4657,8 @@ int moverJointSetLinearVelocity(lua_State* L) {
     b2JointId id = getJointIdFromLuau(L);
 
     b2Vec2 velocity = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2MoverJoint_SetLinearVelocity(id, velocity);
@@ -4817,8 +4680,8 @@ int moverJointSetMaxVelocityForce(lua_State* L) {
     b2JointId id = getJointIdFromLuau(L);
 
     b2Vec2 maxForce = {
-        static_cast<float>(lua_tonumber(L, 2)),
-        static_cast<float>(lua_tonumber(L, 3))
+        (float) (lua_tonumber(L, 2)),
+        (float) (lua_tonumber(L, 3))
     };
 
     b2MoverJoint_SetMaxVelocityForce(id, maxForce);
