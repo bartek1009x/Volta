@@ -14,96 +14,117 @@
 b2WorldDef constructWorldDef(lua_State* L, int defTableIndex) {
     b2WorldDef def = b2DefaultWorldDef();
 
-    lua_pushnil(L);
-    while (lua_next(L, defTableIndex) != 0) {
-        const char* field = lua_tostring(L, -2);
+    lua_getfield(L, defTableIndex, "gravity");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), def.gravity);
+    }
+    lua_pop(L, 1);
 
-        if (strcmp(field, "gravity") == 0) {
-            int gravityIndex = lua_gettop(L);
+    lua_getfield(L, defTableIndex, "restitutionThreshold");
+    if (!lua_isnil(L, -1)) {
+        def.restitutionThreshold = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
 
-            lua_pushnil(L);
-            while (lua_next(L, gravityIndex) != 0) {
-                const char* gravityField = lua_tostring(L, -2);
+    lua_getfield(L, defTableIndex, "hitEventThreshold");
+    if (!lua_isnil(L, -1)) {
+        def.hitEventThreshold = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
 
-                if (strcmp(gravityField, "x") == 0) {
-                    def.gravity.x = lua_tonumber(L, -1);
-                }
-                else if (strcmp(gravityField, "y") == 0) {
-                    def.gravity.y = lua_tonumber(L, -1);
-                }
+    lua_getfield(L, defTableIndex, "contactHertz");
+    if (!lua_isnil(L, -1)) {
+        def.contactHertz = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
 
-                lua_pop(L, 1);
-            }
-        }
-        else if (strcmp(field, "restitutionThreshold") == 0) {
-            def.restitutionThreshold = lua_tonumber(L, -1);
-        }
-        else if (strcmp(field, "hitEventThreshold") == 0) {
-            def.hitEventThreshold = lua_tonumber(L, -1);
-        }
-        else if (strcmp(field, "contactHertz") == 0) {
-            def.contactHertz = lua_tonumber(L, -1);
-        }
-        else if (strcmp(field, "contactDampingRatio") == 0) {
-            def.contactDampingRatio = lua_tonumber(L, -1);
-        }
-        else if (strcmp(field, "contactSpeed") == 0) {
-            def.contactSpeed = lua_tonumber(L, -1);
-        }
-        else if (strcmp(field, "maximumLinearSpeed") == 0) {
-            def.maximumLinearSpeed = lua_tonumber(L, -1);
-        }
-        else if (strcmp(field, "enableSleep") == 0) {
-            def.enableSleep = lua_toboolean(L, -1);
-        }
-        else if (strcmp(field, "enableContinuous") == 0) {
-            def.enableContinuous = lua_toboolean(L, -1);
-        }
-        else if (strcmp(field, "enableContactSoftening") == 0) {
-            def.enableContactSoftening = lua_toboolean(L, -1);
-        }
-        else if (strcmp(field, "workerCount") == 0) {
-            def.workerCount = lua_tointeger(L, -1);
-        }
-        else if (strcmp(field, "capacity") == 0) {
-            int capacityIndex = lua_gettop(L);
+    lua_getfield(L, defTableIndex, "contactDampingRatio");
+    if (!lua_isnil(L, -1)) {
+        def.contactDampingRatio = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
 
-            lua_pushnil(L);
-            while (lua_next(L, capacityIndex) != 0) {
-                const char* capacityField = lua_tostring(L, -2);
+    lua_getfield(L, defTableIndex, "contactSpeed");
+    if (!lua_isnil(L, -1)) {
+        def.contactSpeed = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
 
-                if (strcmp(capacityField, "staticShapeCount") == 0) {
-                    def.capacity.staticShapeCount = lua_tointeger(L, -1);
-                }
-                else if (strcmp(capacityField, "dynamicShapeCount") == 0) {
-                    def.capacity.dynamicShapeCount = lua_tointeger(L, -1);
-                }
-                else if (strcmp(capacityField, "staticBodyCount") == 0) {
-                    def.capacity.staticBodyCount = lua_tointeger(L, -1);
-                }
-                else if (strcmp(capacityField, "dynamicBodyCount") == 0) {
-                    def.capacity.dynamicBodyCount = lua_tointeger(L, -1);
-                }
-                else if (strcmp(capacityField, "contactCount") == 0) {
-                    def.capacity.contactCount = lua_tointeger(L, -1);
-                }
+    lua_getfield(L, defTableIndex, "maximumLinearSpeed");
+    if (!lua_isnil(L, -1)) {
+        def.maximumLinearSpeed = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
 
-                lua_pop(L, 1);
-            }
+    lua_getfield(L, defTableIndex, "enableSleep");
+    if (!lua_isnil(L, -1)) {
+        def.enableSleep = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "enableContinuous");
+    if (!lua_isnil(L, -1)) {
+        def.enableContinuous = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "enableContactSoftening");
+    if (!lua_isnil(L, -1)) {
+        def.enableContactSoftening = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "workerCount");
+    if (!lua_isnil(L, -1)) {
+        def.workerCount = lua_tointeger(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "capacity");
+    if (lua_istable(L, -1)) {
+        int capacityIndex = lua_gettop(L);
+
+        lua_getfield(L, capacityIndex, "staticShapeCount");
+        if (!lua_isnil(L, -1)) {
+            def.capacity.staticShapeCount = lua_tointeger(L, -1);
         }
+        lua_pop(L, 1);
 
+        lua_getfield(L, capacityIndex, "dynamicShapeCount");
+        if (!lua_isnil(L, -1)) {
+            def.capacity.dynamicShapeCount = lua_tointeger(L, -1);
+        }
+        lua_pop(L, 1);
+
+        lua_getfield(L, capacityIndex, "staticBodyCount");
+        if (!lua_isnil(L, -1)) {
+            def.capacity.staticBodyCount = lua_tointeger(L, -1);
+        }
+        lua_pop(L, 1);
+
+        lua_getfield(L, capacityIndex, "dynamicBodyCount");
+        if (!lua_isnil(L, -1)) {
+            def.capacity.dynamicBodyCount = lua_tointeger(L, -1);
+        }
+        lua_pop(L, 1);
+
+        lua_getfield(L, capacityIndex, "contactCount");
+        if (!lua_isnil(L, -1)) {
+            def.capacity.contactCount = lua_tointeger(L, -1);
+        }
         lua_pop(L, 1);
     }
+    lua_pop(L, 1);
 
     return def;
 }
 
 b2ExplosionDef constructExplosionDef(lua_State* L, int index) {
-    b2ExplosionDef def = {};
+    b2ExplosionDef def = b2DefaultExplosionDef();
 
     lua_getfield(L, index, "maskBits");
     if (!lua_isnil(L, -1)) {
-        def.maskBits = static_cast<uint64_t>(lua_tointeger64(L, -1, nullptr));
+        def.maskBits = static_cast<Uint64>(lua_tointeger64(L, -1, nullptr));
     }
     lua_pop(L, 1);
 
@@ -141,8 +162,12 @@ b2WorldId getWorldIdFromLuau(lua_State* L) {
     }
     lua_rawgeti(L, 1, 1);
     Uint16 index1 = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
     lua_rawgeti(L, 1, 2);
     Uint16 generation = lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
     b2WorldId id = {index1, generation};
     return id;
 }
@@ -186,7 +211,7 @@ int createWorld(lua_State* L) {
     lua_pushinteger(L, worldId.generation);
     lua_rawseti(L, -2, 2);
 
-    return 2;
+    return 1;
 }
 
 int destroyWorld(lua_State* L) {
@@ -813,7 +838,7 @@ int contactIsValid(lua_State* L) {
 // Rayast
 
 b2QueryFilter constructQueryFilter(lua_State* L, int index) {
-    b2QueryFilter filter = {};
+    b2QueryFilter filter = b2DefaultQueryFilter();
 
     if (!lua_istable(L, index)) {
         luaL_argerror(L, index, "The query filter must be a table");
@@ -1261,126 +1286,143 @@ void pushMotionLocks(lua_State* L, b2MotionLocks locks) {
 b2BodyDef constructBodyDef(lua_State* L, int defTableIndex) {
     b2BodyDef def = b2DefaultBodyDef();
 
-    lua_pushnil(L);
-    while (lua_next(L, defTableIndex) != 0) {
-        const char* field = lua_tostring(L, -2);
+    lua_getfield(L, defTableIndex, "type");
+    if (!lua_isnil(L, -1)) {
+        def.type = static_cast<b2BodyType>(lua_tointeger(L, -1));
+    }
+    lua_pop(L, 1);
 
-        if (strcmp(field, "type") == 0) {
-            def.type = static_cast<b2BodyType>(lua_tointeger(L, -1));
-        }
-        else if (strcmp(field, "position") == 0) {
-            int positionIndex = lua_gettop(L);
+    lua_getfield(L, defTableIndex, "position");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), def.position);
+    }
+    lua_pop(L, 1);
 
-            lua_pushnil(L);
-            while (lua_next(L, positionIndex) != 0) {
-                const char* positionField = lua_tostring(L, -2);
+    lua_getfield(L, defTableIndex, "rotation");
+    if (lua_istable(L, -1)) {
+        int rotationIndex = lua_gettop(L);
 
-                if (strcmp(positionField, "x") == 0) {
-                    def.position.x = lua_tonumber(L, -1);
-                }
-                else if (strcmp(positionField, "y") == 0) {
-                    def.position.y = lua_tonumber(L, -1);
-                }
+        lua_getfield(L, rotationIndex, "c");
+        if (!lua_isnil(L, -1)) {
+            def.rotation.c = lua_tonumber(L, -1);
+        }
+        lua_pop(L, 1);
 
-                lua_pop(L, 1);
-            }
+        lua_getfield(L, rotationIndex, "s");
+        if (!lua_isnil(L, -1)) {
+            def.rotation.s = lua_tonumber(L, -1);
         }
-        else if (strcmp(field, "rotation") == 0) {
-            int rotationIndex = lua_gettop(L);
-
-            lua_pushnil(L);
-            while (lua_next(L, rotationIndex) != 0) {
-                const char* rotationField = lua_tostring(L, -2);
-
-                if (strcmp(rotationField, "c") == 0) {
-                    def.rotation.c = lua_tonumber(L, -1);
-                }
-                else if (strcmp(rotationField, "s") == 0) {
-                    def.rotation.s = lua_tonumber(L, -1);
-                }
-
-                lua_pop(L, 1);
-            }
-        }
-        else if (strcmp(field, "linearVelocity") == 0) {
-            int velocityIndex = lua_gettop(L);
-
-            lua_pushnil(L);
-            while (lua_next(L, velocityIndex) != 0) {
-                const char* velocityField = lua_tostring(L, -2);
-
-                if (strcmp(velocityField, "x") == 0) {
-                    def.linearVelocity.x = lua_tonumber(L, -1);
-                }
-                else if (strcmp(velocityField, "y") == 0) {
-                    def.linearVelocity.y = lua_tonumber(L, -1);
-                }
-
-                lua_pop(L, 1);
-            }
-        }
-        else if (strcmp(field, "angularVelocity") == 0) {
-            def.angularVelocity = lua_tonumber(L, -1);
-        }
-        else if (strcmp(field, "linearDamping") == 0) {
-            def.linearDamping = lua_tonumber(L, -1);
-        }
-        else if (strcmp(field, "angularDamping") == 0) {
-            def.angularDamping = lua_tonumber(L, -1);
-        }
-        else if (strcmp(field, "gravityScale") == 0) {
-            def.gravityScale = lua_tonumber(L, -1);
-        }
-        else if (strcmp(field, "sleepThreshold") == 0) {
-            def.sleepThreshold = lua_tonumber(L, -1);
-        }
-        else if (strcmp(field, "safetyFactor") == 0) {
-            def.safetyFactor = lua_tonumber(L, -1);
-        }
-        else if (strcmp(field, "name") == 0) {
-            def.name = lua_tostring(L, -1);
-        }
-        else if (strcmp(field, "motionLocks") == 0) {
-            int motionLocksIndex = lua_gettop(L);
-
-            lua_pushnil(L);
-            while (lua_next(L, motionLocksIndex) != 0) {
-                const char* motionLocksField = lua_tostring(L, -2);
-
-                if (strcmp(motionLocksField, "linearX") == 0) {
-                    def.motionLocks.linearX = lua_toboolean(L, -1);
-                }
-                else if (strcmp(motionLocksField, "linearY") == 0) {
-                    def.motionLocks.linearY = lua_toboolean(L, -1);
-                }
-                else if (strcmp(motionLocksField, "angularZ") == 0) {
-                    def.motionLocks.angularZ = lua_toboolean(L, -1);
-                }
-
-                lua_pop(L, 1);
-            }
-        }
-        else if (strcmp(field, "enableSleep") == 0) {
-            def.enableSleep = lua_toboolean(L, -1);
-        }
-        else if (strcmp(field, "isAwake") == 0) {
-            def.isAwake = lua_toboolean(L, -1);
-        }
-        else if (strcmp(field, "isBullet") == 0) {
-            def.isBullet = lua_toboolean(L, -1);
-        }
-        else if (strcmp(field, "isEnabled") == 0) {
-            def.isEnabled = lua_toboolean(L, -1);
-        }
-        else if (strcmp(field, "allowFastRotation") == 0) {
-            def.allowFastRotation = lua_toboolean(L, -1);
-        }
-        else if (strcmp(field, "enableContactRecycling") == 0) {
-            def.enableContactRecycling = lua_toboolean(L, -1);
-        }
-
         lua_pop(L, 1);
     }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "linearVelocity");
+    if (lua_istable(L, -1)) {
+        applyVec2(L, lua_gettop(L), def.linearVelocity);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "angularVelocity");
+    if (!lua_isnil(L, -1)) {
+        def.angularVelocity = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "linearDamping");
+    if (!lua_isnil(L, -1)) {
+        def.linearDamping = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "angularDamping");
+    if (!lua_isnil(L, -1)) {
+        def.angularDamping = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "gravityScale");
+    if (!lua_isnil(L, -1)) {
+        def.gravityScale = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "sleepThreshold");
+    if (!lua_isnil(L, -1)) {
+        def.sleepThreshold = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "safetyFactor");
+    if (!lua_isnil(L, -1)) {
+        def.safetyFactor = lua_tonumber(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "name");
+    if (!lua_isnil(L, -1)) {
+        def.name = lua_tostring(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "motionLocks");
+    if (lua_istable(L, -1)) {
+        int motionLocksIndex = lua_gettop(L);
+
+        lua_getfield(L, motionLocksIndex, "linearX");
+        if (!lua_isnil(L, -1)) {
+            def.motionLocks.linearX = lua_toboolean(L, -1);
+        }
+        lua_pop(L, 1);
+
+        lua_getfield(L, motionLocksIndex, "linearY");
+        if (!lua_isnil(L, -1)) {
+            def.motionLocks.linearY = lua_toboolean(L, -1);
+        }
+        lua_pop(L, 1);
+
+        lua_getfield(L, motionLocksIndex, "angularZ");
+        if (!lua_isnil(L, -1)) {
+            def.motionLocks.angularZ = lua_toboolean(L, -1);
+        }
+        lua_pop(L, 1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "enableSleep");
+    if (!lua_isnil(L, -1)) {
+        def.enableSleep = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "isAwake");
+    if (!lua_isnil(L, -1)) {
+        def.isAwake = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "isBullet");
+    if (!lua_isnil(L, -1)) {
+        def.isBullet = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "isEnabled");
+    if (!lua_isnil(L, -1)) {
+        def.isEnabled = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "allowFastRotation");
+    if (!lua_isnil(L, -1)) {
+        def.allowFastRotation = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+
+    lua_getfield(L, defTableIndex, "enableContactRecycling");
+    if (!lua_isnil(L, -1)) {
+        def.enableContactRecycling = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
 
     return def;
 }
@@ -2070,8 +2112,8 @@ int bodyGetShapes(lua_State* L) {
         return 1;
     }
 
-    b2ShapeId* shapes = new b2ShapeId[capacity];
-
+    b2ShapeId stackShapes[8];
+    b2ShapeId* shapes = (capacity <= 8) ? stackShapes : new b2ShapeId[capacity];
     int count = b2Body_GetShapes(id, shapes, capacity);
 
     lua_createtable(L, count, 0);
@@ -2081,7 +2123,7 @@ int bodyGetShapes(lua_State* L) {
         lua_rawseti(L, -2, i + 1);
     }
 
-    delete[] shapes;
+    if (shapes != stackShapes) delete[] shapes;
 
     return 1;
 }
@@ -2104,8 +2146,8 @@ int bodyGetJoints(lua_State* L) {
         return 1;
     }
 
-    b2JointId* joints = new b2JointId[capacity];
-
+    b2JointId stackJoints[8];
+    b2JointId* joints = (capacity <= 8) ? stackJoints : new b2JointId[capacity];
     int count = b2Body_GetJoints(id, joints, capacity);
 
     lua_createtable(L, count, 0);
@@ -2115,7 +2157,7 @@ int bodyGetJoints(lua_State* L) {
         lua_rawseti(L, -2, i + 1);
     }
 
-    delete[] joints;
+    if (joints != stackJoints) delete[] joints;
 
     return 1;
 }
@@ -2303,7 +2345,7 @@ void pushSegment(lua_State* L, b2Segment segment) {
 }
 
 b2Filter constructFilter(lua_State* L, int index) {
-    b2Filter filter = {};
+    b2Filter filter = b2DefaultFilter();
 
     lua_getfield(L, index, "categoryBits");
     if (!lua_isnil(L, -1)) {
@@ -3211,15 +3253,15 @@ b2ChainId getChainIdFromLuau(lua_State* L) {
     }
 
     lua_rawgeti(L, 1, 1);
-    int32_t index1 = static_cast<int32_t>(lua_tointeger(L, -1));
+    int index1 = lua_tointeger(L, -1);
     lua_pop(L, 1);
 
     lua_rawgeti(L, 1, 2);
-    uint16_t world0 = static_cast<uint16_t>(lua_tointeger(L, -1));
+    Uint16 world0 = lua_tointeger(L, -1);
     lua_pop(L, 1);
 
     lua_rawgeti(L, 1, 3);
-    uint16_t generation = static_cast<uint16_t>(lua_tointeger(L, -1));
+    Uint16 generation = lua_tointeger(L, -1);
     lua_pop(L, 1);
 
     b2ChainId id = {};
@@ -3248,7 +3290,7 @@ int createChain(lua_State* L) {
         return 0;
     }
 
-    int pointCount = static_cast<int>(lua_objlen(L, -1));
+    int pointCount = lua_objlen(L, -1);
 
     if (pointCount < 4) {
         lua_pop(L, 1);
@@ -3306,7 +3348,7 @@ int createChain(lua_State* L) {
                 return 0;
             }
 
-            materials[i] = {};
+            materials[i] = b2DefaultSurfaceMaterial();
             applySurfaceMaterial(L, lua_gettop(L), materials[i]);
 
             lua_pop(L, 1);
@@ -3387,7 +3429,8 @@ int chainGetSegments(lua_State* L) {
         return 1;
     }
 
-    b2ShapeId* segments = new b2ShapeId[capacity];
+    b2ShapeId stackSegments[32];
+    b2ShapeId* segments = (capacity <= 32) ? stackSegments : new b2ShapeId[capacity];
     int count = b2Chain_GetSegments(id, segments, capacity);
 
     lua_createtable(L, count, 0);
@@ -3397,7 +3440,7 @@ int chainGetSegments(lua_State* L) {
         lua_rawseti(L, -2, i + 1);
     }
 
-    delete[] segments;
+    if (segments != stackSegments) delete[] segments;
 
     return 1;
 }

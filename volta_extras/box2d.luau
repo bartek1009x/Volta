@@ -379,11 +379,11 @@ function box2d.createWorld(worldDef: worldDef) : worldId
     return {0, 0}
 end
 function box2d.destroyWorld(worldId: worldId) end
-function box2d.worldIsValid(worldDef: worldDef) : boolean
+function box2d.worldIsValid(worldId: worldId) : boolean
     return false
 end
 function box2d.worldStep(worldId: worldId, timeStep: number, subStepCount: number) end
-function box2d.worldGetBounds(worldId: worldId) : number
+function box2d.worldGetBounds(worldId: worldId) : (number, number, number, number)
     return 0, 0, 0, 0
 end
 function box2d.worldGetBodyEvents(worldId: worldId): bodyEvents
@@ -418,7 +418,7 @@ function box2d.worldGetHitEventThreshold(worldId: worldId) : number
     return 0
 end
 function box2d.worldSetGravity(worldId: worldId, gravityX: number, gravityY: number) end
-function box2d.worldGetGravity(worldId: worldId) : number
+function box2d.worldGetGravity(worldId: worldId) : (number, number)
     return 0, 0
 end
 function box2d.worldExplode(worldId: worldId, def: explosionDef) end
