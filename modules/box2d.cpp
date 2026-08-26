@@ -156,7 +156,7 @@ b2ExplosionDef constructExplosionDef(lua_State* L, int index) {
 }
 
 b2WorldId getWorldIdFromLuau(lua_State* L) {
-    if (lua_type(L, 1) != LUA_TNUMBER) {
+    if (lua_type(L, 1) != LUA_TINTEGER) {
         luaL_argerror(L, 1, "The world ID must be an integer");
         return {};
     }
@@ -236,11 +236,7 @@ int worldGetBodyEvents(lua_State* L) {
     for (int i = 0; i < events.moveCount; ++i) {
         const b2BodyMoveEvent& event = events.moveEvents[i];
 
-        lua_createtable(L, 0, 3);
-
-        lua_createtable(L, 0, 2);
-
-        lua_createtable(L, 0, 2);
+        lua_createtable(L, 0, 6);
 
         lua_pushnumber(L, event.transform.p.x);
         lua_setfield(L, -2, "x");
@@ -248,19 +244,11 @@ int worldGetBodyEvents(lua_State* L) {
         lua_pushnumber(L, event.transform.p.y);
         lua_setfield(L, -2, "y");
 
-        lua_setfield(L, -2, "p");
-
-        lua_createtable(L, 0, 2);
-
         lua_pushnumber(L, event.transform.q.c);
         lua_setfield(L, -2, "c");
 
         lua_pushnumber(L, event.transform.q.s);
         lua_setfield(L, -2, "s");
-
-        lua_setfield(L, -2, "q");
-
-        lua_setfield(L, -2, "transform");
 
         pushBodyId(L, event.bodyId);
         lua_setfield(L, -2, "bodyId");
@@ -786,7 +774,7 @@ int worldGetStateHash(lua_State* L) {
 
 b2ContactId getContactIdFromLuau(lua_State* L) {
     for (int i = 1; i <= 3; ++i) {
-        if (lua_type(L, i) != LUA_TNUMBER) {
+        if (lua_type(L, i) != LUA_TINTEGER) {
             luaL_argerror(L, i, "The contact ID must be three integers: index1, world0, generation");
             return {};
         }
@@ -1132,7 +1120,7 @@ int worldCollideMover(lua_State* L) {
 // Body
 
 b2BodyId getBodyIdFromLuau(lua_State* L) {
-    if (lua_type(L, 1) != LUA_TNUMBER) {
+    if (lua_type(L, 1) != LUA_TINTEGER) {
         luaL_argerror(L, 1, "The body ID must be an integer");
         return {};
     }
@@ -2137,7 +2125,7 @@ int bodyComputeAABB(lua_State* L) {
 // Shape
 
 b2ShapeId getShapeIdFromLuau(lua_State* L) {
-    if (lua_type(L, 1) != LUA_TNUMBER) {
+    if (lua_type(L, 1) != LUA_TINTEGER) {
         luaL_argerror(L, 1, "The shape ID must be an integer");
         return {};
     }
@@ -3164,7 +3152,7 @@ int shapeGetParentChain(lua_State* L) {
 // Chain
 
 b2ChainId getChainIdFromLuau(lua_State* L) {
-    if (lua_type(L, 1) != LUA_TNUMBER) {
+    if (lua_type(L, 1) != LUA_TINTEGER) {
         luaL_argerror(L, 1, "The chain ID must be an integer");
         return {};
     }
@@ -3614,7 +3602,7 @@ int computeHull(lua_State* L) {
 // Joints
 
 b2JointId getJointIdFromLuau(lua_State* L) {
-    if (lua_type(L, 1) != LUA_TNUMBER) {
+    if (lua_type(L, 1) != LUA_TINTEGER) {
         luaL_argerror(L, 1, "The joint ID must be an integer");
         return {};
     }
@@ -3912,7 +3900,7 @@ int jointGetTorqueThreshold(lua_State* L) {
 // Distance Joint
 
 b2BodyId constructBodyId(lua_State* L, int index) {
-    if (lua_type(L, index) != LUA_TNUMBER) {
+    if (lua_type(L, index) != LUA_TINTEGER) {
         luaL_argerror(L, index, "The body ID must be an integer");
         return {};
     }
