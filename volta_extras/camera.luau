@@ -105,26 +105,26 @@ function camera.move(self: Camera, dx: number, dy: number): Camera
 	return self
 end
 
-function camera.position(self: Camera): number
+function camera.position(self: Camera): (number, number)
 	return self.x, self.y
 end
 
-function camera.rotate(self: Camera, phi: number)
+function camera.rotate(self: Camera, phi: number): Camera
 	self.rot += phi
 	return self
 end
 
-function camera.rotateTo(self: Camera, phi: number)
+function camera.rotateTo(self: Camera, phi: number): Camera
 	self.rot = phi
 	return self
 end
 
-function camera.zoom(self: Camera, mul: number)
+function camera.zoom(self: Camera, mul: number): Camera
 	self.scale *= mul
 	return self
 end
 
-function camera.zoomTo(self: Camera, zoom: number)
+function camera.zoomTo(self: Camera, zoom: number): Camera
 	self.scale = zoom
 	return self
 end
@@ -174,7 +174,7 @@ function camera:draw(...)
 end
 
 -- world coordinates to camera coordinates
-function camera.cameraCoords(self: Camera, x: number, y: number, ox: number?, oy: number?, w: number?, h: number?): number
+function camera.cameraCoords(self: Camera, x: number, y: number, ox: number?, oy: number?, w: number?, h: number?): (number, number)
 	ox, oy = ox or 0, oy or 0
 	local vW, vH = volta.window.getSize()
 	local w, h = w or vW, h or vH
@@ -188,7 +188,7 @@ function camera.cameraCoords(self: Camera, x: number, y: number, ox: number?, oy
 end
 
 -- camera coordinates to world coordinates
-function camera.worldCoords(self: Camera, x: number, y: number, ox: number?, oy: number?, w: number?, h: number?): number
+function camera.worldCoords(self: Camera, x: number, y: number, ox: number?, oy: number?, w: number?, h: number?): (number, number)
 	ox, oy = ox or 0, oy or 0
 	local vW, vH = volta.window.getSize()
 	local w, h = w or vW, h or vH
@@ -200,25 +200,25 @@ function camera.worldCoords(self: Camera, x: number, y: number, ox: number?, oy:
 	return x+self.x, y+self.y
 end
 
-function camera.mousePosition(self: Camera, ox: number?, oy: number?, w: number?, h: number?)
+function camera.mousePosition(self: Camera, ox: number?, oy: number?, w: number?, h: number?): (number, number)
 	local mx, my = volta.input.getMousePosition()
 	return self:worldCoords(mx, my, ox, oy, w, h)
 end
 
 -- camera scrolling utilities
-function camera.lockX(self: Camera, x: number, smoother: smootherFunction?, ...)
+function camera.lockX(self: Camera, x: number, smoother: smootherFunction?, ...): Camera
 	local dx, _ = (smoother or self.smoother) (x - self.x, self.y, ...)
 	self.x += dx
 	return self
 end
 
-function camera.lockY(self: Camera, y: number, smoother: smootherFunction?, ...)
+function camera.lockY(self: Camera, y: number, smoother: smootherFunction?, ...): Camera
 	local _, dy = (smoother or self.smoother)(self.x, y - self.y, ...)
 	self.y += dy
 	return self
 end
 
-function camera.lockPosition(self: Camera, x: number, y: number, smoother: smootherFunction?, ...)
+function camera.lockPosition(self: Camera, x: number, y: number, smoother: smootherFunction?, ...): Camera
 	return self:move((smoother or self.smoother)(x - self.x, y - self.y, ...))
 end
 
