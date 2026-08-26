@@ -9,6 +9,15 @@ You can run your game by running your luau script through the Volta executable l
 
 Volta's documentation can be found [here](https://voltaframework.gitbook.io/volta)
 
+# Why use Volta
+There are so many frameworks and engines for various languages that it's sometimes hard to decide what tools to use to make your game. You could use Volta if, for example:
+- You like the Luau language,
+- You like writing games in Lua but find it a bit lacking as a language,
+- You want to make a game in a simple framework with a simple language without much prior experience,
+- You want an easily moddable game,
+- You want your game to be possible to port to pretty much any platform (thanks to the C++ foundation),
+- You want to do some fast prototyping.
+
 # AI usage in the project
 Used AI to write code sparingly - not to vibecode too much, just to assist with some tasks, explain some things, find bugs, etc.
 The only parts of the project that used AI extensively were:
@@ -17,7 +26,8 @@ The only parts of the project that used AI extensively were:
 - the coordinate system transformation functions,
 - the parts of drawing functions that use transformed coordinate systems,
 - vector2 functions other than vector2.create and the ones that are the same as the built-in vector's.
-- the Animated Sprite and Color objects.
+- the Animated Sprite and Color objects,
+- Box2D bindings.
 
 Besides that only a little AI code here and there, sparingly.
 
