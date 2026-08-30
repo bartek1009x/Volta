@@ -24,7 +24,7 @@ int getDelta(lua_State* L) {
 }
 
 int getVersion(lua_State* L) {
-    lua_pushstring(L, "0.3.0");
+    lua_pushstring(L, "0.4.0");
     return 1;
 }
 
