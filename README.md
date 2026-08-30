@@ -27,6 +27,7 @@ The only parts of the project that used AI extensively were:
 - the parts of drawing functions that use transformed coordinate systems,
 - vector2 functions other than vector2.create and the ones that are the same as the built-in vector's.
 - the Animated Sprite and Color objects,
+- shaders implementation,
 - Box2D bindings.
 
 Besides that only a little AI code here and there, sparingly.
@@ -51,5 +52,4 @@ I don't know man I don't even have a Mac. I think you should be able to build vo
 
 # License
 The Volta framework is licensed under the MIT license.
-It uses SDL3 and associated SDL libraries which are licensed under the zlib license.
-It uses OpenSSL as one if its dependencies (for HTTPS support), which is licensed under Apache License 2.0
+Licenses of all used and distributed alongside Volta libraries can be found in THIRD_PARTY_NOTICES.txt
