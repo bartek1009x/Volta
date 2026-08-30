@@ -39,6 +39,7 @@ int getScissor(lua_State* L);
 int createShader(lua_State* L);
 int destroyShader(lua_State* L);
 int setShader(lua_State* L);
+int setShaderUniform(lua_State* L);
 void registerGraphicsFunctions(lua_State* L, ResourceState* state);
 void updateFontTextCache();
 
