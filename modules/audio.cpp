@@ -29,7 +29,7 @@ int loadAudio(lua_State *L) {
 
     loadedAudio[audioIDCounter] = audio;
 
-    lua_pushnumber(L, audioIDCounter);
+    lua_pushinteger(L, audioIDCounter);
 
     audioIDCounter++;
 
@@ -73,7 +73,7 @@ int play(lua_State *L) {
 
     playingTracks[trackIDCounter] = track;
 
-    lua_pushnumber(L, trackIDCounter);
+    lua_pushinteger(L, trackIDCounter);
 
     trackIDCounter++;
 

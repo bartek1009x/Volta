@@ -1,6 +1,7 @@
 #ifndef RESOURCE_STATE_H
 #define RESOURCE_STATE_H
 
+#include <SDL3/SDL_gpu.h>
 #include <filesystem>
 #include <memory>
 
@@ -22,10 +23,16 @@ class ResourceState {
         ~ResourceState();
 
         lua_State* getL() const;
+
+        SDL_Window* getWindow() const;
+        void setWindow(SDL_Window* win);
+
         SDL_Renderer* getRenderer() const;
+        void setRenderer(SDL_Renderer* renderer);
+
         std::filesystem::path getMainPath() const;
         void setMainPath(std::filesystem::path);
-        void setWinRen(SDL_Window* win, SDL_Renderer* ren);
+
         std::unique_ptr<RequireContext> requireContext;
 
         float mouseWheelX, mouseWheelY;
