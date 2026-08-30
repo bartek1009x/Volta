@@ -31,6 +31,25 @@ set(SOURCE_FILES
     modules/box2d.cpp
 )
 
+if(MINGW)
+    set(WIN_LIBS "${CMAKE_SOURCE_DIR}/dependencies/win-libs")
+
+    set(OPENSSL_ROOT_DIR
+        "${WIN_LIBS}/sources/openssl-3.6.3/x86_64-w64-mingw32"
+        CACHE PATH "OpenSSL root directory"
+    )
+
+    set(OPENSSL_USE_STATIC_LIBS TRUE)
+
+    list(APPEND CMAKE_PREFIX_PATH
+        "${WIN_LIBS}/SDL3-3.4.12/x86_64-w64-mingw32"
+        "${WIN_LIBS}/SDL3_image-3.4.4/x86_64-w64-mingw32"
+        "${WIN_LIBS}/SDL3_mixer-3.2.4/x86_64-w64-mingw32"
+        "${WIN_LIBS}/SDL3_ttf-3.2.2/x86_64-w64-mingw32"
+        "${OPENSSL_ROOT_DIR}"
+    )
+endif()
+
 # SDL3
 find_package(SDL3 QUIET CONFIG COMPONENTS SDL3-shared)
 
@@ -54,8 +73,51 @@ if (NOT SDL3_FOUND)
     FetchContent_MakeAvailable(SDL3)
 endif()
 
+# ------------------------------------------------------------
+# Prebuilt DirectXShaderCompiler
+# ------------------------------------------------------------
+
+if(MINGW)
+    set(DXC_ROOT
+        "${CMAKE_SOURCE_DIR}/dependencies/SDL_shadercross/external/DirectXShaderCompiler-binaries"
+    )
+
+    if(NOT EXISTS "${DXC_ROOT}/windows/inc/dxcapi.h")
+        message(STATUS "Prebuilt DXC not found; downloading it")
+
+        include(
+            "${CMAKE_SOURCE_DIR}/dependencies/SDL_shadercross/build-scripts/download-prebuilt-DirectXShaderCompiler.cmake"
+        )
+    endif()
+
+    # Used later when copying the runtime DLLs next to volta.exe.
+    set(DXC_BIN_DIR "${DXC_ROOT}/windows/bin/x64")
+endif()
+
+# ------------------------------------------------------------
+# SPIRV-Cross
+# ------------------------------------------------------------
+
+set(SPIRV_CROSS_SHARED OFF CACHE BOOL "" FORCE)
+set(SPIRV_CROSS_STATIC ON CACHE BOOL "" FORCE)
+set(SPIRV_CROSS_CLI OFF CACHE BOOL "" FORCE)
+set(SPIRV_CROSS_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
+set(SPIRV_CROSS_SKIP_INSTALL ON CACHE BOOL "" FORCE)
+set(SPIRV_CROSS_FORCE_PIC ON CACHE BOOL "" FORCE)
+
+add_subdirectory(
+    dependencies/SDL_shadercross/external/SPIRV-Cross
+    EXCLUDE_FROM_ALL
+)
+
+add_library(spirv_cross_c ALIAS spirv-cross-c)
+
+
+# ------------------------------------------------------------
 # SDL_shadercross
-set(SDLSHADERCROSS_VENDORED ON CACHE BOOL "" FORCE)
+# ------------------------------------------------------------
+
+set(SDLSHADERCROSS_VENDORED OFF CACHE BOOL "" FORCE)
 set(SDLSHADERCROSS_SHARED ON CACHE BOOL "" FORCE)
 set(SDLSHADERCROSS_STATIC OFF CACHE BOOL "" FORCE)
 set(SDLSHADERCROSS_SPIRVCROSS_SHARED OFF CACHE BOOL "" FORCE)
@@ -65,6 +127,7 @@ set(SDLSHADERCROSS_TESTS OFF CACHE BOOL "" FORCE)
 set(SDLSHADERCROSS_INSTALL OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(dependencies/SDL_shadercross)
+
 
 # SDL3_image
 find_package(SDL3_image QUIET CONFIG)
@@ -143,7 +206,7 @@ add_custom_command(TARGET volta POST_BUILD
 
 target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image::SDL3_image SDL3_mixer::SDL3_mixer SDL3_ttf::SDL3_ttf SDL3_shadercross::SDL3_shadercross OpenSSL::SSL OpenSSL::Crypto Luau.Compiler Luau.Require Luau.VM Luau.CodeGen box2d)
 
-if (WIN32)
+if(WIN32)
     add_custom_command(TARGET volta POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_FILE:SDL3::SDL3>
@@ -153,8 +216,8 @@ if (WIN32)
 
             $<TARGET_FILE:SDL3_shadercross::SDL3_shadercross>
 
-            $<TARGET_FILE:DirectXShaderCompiler::dxcompiler>
-            $<TARGET_FILE:DirectXShaderCompiler::dxil>
+            "${DXC_BIN_DIR}/dxcompiler.dll"
+            "${DXC_BIN_DIR}/dxil.dll"
 
             $<TARGET_FILE:OpenSSL::SSL>
             $<TARGET_FILE:OpenSSL::Crypto>
