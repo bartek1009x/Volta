@@ -4,6 +4,8 @@ project(volta)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include(FetchContent)
+
 add_subdirectory(dependencies/box2d)
 add_subdirectory(dependencies/luau)
 set(VOLTA_EXTRAS_DIR ${CMAKE_SOURCE_DIR}/volta_extras)
@@ -51,6 +53,18 @@ if (NOT SDL3_FOUND)
 
     FetchContent_MakeAvailable(SDL3)
 endif()
+
+# SDL_shadercross
+set(SDLSHADERCROSS_VENDORED ON CACHE BOOL "" FORCE)
+set(SDLSHADERCROSS_SHARED ON CACHE BOOL "" FORCE)
+set(SDLSHADERCROSS_STATIC OFF CACHE BOOL "" FORCE)
+set(SDLSHADERCROSS_SPIRVCROSS_SHARED OFF CACHE BOOL "" FORCE)
+set(SDLSHADERCROSS_DXC ON CACHE BOOL "" FORCE)
+set(SDLSHADERCROSS_CLI OFF CACHE BOOL "" FORCE)
+set(SDLSHADERCROSS_TESTS OFF CACHE BOOL "" FORCE)
+set(SDLSHADERCROSS_INSTALL OFF CACHE BOOL "" FORCE)
+
+add_subdirectory(dependencies/SDL_shadercross)
 
 # SDL3_image
 find_package(SDL3_image QUIET CONFIG)
@@ -127,7 +141,7 @@ add_custom_command(TARGET volta POST_BUILD
         $<TARGET_FILE_DIR:volta>/volta.luau
 )
 
-target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image::SDL3_image SDL3_mixer::SDL3_mixer SDL3_ttf::SDL3_ttf OpenSSL::SSL OpenSSL::Crypto Luau.Compiler Luau.Require Luau.VM Luau.CodeGen box2d)
+target_link_libraries(volta PRIVATE SDL3::SDL3 SDL3_image::SDL3_image SDL3_mixer::SDL3_mixer SDL3_ttf::SDL3_ttf SDL3_shadercross::SDL3_shadercross OpenSSL::SSL OpenSSL::Crypto Luau.Compiler Luau.Require Luau.VM Luau.CodeGen box2d)
 
 if (WIN32)
     add_custom_command(TARGET volta POST_BUILD
@@ -136,11 +150,20 @@ if (WIN32)
             $<TARGET_FILE:SDL3_image::SDL3_image>
             $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
             $<TARGET_FILE:SDL3_ttf::SDL3_ttf>
+
+            $<TARGET_FILE:SDL3_shadercross::SDL3_shadercross>
+
+            $<TARGET_FILE:DirectXShaderCompiler::dxcompiler>
+            $<TARGET_FILE:DirectXShaderCompiler::dxil>
+
             $<TARGET_FILE:OpenSSL::SSL>
             $<TARGET_FILE:OpenSSL::Crypto>
+
             $<TARGET_FILE_DIR:volta>
+
         COMMAND ${CMAKE_COMMAND} -E make_directory
             $<TARGET_FILE_DIR:volta>/volta_extras
+
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${VOLTA_EXTRAS_DIR}
             $<TARGET_FILE_DIR:volta>/volta_extras
@@ -156,11 +179,20 @@ elseif (APPLE)
             $<TARGET_FILE:SDL3_image::SDL3_image>
             $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
             $<TARGET_FILE:SDL3_ttf::SDL3_ttf>
+
+            $<TARGET_FILE:SDL3_shadercross::SDL3_shadercross>
+
+            $<TARGET_FILE:DirectXShaderCompiler::dxcompiler>
+            $<TARGET_FILE:DirectXShaderCompiler::dxil>
+
             $<TARGET_FILE:OpenSSL::SSL>
             $<TARGET_FILE:OpenSSL::Crypto>
+
             $<TARGET_FILE_DIR:volta>
+
         COMMAND ${CMAKE_COMMAND} -E make_directory
             $<TARGET_FILE_DIR:volta>/volta_extras
+
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${VOLTA_EXTRAS_DIR}
             $<TARGET_FILE_DIR:volta>/volta_extras
@@ -173,18 +205,6 @@ elseif (UNIX)
 
     set(APPDIR ${CMAKE_BINARY_DIR}/AppDir)
 
-    add_custom_command(TARGET volta POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory
-            $<TARGET_FILE_DIR:volta>/volta_extras
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${VOLTA_EXTRAS_DIR}
-            $<TARGET_FILE_DIR:volta>/volta_extras
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${APPDIR}/usr/bin
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:volta> ${APPDIR}/usr/bin/volta
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${APPDIR}/usr/bin/extras
-    )
-
-    # AppImage requires a .desktop file and an icon
     file(WRITE ${CMAKE_BINARY_DIR}/volta.desktop
 "[Desktop Entry]
 Name=Volta
@@ -194,32 +214,78 @@ Type=Application
 Categories=Game;
 ")
 
-    find_program(LINUXDEPLOY linuxdeploy)
-    find_program(APPIMAGETOOL appimagetool)
+    find_program(LINUXDEPLOY
+        NAMES linuxdeploy linuxdeploy-x86_64.AppImage
+    )
 
-    if (LINUXDEPLOY)
-        add_custom_target(appimage
-            COMMAND ${CMAKE_COMMAND} -E env
-                OUTPUT="volta.AppImage"
-                NO_STRIP=1
-                ${LINUXDEPLOY}
-                    --appdir ${APPDIR}
-                    --executable ${APPDIR}/usr/bin/volta
-                    --desktop-file ${CMAKE_BINARY_DIR}/volta.desktop
-                    --icon-file ${CMAKE_SOURCE_DIR}/assets/volta.png
-                    --library $<TARGET_FILE:SDL3::SDL3>
-                    --library $<TARGET_FILE:SDL3_image::SDL3_image>
-                    --library $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
-                    --library $<TARGET_FILE:SDL3_ttf::SDL3_ttf>
-                    --library $<TARGET_FILE:OpenSSL::SSL>
-                    --library $<TARGET_FILE:OpenSSL::Crypto>
-                    --output appimage
-            DEPENDS volta
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    find_program(APPIMAGETOOL
+        NAMES appimagetool appimagetool-x86_64.AppImage
+    )
+
+    if (NOT LINUXDEPLOY)
+        message(WARNING
+            "linuxdeploy not found. The 'appimage' target will fail until "
+            "linuxdeploy is available on PATH."
         )
-    else()
-        message(STATUS "linuxdeploy not found — 'appimage' target unavailable. "
-                        "Download it from https://github.com/linuxdeploy/linuxdeploy/releases, "
-                        "chmod +x, and put it on PATH.")
     endif()
+
+    if (NOT APPIMAGETOOL)
+        message(WARNING
+            "appimagetool not found. The 'appimage' target will fail until "
+            "appimagetool is available on PATH."
+        )
+    endif()
+
+    add_custom_target(appimage
+        COMMAND ${CMAKE_COMMAND} -E rm -rf ${APPDIR}
+
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            ${APPDIR}/usr/bin
+
+        COMMAND ${CMAKE_COMMAND} -E copy
+            $<TARGET_FILE:volta>
+            ${APPDIR}/usr/bin/volta
+
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            ${APPDIR}/usr/bin/volta_extras
+
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${VOLTA_EXTRAS_DIR}
+            ${APPDIR}/usr/bin/volta_extras
+
+        COMMAND ${CMAKE_COMMAND} -E env
+            NO_STRIP=1
+            ${LINUXDEPLOY}
+                --appdir ${APPDIR}
+                --executable ${APPDIR}/usr/bin/volta
+                --desktop-file ${CMAKE_BINARY_DIR}/volta.desktop
+                --icon-file ${CMAKE_SOURCE_DIR}/assets/volta.png
+                --library $<TARGET_FILE:SDL3::SDL3>
+                --library $<TARGET_FILE:SDL3_image::SDL3_image>
+                --library $<TARGET_FILE:SDL3_mixer::SDL3_mixer>
+                --library $<TARGET_FILE:SDL3_ttf::SDL3_ttf>
+                --library $<TARGET_FILE:SDL3_shadercross::SDL3_shadercross>
+                --library $<TARGET_FILE:DirectXShaderCompiler::dxcompiler>
+                --library $<TARGET_FILE:OpenSSL::SSL>
+                --library $<TARGET_FILE:OpenSSL::Crypto>
+
+        COMMAND ${CMAKE_STRIP}
+            --strip-unneeded
+            ${APPDIR}/usr/lib/libdxcompiler.so
+
+        COMMAND ${CMAKE_STRIP}
+            --strip-unneeded
+            ${APPDIR}/usr/lib/libSDL3_shadercross.so.0
+
+        COMMAND ${CMAKE_COMMAND} -E env
+            ARCH=x86_64
+            ${APPIMAGETOOL}
+            ${APPDIR}
+            ${CMAKE_BINARY_DIR}/volta.AppImage
+
+        DEPENDS volta
+
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        VERBATIM
+    )
 endif()

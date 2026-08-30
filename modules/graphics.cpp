@@ -1,6 +1,8 @@
 #include "graphics.hpp"
 
+#include <SDL3/SDL_gpu.h>
 #include <cmath>
+#include <cstring>
 #include <string>
 #include <filesystem>
 #include <unordered_map>
@@ -16,15 +18,26 @@
 #include <SDL3/SDL_render.h>
 
 #include "../dependencies/luau/VM/include/lualib.h"
+#include "../dependencies/SDL_shadercross/include/SDL3_shadercross/SDL_shadercross.h"
+#include "../dependencies/SDL_shadercross/external/SPIRV-Cross/spirv_msl.hpp"
+
+typedef struct {
+    SDL_GPUShader* shader;
+    SDL_GPURenderState* renderState;
+} shaderData;
 
 using namespace std;
 
-static SDL_Renderer *renderer = nullptr;
+static SDL_Renderer *renderer;
 static ResourceState* resourceState = nullptr;
 static unordered_map<int, SDL_Texture*> loadedTextures;
 Uint32 textureIDCounter = 0;
 unordered_map<int, TTF_Font*> loadedFonts;
 Uint32 fontIDCounter = 0;
+unordered_map<int, shaderData> createdShaders;
+Uint32 shaderIDCounter = 0;
+static int currentGraphicsPipelineId = -1;
+
 TransformationStack transformStack{10};
 Transform currentTransform{
     .xAxisX = 1,
@@ -119,7 +132,7 @@ int drawRect(lua_State *L) {
     if (lua_toboolean(L, 5)) {
         SDL_Color color;
         SDL_GetRenderDrawColor(renderer, &color.r, &color.g, &color.b, &color.a);
-        SDL_FColor fColor = {(float) color.r, (float) color.g, (float) color.b, (float) color.a};
+        SDL_FColor fColor = {(float) color.r / 255, (float) color.g / 255, (float) color.b / 255, (float) color.a / 255};
 
         SDL_Vertex vertices[] = {
             {topLeft, fColor, {0, 0}},
@@ -152,7 +165,7 @@ void renderFillCircle(float centerX, float centerY, float radius) {
 
     SDL_Color color;
     SDL_GetRenderDrawColor(renderer, &color.r, &color.g, &color.b, &color.a);
-    SDL_FColor fColor = {(float) color.r, (float) color.g, (float) color.b, (float) color.a};
+    SDL_FColor fColor = {(float) color.r / 255, (float) color.g / 255, (float) color.b / 255, (float) color.a / 255};
 
     SDL_Vertex vertices[segments + 1];
 
@@ -284,7 +297,7 @@ int setTextureScaleMode(lua_State *L) {
 }
 
 int loadImage(lua_State *L) {
-    lua_pushnumber(L, loadImagePath(L, lua_tostring(L, 1)));
+    lua_pushinteger(L, loadImagePath(L, lua_tostring(L, 1)));
 
     return 1;
 }
@@ -391,7 +404,7 @@ int loadFont(lua_State *L) {
 
     loadedFonts[fontIDCounter] = font;
 
-    lua_pushnumber(L, fontIDCounter);
+    lua_pushinteger(L, fontIDCounter);
 
     fontIDCounter++;
 
@@ -623,6 +636,108 @@ int getScissor(lua_State *L) {
     return 4;
 }
 
+int createShader(lua_State *L) {
+    SDL_GPUDevice* device = SDL_GetGPURendererDevice(renderer);
+
+    const char* hlslCode = lua_tostring(L, 1);
+    const char* hlslMain = luaL_optstring(L, 2, "main");
+
+    SDL_ShaderCross_HLSL_Info hlslInfo = {
+        .source = hlslCode,
+        .entrypoint = hlslMain,
+        .include_dir = nullptr,
+        .defines = nullptr,
+        .shader_stage = SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT,
+        .props = 0
+    };
+
+    size_t spirvSize = 0;
+    void* spirvBytecode = SDL_ShaderCross_CompileSPIRVFromHLSL(&hlslInfo, &spirvSize);
+
+    if (!spirvBytecode) {
+        luaL_error(L, "Could not compile shader: %s", SDL_GetError());
+        return 0;
+    }
+
+    SDL_ShaderCross_SPIRV_Info spirvInfo = {
+        .bytecode = (Uint8*) spirvBytecode,
+        .bytecode_size = spirvSize,
+        .entrypoint = hlslMain,
+        .shader_stage = SDL_SHADERCROSS_SHADERSTAGE_FRAGMENT,
+        .props = 0
+    };
+
+    const SDL_ShaderCross_GraphicsShaderMetadata* metadata = SDL_ShaderCross_ReflectGraphicsSPIRV((Uint8*) spirvBytecode, spirvSize, 0);
+
+    SDL_GPUShader* shader = SDL_ShaderCross_CompileGraphicsShaderFromSPIRV(device, &spirvInfo, &metadata->resource_info, 0);
+
+    SDL_free(spirvBytecode);
+    SDL_free((void*) metadata);
+
+    SDL_GPURenderStateCreateInfo info = {
+        .fragment_shader = shader,
+
+        .num_sampler_bindings = 0,
+        .sampler_bindings = nullptr,
+
+        .num_storage_textures = 0,
+        .storage_textures = nullptr,
+
+        .num_storage_buffers = 0,
+        .storage_buffers = nullptr,
+
+        .props = 0
+    };
+
+    SDL_GPURenderState* state = SDL_CreateGPURenderState(renderer, &info);
+
+    shaderData data = {
+        .shader = shader,
+        .renderState = state
+    };
+    createdShaders[shaderIDCounter] = data;
+    lua_pushinteger(L, shaderIDCounter);
+
+    shaderIDCounter++;
+
+    return 1;
+}
+
+int setShader(lua_State *L) {
+    if (lua_isnoneornil(L, 1)) {
+        if (!SDL_SetGPURenderState(renderer, nullptr)) {
+            luaL_error(L, "Could not reset GPU render state: %s", SDL_GetError());
+            return 0;
+        }
+
+        return 0;
+    }
+
+    int shaderId = lua_tointeger(L, 1);
+    shaderData data = createdShaders[shaderId];
+
+    if (!SDL_SetGPURenderState(renderer, data.renderState)) {
+        luaL_error(L, "Could not set GPU render state: %s", SDL_GetError());
+        return 0;
+    }
+
+    return 0;
+}
+
+int destroyShader(lua_State *L) {
+    int shaderId = lua_tointeger(L, 1);
+
+    SDL_GPUDevice* device = SDL_GetGPURendererDevice(renderer);
+    shaderData data = createdShaders[shaderId];
+
+    SDL_DestroyGPURenderState(data.renderState);
+    SDL_ReleaseGPUShader(device, data.shader);
+
+    createdShaders.erase(shaderId);
+
+    return 0;
+}
+
 static const luaL_Reg graphics_lib[] = {
     {"setCursorVisibility", setCursorVisibility},
     {"isCursorVisible", isCursorVisible},
@@ -648,15 +763,21 @@ static const luaL_Reg graphics_lib[] = {
     {"popCoord", popCoord},
     {"setScissor", setScissor},
     {"getScissor", getScissor},
+    {"createShader", createShader},
+    {"destroyShader", destroyShader},
+    {"setShader", setShader},
     {nullptr, nullptr},
 };
 
 void registerGraphicsFunctions(lua_State* L, ResourceState* state) {
     TTF_Init();
     resourceState = state;
+
+    renderer = SDL_CreateGPURenderer(nullptr, state->getWindow());
     if (renderer == nullptr) {
-        renderer = state->getRenderer();
-    }
+        printf("Couldn't create the renderer: %s", SDL_GetError());
+    };
+    state->setRenderer(renderer);
 
     luaL_register(L, "graphics", graphics_lib);
     lua_setreadonly(L, -1, 1);

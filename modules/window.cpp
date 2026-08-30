@@ -154,12 +154,12 @@ void registerWindowFunctions(lua_State* L, ResourceState* state) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
     }
 
-    SDL_Renderer* renderer;
-    if (!SDL_CreateWindowAndRenderer("Volta", 320, 240, 0, &window, &renderer)) {
+    window = SDL_CreateWindow("Volta", 320, 240, 0);
+    if (window == nullptr) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window and renderer: %s", SDL_GetError());
     }
 
-    state->setWinRen(window, renderer);
+    state->setWindow(window);
 
     luaL_register(L, "window", window_lib);
     lua_setreadonly(L, -1, 1);
